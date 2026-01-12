@@ -666,9 +666,10 @@ function renderScheduleTable(schedule, penaltyRate) {
     const today = new Date();
     const d = localDB[currentIdx];
 
-    // Calculate fixed interest portion per installment
-    // Total Interest / Number of Dues
-    const interestPerDue = parseFloat(d.loan.totalInt) / parseInt(d.loan.dues);
+    // FIX: Ensure totalInt and dues are treated as numbers for existing records
+    const totalInt = parseFloat(d.loan.totalInt) || 0;
+    const totalDues = parseInt(d.loan.dues) || 1;
+    const interestPerDue = totalInt / totalDues;
 
     schedule.forEach((s, i) => {
         let actionBtn = '';
@@ -676,11 +677,12 @@ function renderScheduleTable(schedule, penaltyRate) {
         let intRec = '-';
         let prinRec = '-';
         
+        // This logic now applies to ALL existing "isPaid" rows in your database
         if (s.isPaid) {
             const paidAmt = parseFloat(s.paidAmount) || 0;
+            const expected = parseFloat(s.expectedAmt) || 0;
             
-            // Logic: Interest portion is fixed, remainder goes to Principal
-            // If the user paid more (penalty), it shows in the total, but we cap interest at the calculated per-due rate
+            // Formula: Interest is fixed per due, Principal is the rest
             intRec = `<span class="text-danger">₹${interestPerDue.toFixed(0)}</span>`;
             prinRec = `<span class="text-primary">₹${(paidAmt - interestPerDue).toFixed(0)}</span>`;
 
@@ -698,8 +700,8 @@ function renderScheduleTable(schedule, penaltyRate) {
             <td>${s.sno}</td>
             <td>${s.dueDate}</td>
             <td>${s.expectedAmt}</td>
-            <td>${intRec}</td>
-            <td>${prinRec}</td>
+            <td class="fw-bold">${intRec}</td>
+            <td class="fw-bold">${prinRec}</td>
             <td class="fw-bold text-dark">${s.paidDate||'-'}</td>
             <td>${s.receiptNo||'-'}</td>
             <td class="fw-bold text-success">${s.paidAmount||'-'}</td>
