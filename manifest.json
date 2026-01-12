@@ -1,0 +1,15 @@
+{
+  "name": "Finance Cloud",
+  "short_name": "Finance",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#1e4620",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2910/2910795.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
