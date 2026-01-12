@@ -191,25 +191,26 @@
         </div>
     </div>
 
-    <div class="px-1 d-flex justify-content-between align-items-center mb-3 mt-4">
-    <h6 class="text-muted small fw-bold m-0"><i class="fas fa-history me-1"></i> <span data-lang="history">HISTORY</span></h6>
-    <span class="badge rounded-pill bg-light text-dark border fw-normal" style="font-size: 0.65rem;">Last 10 Payments</span>
-</div>
-
-<div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 16px;">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0 align-middle">
-            <thead class="bg-light">
-                <tr style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
-                    <th class="ps-3 py-3 border-0 text-muted" data-lang="date">Date</th>
-                    <th class="py-3 border-0 text-muted text-center" data-lang="no">Loan</th>
-                    <th class="py-3 border-0 text-muted text-center" data-lang="receipt">Receipt</th>
-                    <th class="pe-3 py-3 border-0 text-muted text-end" data-lang="amt">Amount</th>
-                </tr>
-            </thead>
-            <tbody id="qpHistoryBody" style="font-size: 0.85rem; border-top: 0 !important;">
-                </tbody>
-        </table>
+    <div class="px-1 d-flex justify-content-between align-items-center mb-2">
+        <h6 class="text-muted small fw-bold m-0" data-lang="history">HISTORY</h6>
+        <span class="badge bg-light text-muted border" style="font-size: 0.65rem;">Recent 10</span>
+    </div>
+    
+    <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 text-center align-middle" style="font-size: 0.85rem;">
+                <thead style="background-color: #f1f3f5;">
+                    <tr>
+                        <th class="py-3 text-muted fw-bold border-0" data-lang="date">Date</th>
+                        <th class="py-3 text-muted fw-bold border-0" data-lang="no">No</th>
+                        <th class="py-3 text-muted fw-bold border-0" data-lang="receipt">Rcpt</th>
+                        <th class="py-3 text-muted fw-bold border-0" data-lang="amt">Amt</th>
+                    </tr>
+                </thead>
+                <tbody id="qpHistoryBody" class="border-top-0">
+                    </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -293,22 +294,22 @@
 
             <div class="mt-3 field-lbl" data-lang="remarks">Remarks</div><div class="field-val translatable" id="detailRemarks"></div>
 
-           <div class="table-responsive mt-3">
-    <table class="table table-bordered table-sm text-center mb-0" style="font-size:0.75rem;">
-        <thead class="table-light">
-            <tr>
-                <th>#</th>
-                <th data-lang="due_date">Due Date</th>
-                <th data-lang="due">Due</th>
-                <th>Int. Rec</th> <th>Prin. Rec</th> <th data-lang="paid_date">Paid Date</th>
-                <th data-lang="receipt">Rcpt</th>
-                <th data-lang="paid">Paid</th>
-                <th class="no-print" data-lang="action">Action</th>
-            </tr>
-        </thead>
-        <tbody id="detailTableBody"></tbody>
-    </table>
-</div>
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered table-sm text-center mb-0" style="font-size:0.8rem;">
+                    <thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th data-lang="due_date">Due Date</th>
+        <th data-lang="due">Due</th>
+        <th data-lang="penalty">Days / Penalty</th> <th data-lang="paid_date">Paid Date</th>
+        <th data-lang="receipt">Rcpt</th>
+        <th data-lang="paid">Paid</th>
+        <th class="text-primary">Int. Rec</th> <th class="text-success">Pri. Rec</th> <th class="no-print" data-lang="action">Action</th>
+    </tr>
+</thead>
+                    <tbody id="detailTableBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -664,34 +665,44 @@ function renderScheduleTable(schedule, penaltyRate) {
     const tb = document.getElementById('detailTableBody'); 
     tb.innerHTML = '';
     const today = new Date();
+    today.setHours(0,0,0,0); // Standardize today's date for comparison
+    
     const d = localDB[currentIdx];
-
-    // FIX: Ensure totalInt and dues are treated as numbers for existing records
     const totalInt = parseFloat(d.loan.totalInt) || 0;
-    const totalDues = parseInt(d.loan.dues) || 1;
-    const interestPerDue = totalInt / totalDues;
+    const numDues = parseInt(d.loan.dues) || 1;
+    const interestComponentPerDue = totalInt / numDues;
 
     schedule.forEach((s, i) => {
         let actionBtn = '';
         let penaltyDisplay = '-';
-        let intRec = '-';
-        let prinRec = '-';
+        let intReceived = '-';
+        let priReceived = '-';
         
-        // This logic now applies to ALL existing "isPaid" rows in your database
         if (s.isPaid) {
+            // 1. Calculate Interest and Principal components
             const paidAmt = parseFloat(s.paidAmount) || 0;
-            const expected = parseFloat(s.expectedAmt) || 0;
-            
-            // Formula: Interest is fixed per due, Principal is the rest
-            intRec = `<span class="text-danger">₹${interestPerDue.toFixed(0)}</span>`;
-            prinRec = `<span class="text-primary">₹${(paidAmt - interestPerDue).toFixed(0)}</span>`;
+            intReceived = interestComponentPerDue.toFixed(2);
+            priReceived = (paidAmt - interestComponentPerDue).toFixed(2);
 
-            actionBtn = `<button class="btn btn-sm btn-outline-warning me-1 border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button><i class="fas fa-check text-success"></i>`;
+            // 2. Show if extra (Penalty/Buffer) was paid
+            if(paidAmt > s.expectedAmt) {
+                const extra = (paidAmt - s.expectedAmt).toFixed(0);
+                penaltyDisplay = `<span class="text-success small">Paid: ₹${extra}</span>`;
+            }
+            actionBtn = `<button class="btn btn-sm btn-outline-warning me-2 border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button><i class="fas fa-check text-success"></i>`;
         } else {
+            // 3. Logic for Unpaid/Late Dues
             const due = new Date(s.dueDate);
             if (today > due) {
-                const days = Math.ceil((today - due) / (1000*60*60*24));
-                penaltyDisplay = `<span class="text-danger fw-bold">${days} Days</span>`;
+                const diffTime = Math.abs(today - due);
+                const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const penaltyAmt = days * penaltyRate; // Based on the "Rate/Day" input
+                
+                // Displays "10 Days (₹50)"
+                penaltyDisplay = `<div class="text-danger fw-bold" style="font-size:0.75rem;">
+                                    ${days} Days<br>
+                                    <span class="badge bg-danger">₹${penaltyAmt}</span>
+                                  </div>`;
             }
             actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="openDueModal(${i})">Pay</button>`;
         }
@@ -700,11 +711,12 @@ function renderScheduleTable(schedule, penaltyRate) {
             <td>${s.sno}</td>
             <td>${s.dueDate}</td>
             <td>${s.expectedAmt}</td>
-            <td class="fw-bold">${intRec}</td>
-            <td class="fw-bold">${prinRec}</td>
+            <td style="min-width:90px;">${penaltyDisplay}</td>
             <td class="fw-bold text-dark">${s.paidDate||'-'}</td>
             <td>${s.receiptNo||'-'}</td>
             <td class="fw-bold text-success">${s.paidAmount||'-'}</td>
+            <td class="text-primary fw-500">₹${intReceived}</td>
+            <td class="text-success fw-500">₹${priReceived}</td>
             <td class="no-print">${actionBtn}</td>
         </tr>`;
     });
@@ -867,37 +879,6 @@ function renderScheduleTable(schedule, penaltyRate) {
     function exportGiven() { let c="No,Date,Name,Amt\n"; localDB.forEach(x=>{c+=`${x.loanNo},${x.loan.date},${x.borrower},${x.loan.principal}\n`}); downloadCSV(c,"Given.csv"); }
     function exportReceived() { let c="Date,No,Rcpt,Amt\n"; localHistory.forEach(h=>{c+=`${h.date},${h.loanNo},${h.rcpt},${h.amt}\n`}); downloadCSV(c,"Received.csv"); }
     function downloadCSV(c,f){ const b=new Blob([c],{type:'text/csv'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download=f; l.click(); }
-
-    function renderHistory() {
-    const tb = document.getElementById('qpHistoryBody');
-    tb.innerHTML = '';
-    
-    localHistory.forEach(h => {
-        // Format date to be shorter for mobile
-        const shortDate = h.date.split('-').reverse().slice(0,2).join('/'); // Shows "12/01"
-        
-        tb.innerHTML += `
-            <tr class="border-bottom-0">
-                <td class="ps-3 py-3">
-                    <div class="fw-bold text-dark">${shortDate}</div>
-                    <div class="text-muted" style="font-size: 0.7rem;">${h.date.split('-')[0]}</div>
-                </td>
-                <td class="text-center">
-                    <span class="badge bg-opacity-10 bg-primary text-primary fw-600">#${h.loanNo}</span>
-                </td>
-                <td class="text-center">
-                    <code class="text-secondary small fw-bold">${h.rcpt}</code>
-                </td>
-                <td class="pe-3 text-end">
-                    <span class="fw-bold text-success">₹${parseFloat(h.amt).toLocaleString()}</span>
-                </td>
-            </tr>`;
-    });
-    
-    if(localHistory.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted small">No transactions found</td></tr>';
-    }
-}
 </script>
 </body>
 </html>
