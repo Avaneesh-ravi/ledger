@@ -226,10 +226,13 @@
             </div>
         </div>
         <div class="ledger-sheet">
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-                <h4 class="fw-bold text-success m-0"><span data-lang="loan_no">LOAN NO</span>: #<span id="detailLoanNo"></span></h4>
-                <div class="text-end"><span class="badge bg-light text-dark border" id="detailDate"></span></div>
-            </div>
+<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+    <div class="d-flex align-items-center">
+        <h4 class="fw-bold text-success m-0"><span data-lang="loan_no">LOAN NO</span>: #<span id="detailLoanNo"></span></h4>
+        <span id="prevLoanBadge" class="ms-3 badge rounded-pill"></span>
+    </div>
+    <div class="text-end"><span class="badge bg-light text-dark border" id="detailDate"></span></div>
+</div>
             
             <div class="row">
                 <div class="col-6 border-end pe-3">
@@ -241,11 +244,13 @@
                     <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailBFather"></span>
                     <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailBAddress"></span>
                     <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val" id="detailBPhone"></span>
-                    <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val" id="detailBPhone"></span>
-<span class="field-lbl mt-1" data-lang="phone2">Mobile 2</span><span class="field-val" id="detailBPhone2"></span>
+                    
+                    <span class="field-lbl mt-1" data-lang="phone">Phone 2</span><span class="field-val" id="detailBPhone"></span>
 <span class="field-lbl mt-1" data-lang="prev_loan">Previous Loan</span><span class="field-val fw-bold text-primary" id="detailPrevLoan"></span>
 <span class="field-lbl mt-1" data-lang="id_proof">ID Proof</span><span class="field-val" id="detailBId"></span>
-                </div>
+                
+
+</div>
                 
                 <div class="col-6 ps-3">
                     <div class="text-center mb-2">
@@ -257,6 +262,8 @@
                         <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailGFather"></span>
                         <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailGAddress"></span>
                         <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val" id="detailGPhone"></span>
+
+<span class="field-lbl mt-1" data-lang="phone2">Phone 2</span><span class="field-val" id="detailGPhone2"></span>
                         <hr class="my-2 text-muted">
                         <span class="field-lbl mt-1" data-lang="witness">Witness</span><span class="field-val translatable" id="detailWitness"></span>
                     </div>
@@ -350,19 +357,14 @@
 <div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h6 class="modal-title fw-bold" data-lang="new_account">New Account</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light"><form id="entryForm">
     <div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-4"><input type="text" class="form-control fw-bold" id="inLoanNo" placeholder="Loan No"></div><div class="col-8"><input type="text" class="form-control fw-bold" id="inBName" placeholder="Borrower Name"></div></div></div><div class="row g-2 mb-3"><div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('borrower')"><i class="fas fa-camera text-success"></i> Borrower<img id="imgPreviewBorrower" class="preview-img mx-auto"></div></div><div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('guarantor')"><i class="fas fa-camera text-secondary"></i> Guarantor<img id="imgPreviewGuarantor" class="preview-img mx-auto"></div></div></div><input type="hidden" id="base64Borrower"><input type="hidden" id="base64Guarantor">
     
-    <div class="card p-3 border-0 shadow-sm mb-3">
+<div class="card p-3 border-0 shadow-sm mb-3">
     <div class="row g-2">
-        <div class="col-6"><input type="text" class="form-control" id="inBFather" placeholder="Father"></div>
-        <div class="col-6"><input type="tel" class="form-control" id="inBPhone" placeholder="Mobile 1"></div>
-        <div class="col-6"><input type="tel" class="form-control" id="inBPhone2" placeholder="Mobile 2"></div>
-        <div class="col-6">
-            <select class="form-select" id="inPrevLoan">
-                <option value="No">No Previous Loan</option>
-                <option value="Yes">Has Previous Loan</option>
-            </select>
-        </div>
-        <div class="col-12"><input type="text" class="form-control" id="inBAddress" placeholder="Address"></div>
-        <div class="col-12"><input type="text" class="form-control" id="inBId" placeholder="ID Proof"></div>
+        <div class="col-6"><input type="text" class="form-control fw-bold" id="inGName" placeholder="Guarantor Name"></div>
+        <div class="col-6"><input type="text" class="form-control" id="inGFather" placeholder="G. Father"></div>
+        <div class="col-6"><input type="tel" class="form-control" id="inGPhone" placeholder="G. Mobile 1"></div>
+        <div class="col-6"><input type="tel" class="form-control" id="inGPhone2" placeholder="G. Mobile 2"></div>
+        <div class="col-12"><input type="text" class="form-control" id="inGAddress" placeholder="G. Address"></div>
+        <div class="col-12"><input type="text" class="form-control" id="inWitness" placeholder="Witness"></div>
     </div>
 </div>
 <div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><input type="text" class="form-control fw-bold" id="inGName" placeholder="Guarantor Name"></div><div class="col-6"><input type="text" class="form-control" id="inGFather" placeholder="G. Father"></div><div class="col-6"><input type="tel" class="form-control" id="inGPhone" placeholder="G. Mobile"></div><div class="col-6"><input type="text" class="form-control" id="inGAddress" placeholder="G. Address"></div><div class="col-12"><input type="text" class="form-control" id="inWitness" placeholder="Witness"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-4"><input type="text" class="form-control" id="inVName" placeholder="Make"></div><div class="col-4"><input type="text" class="form-control" id="inVModel" placeholder="Model"></div><div class="col-4"><input type="text" class="form-control" id="inVReg" placeholder="No"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><label class="small" data-lang="date">Date</label><input type="date" class="form-control" id="inDate"></div><div class="col-6"><label class="small" data-lang="principal">Principal</label><input type="number" class="form-control fw-bold" id="inPrincipal" value="17000" oninput="calculate()"></div><div class="col-6"><label class="small">Int %</label><input type="number" class="form-control" id="inPercent" value="2.5" oninput="calculate()"></div><div class="col-6"><label class="small" data-lang="dues">Dues</label><input type="number" class="form-control" id="inDues" value="10" oninput="calculate()"></div><div class="col-12"><input type="text" class="form-control" id="inRemarks" placeholder="Remarks"></div></div><div class="row mt-3 text-center bg-light p-2 rounded mx-0"><div class="col-6 border-end"><small class="text-success fw-bold d-block">Per Due</small><span class="h5 text-success fw-bold" id="outExpected">0</span></div><div class="col-6"><small class="text-danger fw-bold d-block">Total Int</small><span class="h5 text-danger fw-bold" id="outTotalInt">0</span></div></div></div></form></div><div class="modal-footer border-0"><button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="saveToCloud()" data-lang="create_account">CREATE ACCOUNT</button></div></div></div></div>
@@ -484,15 +486,13 @@
     };
 
     // --- FIREBASE LISTENERS ---
-    db.collection("loans").onSnapshot((snap) => {
-        localDB = [];
-        snap.forEach(d => { let data = d.data(); data.uid = d.id; localDB.push(data); });
-        updateDashboard(); renderGivenList(); checkNotifications();
-        document.getElementById('loader').style.display='none';
-        if(currentIdx !== null) viewLedger(currentIdx); 
-        setText('detailBPhone2', d.borrowerInfo.phone2 || "-");
-setText('detailPrevLoan', d.borrowerInfo.prevLoan || "No");// Refresh ledger if open
-    }, (error) => console.error(error));
+db.collection("loans").onSnapshot((snap) => {
+    localDB = [];
+    snap.forEach(d => { let data = d.data(); data.uid = d.id; localDB.push(data); });
+    updateDashboard(); renderGivenList(); checkNotifications();
+    document.getElementById('loader').style.display='none';
+    if(currentIdx !== null) viewLedger(currentIdx); // This function already handles the phone2/prevLoan setText
+}, (error) => console.error(error));
 
     db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
         localHistory = []; snap.forEach(d => { let data = d.data(); data.uid = d.id; localHistory.push(data); });
@@ -625,7 +625,14 @@ borrowerInfo: {
     address: document.getElementById('inBAddress').value, 
     idProof: document.getElementById('inBId').value 
 },
-            guarantor: { name: document.getElementById('inGName').value, father: document.getElementById('inGFather').value, phone: document.getElementById('inGPhone').value, address: document.getElementById('inGAddress').value, witness: document.getElementById('inWitness').value },
+            guarantor: { 
+    name: document.getElementById('inGName').value, 
+    father: document.getElementById('inGFather').value, 
+    phone: document.getElementById('inGPhone').value, 
+    phone2: document.getElementById('inGPhone2').value, // Added this line
+    address: document.getElementById('inGAddress').value, 
+    witness: document.getElementById('inWitness').value 
+},
             vehicle: { name: document.getElementById('inVName').value, model: document.getElementById('inVModel').value, reg: document.getElementById('inVReg').value },
             loan: { principal: parseFloat(document.getElementById('inPrincipal').value)||0, percent: document.getElementById('inPercent').value, expected: parseFloat(document.getElementById('outExpected').innerText)||0, dues: parseInt(document.getElementById('inDues').value)||0, date: document.getElementById('inDate').value, totalInt: document.getElementById('outTotalInt').innerText, remarks: document.getElementById('inRemarks').value },
             photos: { borrower: document.getElementById('base64Borrower').value, guarantor: document.getElementById('base64Guarantor').value }, 
@@ -638,53 +645,81 @@ borrowerInfo: {
 
     function generateSchedule(date, dues, amt) { let arr = []; let d = new Date(date); for(let i=1; i<=dues; i++) { let nd = new Date(d); nd.setMonth(d.getMonth()+i); arr.push({sno:i, dueDate:nd.toISOString().split('T')[0], expectedAmt:amt, isPaid:false, paidAmount:0, paidDate:'', receiptNo:''}); } return arr; }
 
-    function viewLedger(idx) {
-        currentIdx = idx; const d = localDB[idx]; currentDocId = d.uid;
-        
-        // Reset to English content first (Source of Truth)
-        setText('detailLoanNo', d.loanNo); setText('detailDate', d.loan.date);
-        setText('detailBName', d.borrower); setText('detailBFather', d.borrowerInfo.father);
-        setText('detailBAddress', d.borrowerInfo.address); setText('detailBPhone', d.borrowerInfo.phone);
-        setText('detailBId', d.borrowerInfo.idProof);
-        
-        setText('detailGName', d.guarantor.name); setText('detailGFather', d.guarantor.father);
-        setText('detailGPhone', d.guarantor.phone); setText('detailGAddress', d.guarantor.address);
-        setText('detailWitness', d.guarantor.witness);
-        
-        document.getElementById('detailBPhoto').src = d.photos.borrower || ""; document.getElementById('detailGPhoto').src = d.photos.guarantor || "";
-        document.getElementById('detailVehicle').innerText = `${d.vehicle.name} ${d.vehicle.model}`; document.getElementById('detailReg').innerText = d.vehicle.reg;
-        
-        document.getElementById('detailPrincipal').innerText = d.loan.principal; 
-        document.getElementById('detailTotalAmount').innerText = d.loan.expected * d.loan.dues;
-        document.getElementById('detailExpected').innerText = d.loan.expected;
-        document.getElementById('detailPercent').innerText = d.loan.percent; 
-        document.getElementById('detailTotalInt').innerText = d.loan.totalInt;
-        document.getElementById('detailRemarks').innerText = d.loan.remarks;
-
-        const paid = d.schedule.reduce((acc,s) => acc + (parseFloat(s.paidAmount)||0), 0);
-        document.getElementById('detailRemaining').innerText = (d.loan.expected * d.loan.dues) - paid;
-
-        // Penalty Handling
-        const storedRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
-        document.getElementById('penRate').value = storedRate;
-
-        // Draw Table and Calculate Penalty Totals
-        renderScheduleTable(d.schedule, storedRate);
-        calculatePenaltyTotals();
-        
-        // If language is currently Tamil, apply translation over the loaded data
-        if(curLang === 'ta') {
-            applyDynamicTranslation(d);
-            // Re-apply static labels
-            const elements = document.querySelectorAll('[data-lang]');
-            elements.forEach(el => {
-                const key = el.getAttribute('data-lang');
-                if (uiTranslations[curLang][key]) el.innerText = uiTranslations[curLang][key];
-            });
-        }
-
-        switchTab('viewLedger');
+function viewLedger(idx) {
+    currentIdx = idx; 
+    const d = localDB[idx]; 
+    currentDocId = d.uid;
+    
+    // --- 1. HEADER & INDICATORS ---
+    setText('detailLoanNo', d.loanNo); 
+    setText('detailDate', d.loan.date);
+    
+    // Handle the Previous Loan Badge Display
+    const badge = document.getElementById('prevLoanBadge');
+    if (d.borrowerInfo && d.borrowerInfo.prevLoan === "Yes") {
+        badge.innerText = "PREVIOUS LOAN: YES";
+        badge.className = "ms-3 badge rounded-pill bg-warning text-dark shadow-sm";
+    } else {
+        badge.innerText = "NEW CUSTOMER";
+        badge.className = "ms-3 badge rounded-pill bg-info text-white shadow-sm";
     }
+
+    // --- 2. BORROWER DETAILS ---
+    setText('detailBName', d.borrower); 
+    setText('detailBFather', d.borrowerInfo.father);
+    setText('detailBAddress', d.borrowerInfo.address); 
+    setText('detailBPhone', d.borrowerInfo.phone);
+    // Display Second Mobile for Borrower
+    setText('detailBPhone2', d.borrowerInfo.phone2 || "-");
+    setText('detailBId', d.borrowerInfo.idProof);
+    
+    // --- 3. GUARANTOR DETAILS ---
+    setText('detailGName', d.guarantor.name); 
+    setText('detailGFather', d.guarantor.father);
+    setText('detailGPhone', d.guarantor.phone); 
+    // Display Second Mobile for Guarantor
+    setText('detailGPhone2', d.guarantor.phone2 || "-");
+    setText('detailGAddress', d.guarantor.address);
+    setText('detailWitness', d.guarantor.witness);
+    
+    // --- 4. ASSET & PHOTOS ---
+    document.getElementById('detailBPhoto').src = d.photos.borrower || ""; 
+    document.getElementById('detailGPhoto').src = d.photos.guarantor || "";
+    document.getElementById('detailVehicle').innerText = `${d.vehicle.name} ${d.vehicle.model}`; 
+    document.getElementById('detailReg').innerText = d.vehicle.reg;
+    
+    // --- 5. FINANCIAL SUMMARY ---
+    document.getElementById('detailPrincipal').innerText = d.loan.principal; 
+    document.getElementById('detailTotalAmount').innerText = d.loan.expected * d.loan.dues;
+    document.getElementById('detailExpected').innerText = d.loan.expected;
+    document.getElementById('detailPercent').innerText = d.loan.percent; 
+    document.getElementById('detailTotalInt').innerText = d.loan.totalInt;
+    document.getElementById('detailRemarks').innerText = d.loan.remarks;
+
+    const paid = d.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+    document.getElementById('detailRemaining').innerText = (d.loan.expected * d.loan.dues) - paid;
+
+    // --- 6. PENALTY CONFIGURATION ---
+    const storedRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
+    document.getElementById('penRate').value = storedRate;
+
+    // --- 7. TABLE RENDERING ---
+    renderScheduleTable(d.schedule, storedRate);
+    calculatePenaltyTotals();
+    
+    // --- 8. LANGUAGE SYNC ---
+    if(curLang === 'ta') {
+        applyDynamicTranslation(d);
+        // Re-apply static UI labels for new columns
+        const elements = document.querySelectorAll('[data-lang]');
+        elements.forEach(el => {
+            const key = el.getAttribute('data-lang');
+            if (uiTranslations[curLang][key]) el.innerText = uiTranslations[curLang][key];
+        });
+    }
+
+    switchTab('viewLedger');
+}
 
     function calculatePenaltyTotals() {
         const rate = parseFloat(document.getElementById('penRate').value) || 0;
