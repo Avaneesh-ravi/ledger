@@ -241,12 +241,7 @@
 <div class="ledger-sheet">
     <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-3">
         <div>
-            <h4 class="fw-bold text-success m-0">
-                <span data-lang="loan_no">LOAN NO</span>: #<span id="detailLoanNo"></span>
-            </h4>
-            <div class="mt-1">
-                <span id="prevLoanBadge" class="badge rounded-pill shadow-sm" style="font-size: 0.7rem;"></span>
-            </div>
+           
         </div>
         <div class="text-end">
             <span class="badge bg-light text-dark border" id="detailDate"></span>
@@ -373,20 +368,68 @@
     </div>
 </div>
 
-<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h6 class="modal-title fw-bold" data-lang="new_account">New Account</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light"><form id="entryForm">
-    <div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-4"><input type="text" class="form-control fw-bold" id="inLoanNo" placeholder="Loan No"></div><div class="col-8"><input type="text" class="form-control fw-bold" id="inBName" placeholder="Borrower Name"></div></div></div><div class="row g-2 mb-3"><div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('borrower')"><i class="fas fa-camera text-success"></i> Borrower<img id="imgPreviewBorrower" class="preview-img mx-auto"></div></div><div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('guarantor')"><i class="fas fa-camera text-secondary"></i> Guarantor<img id="imgPreviewGuarantor" class="preview-img mx-auto"></div></div></div><input type="hidden" id="base64Borrower"><input type="hidden" id="base64Guarantor">
+<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h6 class="modal-title fw-bold" data-lang="new_account">New Account</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light">
     
-<div class="card p-3 border-0 shadow-sm mb-3">
-    <div class="row g-2">
-        <div class="col-6"><input type="text" class="form-control fw-bold" id="inGName" placeholder="Guarantor Name"></div>
-        <div class="col-6"><input type="text" class="form-control" id="inGFather" placeholder="G. Father"></div>
-        <div class="col-6"><input type="tel" class="form-control" id="inGPhone" placeholder="G. Mobile 1"></div>
-        <div class="col-6"><input type="tel" class="form-control" id="inGPhone2" placeholder="G. Mobile 2"></div>
-        <div class="col-12"><input type="text" class="form-control" id="inGAddress" placeholder="G. Address"></div>
-        <div class="col-12"><input type="text" class="form-control" id="inWitness" placeholder="Witness"></div>
+<form id="entryForm">
+    <div class="card p-3 border-0 shadow-sm mb-3">
+        <div class="row g-2">
+            <div class="col-4"><input type="text" class="form-control fw-bold" id="inLoanNo" placeholder="Loan No"></div>
+            <div class="col-8"><input type="text" class="form-control fw-bold" id="inBName" placeholder="Borrower Name"></div>
+        </div>
     </div>
-</div>
-<div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><input type="text" class="form-control fw-bold" id="inGName" placeholder="Guarantor Name"></div><div class="col-6"><input type="text" class="form-control" id="inGFather" placeholder="G. Father"></div><div class="col-6"><input type="tel" class="form-control" id="inGPhone" placeholder="G. Mobile"></div><div class="col-6"><input type="text" class="form-control" id="inGAddress" placeholder="G. Address"></div><div class="col-12"><input type="text" class="form-control" id="inWitness" placeholder="Witness"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-4"><input type="text" class="form-control" id="inVName" placeholder="Make"></div><div class="col-4"><input type="text" class="form-control" id="inVModel" placeholder="Model"></div><div class="col-4"><input type="text" class="form-control" id="inVReg" placeholder="No"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><label class="small" data-lang="date">Date</label><input type="date" class="form-control" id="inDate"></div><div class="col-6"><label class="small" data-lang="principal">Principal</label><input type="number" class="form-control fw-bold" id="inPrincipal" value="17000" oninput="calculate()"></div><div class="col-6"><label class="small">Int %</label><input type="number" class="form-control" id="inPercent" value="2.5" oninput="calculate()"></div><div class="col-6"><label class="small" data-lang="dues">Dues</label><input type="number" class="form-control" id="inDues" value="10" oninput="calculate()"></div><div class="col-12"><input type="text" class="form-control" id="inRemarks" placeholder="Remarks"></div></div><div class="row mt-3 text-center bg-light p-2 rounded mx-0"><div class="col-6 border-end"><small class="text-success fw-bold d-block">Per Due</small><span class="h5 text-success fw-bold" id="outExpected">0</span></div><div class="col-6"><small class="text-danger fw-bold d-block">Total Int</small><span class="h5 text-danger fw-bold" id="outTotalInt">0</span></div></div></div></form></div><div class="modal-footer border-0"><button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="saveToCloud()" data-lang="create_account">CREATE ACCOUNT</button></div></div></div></div>
+
+    <div class="card p-3 border-0 shadow-sm mb-3">
+        <h6 class="small fw-bold text-success mb-2">BORROWER DETAILS</h6>
+        <div class="row g-2">
+            <div class="col-6"><input type="text" class="form-control" id="inBFather" placeholder="B. Father Name"></div>
+            <div class="col-6"><input type="tel" class="form-control" id="inBPhone" placeholder="B. Mobile"></div>
+            <div class="col-12"><input type="text" class="form-control" id="inBAddress" placeholder="Borrower Address"></div>
+            <div class="col-6"><input type="text" class="form-control" id="inBId" placeholder="ID Proof No"></div>
+            <div class="col-6"><input type="text" class="form-control" id="inPrevLoan" placeholder="Previous Loan Info"></div>
+        </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('borrower')"><i class="fas fa-camera text-success"></i> Borrower<img id="imgPreviewBorrower" class="preview-img mx-auto"></div></div>
+        <div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('guarantor')"><i class="fas fa-camera text-secondary"></i> Guarantor<img id="imgPreviewGuarantor" class="preview-img mx-auto"></div></div>
+    </div>
+    <input type="hidden" id="base64Borrower"><input type="hidden" id="base64Guarantor">
+
+    <div class="card p-3 border-0 shadow-sm mb-3">
+        <h6 class="small fw-bold text-secondary mb-2">GUARANTOR DETAILS</h6>
+        <div class="row g-2">
+            <div class="col-6"><input type="text" class="form-control fw-bold" id="inGName" placeholder="Guarantor Name"></div>
+            <div class="col-6"><input type="text" class="form-control" id="inGFather" placeholder="G. Father Name"></div>
+            <div class="col-6"><input type="tel" class="form-control" id="inGPhone" placeholder="G. Mobile 1"></div>
+            <div class="col-6"><input type="tel" class="form-control" id="inGPhone2" placeholder="G. Mobile 2"></div>
+            <div class="col-12"><input type="text" class="form-control" id="inGAddress" placeholder="Guarantor Address"></div>
+            <div class="col-12"><input type="text" class="form-control" id="inWitness" placeholder="Witness Name"></div>
+        </div>
+    </div>
+
+    <div class="card p-3 border-0 shadow-sm mb-3">
+        <div class="row g-2">
+            <div class="col-4"><input type="text" class="form-control" id="inVName" placeholder="Make"></div>
+            <div class="col-4"><input type="text" class="form-control" id="inVModel" placeholder="Model"></div>
+            <div class="col-4"><input type="text" class="form-control" id="inVReg" placeholder="Vehicle No"></div>
+        </div>
+    </div>
+    <div class="card p-3 border-0 shadow-sm mb-3">
+        <div class="row g-2">
+            <div class="col-6"><label class="small">Date</label><input type="date" class="form-control" id="inDate"></div>
+            <div class="col-6"><label class="small">Principal</label><input type="number" class="form-control fw-bold" id="inPrincipal" value="17000" oninput="calculate()"></div>
+            <div class="col-6"><label class="small">Int %</label><input type="number" class="form-control" id="inPercent" value="2.5" oninput="calculate()"></div>
+            <div class="col-6"><label class="small">Dues</label><input type="number" class="form-control" id="inDues" value="10" oninput="calculate()"></div>
+            <div class="col-12"><input type="text" class="form-control" id="inRemarks" placeholder="Remarks"></div>
+        </div>
+        <div class="row mt-3 text-center bg-light p-2 rounded mx-0">
+            <div class="col-6 border-end"><small class="text-success fw-bold d-block">Per Due</small><span class="h5 text-success fw-bold" id="outExpected">0</span></div>
+            <div class="col-6"><small class="text-danger fw-bold d-block">Total Int</small><span class="h5 text-danger fw-bold" id="outTotalInt">0</span></div>
+        </div>
+    </div>
+</form>
+
+</div><div class="modal-footer border-0"><button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="saveToCloud()" data-lang="create_account">CREATE ACCOUNT</button></div></div></div></div>
 
 <div class="modal fade" id="cameraModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content bg-black"><div class="modal-body p-0 text-center"><video id="cameraFeed" class="camera-video" autoplay playsinline></video><canvas id="cameraCanvas" style="display:none;"></canvas></div><div class="modal-footer border-0 justify-content-center"><button class="btn btn-light rounded-circle" style="width:60px; height:60px" onclick="snapPhoto()"><i class="fas fa-camera"></i></button><button class="btn btn-outline-light" data-bs-dismiss="modal">X</button></div></div></div></div>
 
@@ -740,41 +783,33 @@ borrowerInfo: {
     function generateSchedule(date, dues, amt) { let arr = []; let d = new Date(date); for(let i=1; i<=dues; i++) { let nd = new Date(d); nd.setMonth(d.getMonth()+i); arr.push({sno:i, dueDate:nd.toISOString().split('T')[0], expectedAmt:amt, isPaid:false, paidAmount:0, paidDate:'', receiptNo:''}); } return arr; }
 
 function viewLedger(idx) {
-    currentIdx = idx; 
-    const d = localDB[idx]; 
-    currentDocId = d.uid;
+    currentIdx = idx; const d = localDB[idx]; currentDocId = d.uid;
     
-    // --- 1. HEADER & INDICATORS ---
     setText('detailLoanNo', d.loanNo); 
     setText('detailDate', d.loan.date);
     
-    // Previous Loan Badge Logic
-    const badge = document.getElementById('prevLoanBadge');
-    if (d.borrowerInfo && d.borrowerInfo.prevLoan === "Yes") {
-        badge.innerText = "PREVIOUS LOAN: YES";
-        badge.className = "badge rounded-pill bg-warning text-dark shadow-sm";
+    // Display Previous Loan Manual Entry below Loan No
+    const prevLoanArea = document.getElementById('detailPrevLoan');
+    if (d.borrowerInfo.prevLoan) {
+        prevLoanArea.innerText = "PREVIOUS: " + d.borrowerInfo.prevLoan;
+        prevLoanArea.style.display = "block";
     } else {
-        badge.innerText = "NEW CUSTOMER";
-        badge.className = "badge rounded-pill bg-info text-white shadow-sm";
+        prevLoanArea.style.display = "none";
     }
 
-    // --- 2. BORROWER DETAILS ---
     setText('detailBName', d.borrower); 
     setText('detailBFather', d.borrowerInfo.father);
     setText('detailBAddress', d.borrowerInfo.address); 
     setText('detailBPhone', d.borrowerInfo.phone);
-    setText('detailBPhone2', d.borrowerInfo.phone2 || "-");
     setText('detailBId', d.borrowerInfo.idProof);
     
-    // --- 3. GUARANTOR DETAILS ---
     setText('detailGName', d.guarantor.name); 
     setText('detailGFather', d.guarantor.father);
     setText('detailGPhone', d.guarantor.phone); 
-    setText('detailGPhone2', d.guarantor.phone2 || "-"); // Ensure this ID exists in HTML
+    setText('detailGPhone2', d.guarantor.phone2 || "-"); // Display new Mobile 2
     setText('detailGAddress', d.guarantor.address);
     setText('detailWitness', d.guarantor.witness);
     
-    // --- 4. ASSET & PHOTOS ---
     document.getElementById('detailBPhoto').src = d.photos.borrower || ""; 
     document.getElementById('detailGPhoto').src = d.photos.guarantor || "";
     document.getElementById('detailVehicle').innerText = `${d.vehicle.name} ${d.vehicle.model}`; 
@@ -1002,42 +1037,31 @@ function fetchDetails() {
     }
 }
 
-function processQuickPay() {
-        const no = document.getElementById('qpLoanNo').value.trim();
-        const date = document.getElementById('qpDate').value;
-        const amount = document.getElementById('qpAmount').value;
-        const receipt = document.getElementById('qpRcpt').value.trim();
-
+    function processQuickPay() {
+        const no = document.getElementById('qpLoanNo').value; const date = document.getElementById('qpDate').value; const amount = document.getElementById('qpAmount').value; const receipt = document.getElementById('qpRcpt').value;
         if(!no || !date || !amount || !receipt) {
-            alert("Error: Fill all fields marked with (*)");
+            alert("Please fill in all details marked with a star (*) before saving.");
+            document.querySelectorAll('.mandatory-qp').forEach(el => { if(!el.value) el.style.border = "2px solid red"; else el.style.border = "1px solid #ccc"; });
+            return;
+        }
+        
+        // UNIQUE RECEIPT CHECK
+        if(localHistory.some(h => h.rcpt === receipt)) {
+            alert("Error: Receipt Number " + receipt + " already exists!");
             return;
         }
 
-        const loanDoc = localDB.find(x => x.loanNo == no);
-        if(!loanDoc) return alert("Loan No #" + no + " not found!");
-
-        const idx = loanDoc.schedule.findIndex(s => !s.isPaid);
-        if(idx === -1) return alert("Account is already SETTLED!");
-
-        const newSched = [...loanDoc.schedule];
-        newSched[idx].isPaid = true;
-        newSched[idx].paidAmount = amount;
-        newSched[idx].paidDate = date;
-        newSched[idx].receiptNo = receipt;
-
-        // Save to BOTH collections
-        db.collection("loans").doc(loanDoc.uid).update({ schedule: newSched })
-        .then(() => {
-            return db.collection("transactions").add({ date, loanNo: no, amt: amount, rcpt: receipt });
-        })
-        .then(() => {
-            alert("Payment Saved Successfully!");
-            document.getElementById('qpLoanNo').value = '';
-            document.getElementById('qpName').value = '';
-            document.getElementById('qpAmount').value = '';
-            document.getElementById('qpRcpt').value = '';
-        })
-        .catch(e => alert("Error saving payment: " + e.message));
+        const l = localDB.find(x => x.loanNo == no);
+        if(!l) return alert("Loan Not Found");
+        const idx = l.schedule.findIndex(s => !s.isPaid);
+        if(idx === -1) return alert("Fully Paid");
+        const newSched = [...l.schedule];
+        newSched[idx].isPaid = true; newSched[idx].paidAmount = amount; newSched[idx].paidDate = date; newSched[idx].receiptNo = receipt;
+        db.collection("loans").doc(l.uid).update({ schedule: newSched });
+        db.collection("transactions").add({ date: date, loanNo: l.loanNo, amt: amount, rcpt: receipt });
+        alert("Saved!"); 
+        document.getElementById('qpLoanNo').value = ''; document.getElementById('qpName').value = ''; document.getElementById('qpAmount').value = ''; document.getElementById('qpRcpt').value = '';
+        document.querySelectorAll('.mandatory-qp').forEach(el => el.style.border = "1px solid #ddd");
     }
 
     function setText(id, t) { if(document.getElementById(id)) document.getElementById(id).innerText = t || ""; }
