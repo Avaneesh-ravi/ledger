@@ -225,14 +225,21 @@
                 <button class="btn btn-dark shadow-sm btn-sm" onclick="window.print()"><i class="fas fa-print"></i></button>
             </div>
         </div>
-        <div class="ledger-sheet">
-<div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-    <div class="d-flex align-items-center">
-        <h4 class="fw-bold text-success m-0"><span data-lang="loan_no">LOAN NO</span>: #<span id="detailLoanNo"></span></h4>
-        <span id="prevLoanBadge" class="ms-3 badge rounded-pill"></span>
+        
+<div class="ledger-sheet">
+    <div class="d-flex justify-content-between align-items-start border-bottom pb-2 mb-3">
+        <div>
+            <h4 class="fw-bold text-success m-0">
+                <span data-lang="loan_no">LOAN NO</span>: #<span id="detailLoanNo"></span>
+            </h4>
+            <div class="mt-1">
+                <span id="prevLoanBadge" class="badge rounded-pill shadow-sm" style="font-size: 0.7rem;"></span>
+            </div>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-light text-dark border" id="detailDate"></span>
+        </div>
     </div>
-    <div class="text-end"><span class="badge bg-light text-dark border" id="detailDate"></span></div>
-</div>
             
             <div class="row">
                 <div class="col-6 border-end pe-3">
@@ -654,14 +661,14 @@ function viewLedger(idx) {
     setText('detailLoanNo', d.loanNo); 
     setText('detailDate', d.loan.date);
     
-    // Handle the Previous Loan Badge Display
+    // Previous Loan Badge Logic
     const badge = document.getElementById('prevLoanBadge');
     if (d.borrowerInfo && d.borrowerInfo.prevLoan === "Yes") {
         badge.innerText = "PREVIOUS LOAN: YES";
-        badge.className = "ms-3 badge rounded-pill bg-warning text-dark shadow-sm";
+        badge.className = "badge rounded-pill bg-warning text-dark shadow-sm";
     } else {
         badge.innerText = "NEW CUSTOMER";
-        badge.className = "ms-3 badge rounded-pill bg-info text-white shadow-sm";
+        badge.className = "badge rounded-pill bg-info text-white shadow-sm";
     }
 
     // --- 2. BORROWER DETAILS ---
@@ -669,7 +676,6 @@ function viewLedger(idx) {
     setText('detailBFather', d.borrowerInfo.father);
     setText('detailBAddress', d.borrowerInfo.address); 
     setText('detailBPhone', d.borrowerInfo.phone);
-    // Display Second Mobile for Borrower
     setText('detailBPhone2', d.borrowerInfo.phone2 || "-");
     setText('detailBId', d.borrowerInfo.idProof);
     
@@ -677,8 +683,7 @@ function viewLedger(idx) {
     setText('detailGName', d.guarantor.name); 
     setText('detailGFather', d.guarantor.father);
     setText('detailGPhone', d.guarantor.phone); 
-    // Display Second Mobile for Guarantor
-    setText('detailGPhone2', d.guarantor.phone2 || "-");
+    setText('detailGPhone2', d.guarantor.phone2 || "-"); // Ensure this ID exists in HTML
     setText('detailGAddress', d.guarantor.address);
     setText('detailWitness', d.guarantor.witness);
     
@@ -688,7 +693,7 @@ function viewLedger(idx) {
     document.getElementById('detailVehicle').innerText = `${d.vehicle.name} ${d.vehicle.model}`; 
     document.getElementById('detailReg').innerText = d.vehicle.reg;
     
-    // --- 5. FINANCIAL SUMMARY ---
+    // --- 5. FINANCIAL CALCULATIONS ---
     document.getElementById('detailPrincipal').innerText = d.loan.principal; 
     document.getElementById('detailTotalAmount').innerText = d.loan.expected * d.loan.dues;
     document.getElementById('detailExpected').innerText = d.loan.expected;
@@ -699,23 +704,15 @@ function viewLedger(idx) {
     const paid = d.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
     document.getElementById('detailRemaining').innerText = (d.loan.expected * d.loan.dues) - paid;
 
-    // --- 6. PENALTY CONFIGURATION ---
+    // --- 6. RENDER TABLE ---
     const storedRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
     document.getElementById('penRate').value = storedRate;
-
-    // --- 7. TABLE RENDERING ---
     renderScheduleTable(d.schedule, storedRate);
     calculatePenaltyTotals();
     
-    // --- 8. LANGUAGE SYNC ---
+    // --- 7. TRANSLATION ---
     if(curLang === 'ta') {
         applyDynamicTranslation(d);
-        // Re-apply static UI labels for new columns
-        const elements = document.querySelectorAll('[data-lang]');
-        elements.forEach(el => {
-            const key = el.getAttribute('data-lang');
-            if (uiTranslations[curLang][key]) el.innerText = uiTranslations[curLang][key];
-        });
     }
 
     switchTab('viewLedger');
