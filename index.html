@@ -89,6 +89,7 @@
 <div class="container pt-4">
     
     <div id="viewDashboard">
+        
         <div class="stat-card">
             <div class="row text-center g-3">
                 <div class="col-6 border-end border-white border-opacity-25">
@@ -107,14 +108,25 @@
                 <div class="col-6">
                     <div class="stat-label text-info" data-lang="interest">Total Interest</div>
                     <div class="stat-val text-info">₹<span id="dashInterest">0</span></div>
+                    
                 </div>
             </div>
         </div>
 
-        <div class="mb-4 position-relative">
+<div class="row mb-4 align-items-center g-2 no-print">
+    <div class="col">
+        <div class="position-relative">
             <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 12px;"></i>
             <input type="text" id="searchInput" class="form-control rounded-pill ps-5" placeholder="Search accounts..." onkeyup="filterLoans()">
         </div>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-success btn-sm rounded-pill px-3 shadow-sm" onclick="exportMasterLedger()" style="height: 38px;">
+            <i class="fas fa-file-excel me-1"></i> <span class="d-none d-sm-inline">Master Excel</span>
+        </button>
+    </div>
+</div>
+
         <h6 class="fw-bold text-muted small mb-3"><span data-lang="accounts">ACCOUNTS</span> (<span id="totalCount">0</span>)</h6>
         <div class="row g-3" id="loansList"></div>
     </div>
@@ -425,6 +437,57 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+function exportMasterLedger() {
+    // 1. Added "Loan Date" to the header row
+    let csv = "Loan No,Loan Date,Borrower,Phone 1,Phone 2,Guarantor,G-Phone 1,G-Phone 2,Principal,Total Interest,Total Expected,Total Paid,Current Balance,Prev Loan,Status\n";
+    
+    localDB.forEach(x => {
+        // Calculate financial totals for the export
+        const totalExp = x.loan.expected * x.loan.dues;
+        const totalPaid = x.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+        const balance = totalExp - totalPaid;
+        const status = balance <= 0 ? "SETTLED" : "ACTIVE";
+
+        // 2. Included x.loan.date in the data row assembly
+        csv += `"${x.loanNo}","${x.loan.date}","${x.borrower}","${x.borrowerInfo.phone}","${x.borrowerInfo.phone2 || '-'}","${x.guarantor.name}","${x.guarantor.phone}","${x.guarantor.phone2 || '-'}","${x.loan.principal}","${x.loan.totalInt}","${totalExp}","${totalPaid}","${balance}","${x.borrowerInfo.prevLoan || 'No'}","${status}"\n`;
+    });
+
+    // Handle the file download
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "Master_Ledger_" + new Date().toISOString().split('T')[0] + ".csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+    function downloadFullBackup() {
+    if (localDB.length === 0) {
+        alert("No data found to backup!");
+        return;
+    }
+
+    // Create a data object with timestamp
+    const backupData = {
+        exportDate: new Date().toISOString(),
+        totalAccounts: localDB.length,
+        accounts: localDB
+    };
+
+    // Convert to string and create a blob
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "Finance_Master_Backup_" + new Date().toLocaleDateString() + ".json");
+    document.body.appendChild(downloadAnchorNode); 
+    
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    
+    alert("Backup of " + localDB.length + " accounts downloaded successfully!");
+}
     // --- FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyCUEjBkaIWmwQpdvrcUDHx_TnCm-4gGxE8",
