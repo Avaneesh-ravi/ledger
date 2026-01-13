@@ -60,11 +60,14 @@
         .preview-img { width: 80px; height: 100px; object-fit: cover; border-radius: 4px; display: none; border: 1px solid #ddd; margin: 5px auto 0; }
         .required-star { color: #dc3545; font-weight: bold; margin-left: 2px; }
 
-        @media print {
-            .header-bar, .bottom-nav, .no-print, #viewDashboard, #viewGiven, #viewQuickPay { display: none !important; }
-            #viewLedger { display: block !important; }
-            .ledger-sheet { border: 2px solid #000; box-shadow: none; margin: 0; padding: 0; width: 100%; }
-        }
+@media print {
+    .header-bar, .bottom-nav, .no-print, #viewDashboard, #viewGiven, #viewQuickPay, .penalty-card { display: none !important; }
+    #viewLedger { display: block !important; width: 100% !important; }
+    .ledger-sheet { border: none; box-shadow: none; margin: 0; padding: 0; width: 100%; font-size: 10px; }
+    .table { width: 100% !important; table-layout: fixed; }
+    .table th, .table td { padding: 2px !important; word-wrap: break-word; font-size: 9px; }
+    body { background: white; padding: 0; }
+}
     </style>
 </head>
 <body>
@@ -196,22 +199,21 @@
         <span class="badge bg-light text-muted border" style="font-size: 0.65rem;">Recent 10</span>
     </div>
     
-    <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0 text-center align-middle" style="font-size: 0.85rem;">
-                <thead style="background-color: #f1f3f5;">
-                    <tr>
-                        <th class="py-3 text-muted fw-bold border-0" data-lang="date">Date</th>
-                        <th class="py-3 text-muted fw-bold border-0" data-lang="no">No</th>
-                        <th class="py-3 text-muted fw-bold border-0" data-lang="receipt">Rcpt</th>
-                        <th class="py-3 text-muted fw-bold border-0" data-lang="amt">Amt</th>
-                    </tr>
-                </thead>
-                <tbody id="qpHistoryBody" class="border-top-0">
-                    </tbody>
-            </table>
-        </div>
+<div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 text-center align-middle" style="font-size: 0.85rem;">
+            <thead style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                <tr>
+                    <th class="py-3 text-secondary fw-bold">DATE</th>
+                    <th class="py-3 text-secondary fw-bold">LOAN #</th>
+                    <th class="py-3 text-secondary fw-bold">RECEIPT</th>
+                    <th class="py-3 text-primary fw-bold">AMOUNT</th>
+                </tr>
+            </thead>
+            <tbody id="qpHistoryBody" class="border-top-0"></tbody>
+        </table>
     </div>
+</div>
 </div>
 
     <div id="viewLedger" class="d-none">
@@ -239,7 +241,10 @@
                     <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailBFather"></span>
                     <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailBAddress"></span>
                     <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val" id="detailBPhone"></span>
-                    <span class="field-lbl mt-1" data-lang="id_proof">ID Proof</span><span class="field-val" id="detailBId"></span>
+                    <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val" id="detailBPhone"></span>
+<span class="field-lbl mt-1" data-lang="phone2">Mobile 2</span><span class="field-val" id="detailBPhone2"></span>
+<span class="field-lbl mt-1" data-lang="prev_loan">Previous Loan</span><span class="field-val fw-bold text-primary" id="detailPrevLoan"></span>
+<span class="field-lbl mt-1" data-lang="id_proof">ID Proof</span><span class="field-val" id="detailBId"></span>
                 </div>
                 
                 <div class="col-6 ps-3">
@@ -296,15 +301,18 @@
 
             <div class="table-responsive mt-3">
                 <table class="table table-bordered table-sm text-center mb-0" style="font-size:0.8rem;">
-                    <thead class="table-light">
+<thead class="table-light">
     <tr>
         <th>#</th>
         <th data-lang="due_date">Due Date</th>
         <th data-lang="due">Due</th>
-        <th data-lang="penalty">Days / Penalty</th> <th data-lang="paid_date">Paid Date</th>
+        <th data-lang="penalty">Days / Penalty</th>
+        <th data-lang="paid_date">Paid Date</th>
         <th data-lang="receipt">Rcpt</th>
         <th data-lang="paid">Paid</th>
-        <th class="text-primary">Int. Rec</th> <th class="text-success">Pri. Rec</th> <th class="no-print" data-lang="action">Action</th>
+        <th class="text-primary" data-lang="int_rec">Int. Rec</th> 
+        <th class="text-success" data-lang="pri_rec">Pri. Rec</th> 
+        <th class="text-danger" data-lang="pri_bal">Prin. Bal</th> <th class="no-print" data-lang="action">Action</th>
     </tr>
 </thead>
                     <tbody id="detailTableBody"></tbody>
@@ -339,7 +347,25 @@
     </div>
 </div>
 
-<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h6 class="modal-title fw-bold" data-lang="new_account">New Account</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light"><form id="entryForm"><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-4"><input type="text" class="form-control fw-bold" id="inLoanNo" placeholder="Loan No"></div><div class="col-8"><input type="text" class="form-control fw-bold" id="inBName" placeholder="Borrower Name"></div></div></div><div class="row g-2 mb-3"><div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('borrower')"><i class="fas fa-camera text-success"></i> Borrower<img id="imgPreviewBorrower" class="preview-img mx-auto"></div></div><div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('guarantor')"><i class="fas fa-camera text-secondary"></i> Guarantor<img id="imgPreviewGuarantor" class="preview-img mx-auto"></div></div></div><input type="hidden" id="base64Borrower"><input type="hidden" id="base64Guarantor"><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><input type="text" class="form-control" id="inBFather" placeholder="Father"></div><div class="col-6"><input type="tel" class="form-control" id="inBPhone" placeholder="Mobile"></div><div class="col-12"><input type="text" class="form-control" id="inBAddress" placeholder="Address"></div><div class="col-12"><input type="text" class="form-control" id="inBId" placeholder="ID Proof"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><input type="text" class="form-control fw-bold" id="inGName" placeholder="Guarantor Name"></div><div class="col-6"><input type="text" class="form-control" id="inGFather" placeholder="G. Father"></div><div class="col-6"><input type="tel" class="form-control" id="inGPhone" placeholder="G. Mobile"></div><div class="col-6"><input type="text" class="form-control" id="inGAddress" placeholder="G. Address"></div><div class="col-12"><input type="text" class="form-control" id="inWitness" placeholder="Witness"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-4"><input type="text" class="form-control" id="inVName" placeholder="Make"></div><div class="col-4"><input type="text" class="form-control" id="inVModel" placeholder="Model"></div><div class="col-4"><input type="text" class="form-control" id="inVReg" placeholder="No"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><label class="small" data-lang="date">Date</label><input type="date" class="form-control" id="inDate"></div><div class="col-6"><label class="small" data-lang="principal">Principal</label><input type="number" class="form-control fw-bold" id="inPrincipal" value="17000" oninput="calculate()"></div><div class="col-6"><label class="small">Int %</label><input type="number" class="form-control" id="inPercent" value="2.5" oninput="calculate()"></div><div class="col-6"><label class="small" data-lang="dues">Dues</label><input type="number" class="form-control" id="inDues" value="10" oninput="calculate()"></div><div class="col-12"><input type="text" class="form-control" id="inRemarks" placeholder="Remarks"></div></div><div class="row mt-3 text-center bg-light p-2 rounded mx-0"><div class="col-6 border-end"><small class="text-success fw-bold d-block">Per Due</small><span class="h5 text-success fw-bold" id="outExpected">0</span></div><div class="col-6"><small class="text-danger fw-bold d-block">Total Int</small><span class="h5 text-danger fw-bold" id="outTotalInt">0</span></div></div></div></form></div><div class="modal-footer border-0"><button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="saveToCloud()" data-lang="create_account">CREATE ACCOUNT</button></div></div></div></div>
+<div class="modal fade" id="addModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h6 class="modal-title fw-bold" data-lang="new_account">New Account</h6><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body bg-light"><form id="entryForm">
+    <div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-4"><input type="text" class="form-control fw-bold" id="inLoanNo" placeholder="Loan No"></div><div class="col-8"><input type="text" class="form-control fw-bold" id="inBName" placeholder="Borrower Name"></div></div></div><div class="row g-2 mb-3"><div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('borrower')"><i class="fas fa-camera text-success"></i> Borrower<img id="imgPreviewBorrower" class="preview-img mx-auto"></div></div><div class="col-6"><div class="card p-2 text-center border-0" onclick="openCamera('guarantor')"><i class="fas fa-camera text-secondary"></i> Guarantor<img id="imgPreviewGuarantor" class="preview-img mx-auto"></div></div></div><input type="hidden" id="base64Borrower"><input type="hidden" id="base64Guarantor">
+    
+    <div class="card p-3 border-0 shadow-sm mb-3">
+    <div class="row g-2">
+        <div class="col-6"><input type="text" class="form-control" id="inBFather" placeholder="Father"></div>
+        <div class="col-6"><input type="tel" class="form-control" id="inBPhone" placeholder="Mobile 1"></div>
+        <div class="col-6"><input type="tel" class="form-control" id="inBPhone2" placeholder="Mobile 2"></div>
+        <div class="col-6">
+            <select class="form-select" id="inPrevLoan">
+                <option value="No">No Previous Loan</option>
+                <option value="Yes">Has Previous Loan</option>
+            </select>
+        </div>
+        <div class="col-12"><input type="text" class="form-control" id="inBAddress" placeholder="Address"></div>
+        <div class="col-12"><input type="text" class="form-control" id="inBId" placeholder="ID Proof"></div>
+    </div>
+</div>
+<div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><input type="text" class="form-control fw-bold" id="inGName" placeholder="Guarantor Name"></div><div class="col-6"><input type="text" class="form-control" id="inGFather" placeholder="G. Father"></div><div class="col-6"><input type="tel" class="form-control" id="inGPhone" placeholder="G. Mobile"></div><div class="col-6"><input type="text" class="form-control" id="inGAddress" placeholder="G. Address"></div><div class="col-12"><input type="text" class="form-control" id="inWitness" placeholder="Witness"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-4"><input type="text" class="form-control" id="inVName" placeholder="Make"></div><div class="col-4"><input type="text" class="form-control" id="inVModel" placeholder="Model"></div><div class="col-4"><input type="text" class="form-control" id="inVReg" placeholder="No"></div></div></div><div class="card p-3 border-0 shadow-sm mb-3"><div class="row g-2"><div class="col-6"><label class="small" data-lang="date">Date</label><input type="date" class="form-control" id="inDate"></div><div class="col-6"><label class="small" data-lang="principal">Principal</label><input type="number" class="form-control fw-bold" id="inPrincipal" value="17000" oninput="calculate()"></div><div class="col-6"><label class="small">Int %</label><input type="number" class="form-control" id="inPercent" value="2.5" oninput="calculate()"></div><div class="col-6"><label class="small" data-lang="dues">Dues</label><input type="number" class="form-control" id="inDues" value="10" oninput="calculate()"></div><div class="col-12"><input type="text" class="form-control" id="inRemarks" placeholder="Remarks"></div></div><div class="row mt-3 text-center bg-light p-2 rounded mx-0"><div class="col-6 border-end"><small class="text-success fw-bold d-block">Per Due</small><span class="h5 text-success fw-bold" id="outExpected">0</span></div><div class="col-6"><small class="text-danger fw-bold d-block">Total Int</small><span class="h5 text-danger fw-bold" id="outTotalInt">0</span></div></div></div></form></div><div class="modal-footer border-0"><button type="button" class="btn btn-success w-100 fw-bold py-2" onclick="saveToCloud()" data-lang="create_account">CREATE ACCOUNT</button></div></div></div></div>
 
 <div class="modal fade" id="cameraModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content bg-black"><div class="modal-body p-0 text-center"><video id="cameraFeed" class="camera-video" autoplay playsinline></video><canvas id="cameraCanvas" style="display:none;"></canvas></div><div class="modal-footer border-0 justify-content-center"><button class="btn btn-light rounded-circle" style="width:60px; height:60px" onclick="snapPhoto()"><i class="fas fa-camera"></i></button><button class="btn btn-outline-light" data-bs-dismiss="modal">X</button></div></div></div></div>
 
@@ -429,7 +455,12 @@
             record_payment: "Record Due Payment", edit_transaction: "Edit Transaction", new_account: "New Account", create_account: "CREATE ACCOUNT",
             payment_date: "Payment Date", dues: "Dues",
             // New Penalty Fields
-            penalty_calc: "PENALTY CALCULATOR", rate_day: "Rate/Day", late_days: "Late Days"
+            penalty_calc: "PENALTY CALCULATOR", rate_day: "Rate/Day", late_days: "Late Days",
+            int_rec: "Int. Received",
+    pri_rec: "Prin. Received",
+    pri_bal: "Prin. Balance",
+    prev_loan: "Previous Loan?",
+    phone2: "Mobile 2"
         },
         ta: {
             given: "கொடுக்கப்பட்டது", received: "பெறப்பட்டது", balance: "நிலுவை", interest: "வட்டி மொத்தம்", accounts: "கணக்குகள்",
@@ -443,7 +474,12 @@
             record_payment: "தவணை வரவு", edit_transaction: "திருத்தம்", new_account: "புதிய கணக்கு", create_account: "கணக்கை உருவாக்கு",
             payment_date: "செலுத்தும் தேதி", dues: "தவணைகள்",
             // New Penalty Fields
-            penalty_calc: "அபராத கால்குலேட்டர்", rate_day: "கட்டணம்/நாள்", late_days: "தாமத நாட்கள்"
+            penalty_calc: "அபராத கால்குலேட்டர்", rate_day: "கட்டணம்/நாள்", late_days: "தாமத நாட்கள்",
+            int_rec: "வட்டி வரவு",
+    pri_rec: "அசல் வரவு",
+    pri_bal: "அசல் மீதம்",
+    prev_loan: "முந்தைய கடன்?",
+    phone2: "அலைபேசி 2"
         }
     };
 
@@ -453,7 +489,9 @@
         snap.forEach(d => { let data = d.data(); data.uid = d.id; localDB.push(data); });
         updateDashboard(); renderGivenList(); checkNotifications();
         document.getElementById('loader').style.display='none';
-        if(currentIdx !== null) viewLedger(currentIdx); // Refresh ledger if open
+        if(currentIdx !== null) viewLedger(currentIdx); 
+        setText('detailBPhone2', d.borrowerInfo.phone2 || "-");
+setText('detailPrevLoan', d.borrowerInfo.prevLoan || "No");// Refresh ledger if open
     }, (error) => console.error(error));
 
     db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
@@ -464,61 +502,65 @@
     // --- CORE FUNCTIONS ---
     
     // NEW NOTIFICATION SYSTEM
-    function checkNotifications() {
-        const notifBadge = document.getElementById('notifBadge');
-        const notifList = document.getElementById('notifList');
-        const noNotifs = document.getElementById('noNotifs');
-        
-        let overdueItems = [];
-        const today = new Date();
-        // Reset time part to ensure accurate date comparison
-        today.setHours(0,0,0,0);
+function checkNotifications() {
+    const notifBadge = document.getElementById('notifBadge');
+    const notifList = document.getElementById('notifList');
+    const noNotifs = document.getElementById('noNotifs');
+    
+    let overdueItems = [];
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
-        localDB.forEach((loan, idx) => {
-            loan.schedule.forEach(s => {
-                if(!s.isPaid) {
-                    const due = new Date(s.dueDate);
-                    if(today > due) {
-                        const daysLate = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
-                        // Prevent duplicates for same loan, only show one notification per loan if multiple dues are late
-                        if(!overdueItems.some(i => i.idx === idx)) {
-                            overdueItems.push({
-                                idx: idx,
-                                no: loan.loanNo,
-                                name: loan.borrower,
-                                days: daysLate,
-                                date: s.dueDate
-                            });
-                        }
+    localDB.forEach((loan, idx) => {
+        // --- LOGICAL FIX ---
+        // Calculate the actual current balance of the loan
+        const totalExpected = loan.loan.expected * loan.loan.dues;
+        const totalPaid = loan.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+        
+        // If the loan is fully paid or overpaid (Balance <= 0), do not notify
+        if (totalExpected - totalPaid <= 0) return; 
+
+        loan.schedule.forEach(s => {
+            if(!s.isPaid) {
+                const due = new Date(s.dueDate);
+                if(today > due) {
+                    const daysLate = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
+                    if(!overdueItems.some(i => i.idx === idx)) {
+                        overdueItems.push({
+                            idx: idx,
+                            no: loan.loanNo,
+                            name: loan.borrower,
+                            days: daysLate,
+                            date: s.dueDate
+                        });
                     }
                 }
-            });
+            }
         });
+    });
 
-        // Update Badge
-        if(overdueItems.length > 0) {
-            notifBadge.style.display = 'block';
-            notifBadge.innerText = overdueItems.length;
-            noNotifs.style.display = 'none';
-        } else {
-            notifBadge.style.display = 'none';
-            noNotifs.style.display = 'block';
-        }
-
-        // Render List
-        notifList.innerHTML = '';
-        overdueItems.forEach(item => {
-            const html = `
-            <div class="list-group-item notif-item p-3" onclick="openNotifLedger(${item.idx})">
-                <div class="d-flex w-100 justify-content-between align-items-center">
-                    <h6 class="mb-1 fw-bold text-danger">#${item.no} - ${item.name}</h6>
-                    <small class="badge bg-danger">${item.days} Days Late</small>
-                </div>
-                <small class="text-muted">Due Date: ${item.date}</small>
-            </div>`;
-            notifList.innerHTML += html;
-        });
+    if(overdueItems.length > 0) {
+        notifBadge.style.display = 'block';
+        notifBadge.innerText = overdueItems.length;
+        noNotifs.style.display = 'none';
+    } else {
+        notifBadge.style.display = 'none';
+        noNotifs.style.display = 'block';
     }
+
+    notifList.innerHTML = '';
+    overdueItems.forEach(item => {
+        const html = `
+        <div class="list-group-item notif-item p-3" onclick="openNotifLedger(${item.idx})">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <h6 class="mb-1 fw-bold text-danger">#${item.no} - ${item.name}</h6>
+                <small class="badge bg-danger">${item.days} Days Late</small>
+            </div>
+            <small class="text-muted">Due Date: ${item.date}</small>
+        </div>`;
+        notifList.innerHTML += html;
+    });
+}
 
     function openNotifModal() {
         new bootstrap.Modal(document.getElementById('notifModal')).show();
@@ -574,7 +616,15 @@
 
         const docData = {
             loanNo: no, borrower: bName,
-            borrowerInfo: { father: document.getElementById('inBFather').value, phone: document.getElementById('inBPhone').value, address: document.getElementById('inBAddress').value, idProof: document.getElementById('inBId').value },
+            // Replace the borrowerInfo block inside saveToCloud():
+borrowerInfo: { 
+    father: document.getElementById('inBFather').value, 
+    phone: document.getElementById('inBPhone').value, 
+    phone2: document.getElementById('inBPhone2').value, // Added
+    prevLoan: document.getElementById('inPrevLoan').value, // Added
+    address: document.getElementById('inBAddress').value, 
+    idProof: document.getElementById('inBId').value 
+},
             guarantor: { name: document.getElementById('inGName').value, father: document.getElementById('inGFather').value, phone: document.getElementById('inGPhone').value, address: document.getElementById('inGAddress').value, witness: document.getElementById('inWitness').value },
             vehicle: { name: document.getElementById('inVName').value, model: document.getElementById('inVModel').value, reg: document.getElementById('inVReg').value },
             loan: { principal: parseFloat(document.getElementById('inPrincipal').value)||0, percent: document.getElementById('inPercent').value, expected: parseFloat(document.getElementById('outExpected').innerText)||0, dues: parseInt(document.getElementById('inDues').value)||0, date: document.getElementById('inDate').value, totalInt: document.getElementById('outTotalInt').innerText, remarks: document.getElementById('inRemarks').value },
@@ -665,40 +715,44 @@ function renderScheduleTable(schedule, penaltyRate) {
     const tb = document.getElementById('detailTableBody'); 
     tb.innerHTML = '';
     const today = new Date();
-    today.setHours(0,0,0,0); // Standardize today's date for comparison
+    today.setHours(0,0,0,0);
     
     const d = localDB[currentIdx];
     const totalInt = parseFloat(d.loan.totalInt) || 0;
     const numDues = parseInt(d.loan.dues) || 1;
     const interestComponentPerDue = totalInt / numDues;
+    
+    // Start balance with the initial principal recorded at account creation
+    let runningPrincipalBalance = parseFloat(d.loan.principal) || 0;
 
     schedule.forEach((s, i) => {
         let actionBtn = '';
         let penaltyDisplay = '-';
-        let intReceived = '-';
-        let priReceived = '-';
+        let intRecVal = 0;
+        let priRecVal = 0;
         
         if (s.isPaid) {
-            // 1. Calculate Interest and Principal components
+            // Calculate components based on your requested formulas
             const paidAmt = parseFloat(s.paidAmount) || 0;
-            intReceived = interestComponentPerDue.toFixed(2);
-            priReceived = (paidAmt - interestComponentPerDue).toFixed(2);
+            intRecVal = interestComponentPerDue;
+            priRecVal = paidAmt - intRecVal;
+            
+            // Subtract only the principal portion from the running balance
+            runningPrincipalBalance -= priRecVal;
 
-            // 2. Show if extra (Penalty/Buffer) was paid
+            // Display penalty already paid if the amount exceeds the expected due
             if(paidAmt > s.expectedAmt) {
                 const extra = (paidAmt - s.expectedAmt).toFixed(0);
                 penaltyDisplay = `<span class="text-success small">Paid: ₹${extra}</span>`;
             }
             actionBtn = `<button class="btn btn-sm btn-outline-warning me-2 border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button><i class="fas fa-check text-success"></i>`;
         } else {
-            // 3. Logic for Unpaid/Late Dues
+            // Calculate late days and respective penalty amount for unpaid dues
             const due = new Date(s.dueDate);
             if (today > due) {
                 const diffTime = Math.abs(today - due);
                 const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                const penaltyAmt = days * penaltyRate; // Based on the "Rate/Day" input
-                
-                // Displays "10 Days (₹50)"
+                const penaltyAmt = days * penaltyRate;
                 penaltyDisplay = `<div class="text-danger fw-bold" style="font-size:0.75rem;">
                                     ${days} Days<br>
                                     <span class="badge bg-danger">₹${penaltyAmt}</span>
@@ -707,16 +761,24 @@ function renderScheduleTable(schedule, penaltyRate) {
             actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="openDueModal(${i})">Pay</button>`;
         }
 
+        // Logic to display "SETTLED" instead of negative or zero balances
+        let displayBal = `₹${runningPrincipalBalance.toFixed(2)}`;
+        if (runningPrincipalBalance <= 0) {
+            displayBal = `<span class="badge bg-success-subtle text-success">SETTLED</span>`;
+        }
+
+        // Construct the table row with updated columns and language-synced currency
         tb.innerHTML += `<tr>
             <td>${s.sno}</td>
             <td>${s.dueDate}</td>
             <td>${s.expectedAmt}</td>
             <td style="min-width:90px;">${penaltyDisplay}</td>
-            <td class="fw-bold text-dark">${s.paidDate||'-'}</td>
-            <td>${s.receiptNo||'-'}</td>
-            <td class="fw-bold text-success">${s.paidAmount||'-'}</td>
-            <td class="text-primary fw-500">₹${intReceived}</td>
-            <td class="text-success fw-500">₹${priReceived}</td>
+            <td class="fw-bold text-dark">${s.paidDate || '-'}</td>
+            <td>${s.receiptNo || '-'}</td>
+            <td class="fw-bold text-success">${s.paidAmount || '-'}</td>
+            <td class="text-primary fw-bold">₹${s.isPaid ? intRecVal.toFixed(2) : '-'}</td>
+            <td class="text-success fw-bold">₹${s.isPaid ? priRecVal.toFixed(2) : '-'}</td>
+            <td class="text-danger fw-bold">${displayBal}</td>
             <td class="no-print">${actionBtn}</td>
         </tr>`;
     });
@@ -874,7 +936,36 @@ function renderScheduleTable(schedule, penaltyRate) {
     }
 
     function renderGivenList() { const tb = document.getElementById('givenTableBody'); tb.innerHTML = ''; localDB.forEach(x => tb.innerHTML += `<tr><td>${x.loanNo}</td><td>${x.loan.date}</td><td>${x.borrower}</td><td>${x.loan.principal}</td></tr>`); }
-    function renderHistory() { const tb = document.getElementById('qpHistoryBody'); tb.innerHTML = ''; localHistory.forEach(h => tb.innerHTML += `<tr><td>${h.date}</td><td>${h.loanNo}</td><td>${h.rcpt}</td><td>${h.amt}</td></tr>`); }
+async function renderHistory() {
+    const tb = document.getElementById('qpHistoryBody'); 
+    tb.innerHTML = ''; 
+    
+    for (const h of localHistory) {
+        let displayDate = h.date;
+        let displayAmt = parseFloat(h.amt).toLocaleString();
+
+        // Translate the date if the current language is Tamil
+        if (curLang === 'ta') {
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ta&dt=t&q=${encodeURI(h.date)}`);
+                const json = await res.json();
+                if (json && json[0] && json[0][0]) {
+                    displayDate = json[0][0][0];
+                }
+            } catch (e) {
+                console.log("History translation failed");
+            }
+        }
+
+        tb.innerHTML += `
+            <tr style="border-bottom: 1px solid #f1f1f1;">
+                <td class="py-3 fw-bold text-dark">${displayDate}</td>
+                <td class="py-3"><span class="badge bg-light text-dark border">#${h.loanNo}</span></td>
+                <td class="py-3 text-muted">${h.rcpt}</td>
+                <td class="py-3 fw-bold text-success">₹${displayAmt}</td>
+            </tr>`;
+    }
+}
     function filterLoans() { const q = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.loan-card').forEach(c => { c.parentElement.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; }); }
     function exportGiven() { let c="No,Date,Name,Amt\n"; localDB.forEach(x=>{c+=`${x.loanNo},${x.loan.date},${x.borrower},${x.loan.principal}\n`}); downloadCSV(c,"Given.csv"); }
     function exportReceived() { let c="Date,No,Rcpt,Amt\n"; localHistory.forEach(h=>{c+=`${h.date},${h.loanNo},${h.rcpt},${h.amt}\n`}); downloadCSV(c,"Received.csv"); }
