@@ -63,6 +63,12 @@
             #viewLedger { display: block !important; }
             .ledger-sheet { border: 2px solid #000; box-shadow: none; margin: 0; padding: 0; width: 100%; }
         }
+        
+        #viewLedger {
+    touch-action: pan-y; /* Allows vertical scrolling but prevents browser horizontal interference */
+    user-select: none;   /* Prevents text selection while swiping */
+}
+
     </style>
 </head>
 <body>
@@ -693,7 +699,7 @@ function snapPhoto() {
     function generateSchedule(date, dues, amt) { let arr = []; let d = new Date(date); for(let i=1; i<=dues; i++) { let nd = new Date(d); nd.setMonth(d.getMonth()+i); arr.push({sno:i, dueDate:nd.toISOString().split('T')[0], expectedAmt:amt, isPaid:false, paidAmount:0, paidDate:'', receiptNo:''}); } return arr; }
 
     function viewLedger(idx) {
-        currentIdx = idx; const d = localDB[idx]; currentDocId = d.uid;
+        currentIdx = idx; currentIdx = idx;const d = localDB[idx]; currentDocId = d.uid;
         setText('detailLoanNo', d.loanNo); setText('detailDate', d.loan.date);
         setText('detailBName', d.borrower); setText('detailBFather', d.borrowerInfo.father);
         setText('detailBAddress', d.borrowerInfo.address); 
@@ -985,6 +991,54 @@ function editLoan() {
     function exportGiven() { let c="No,Date,Name,Amt\n"; localDB.forEach(x=>{c+=`${x.loanNo},${x.loan.date},${x.borrower},${x.loan.principal}\n`}); downloadCSV(c,"Given.csv"); }
     function exportReceived() { let c="Date,No,Rcpt,Amt\n"; localHistory.forEach(h=>{c+=`${h.date},${h.loanNo},${h.rcpt},${h.amt}\n`}); downloadCSV(c,"Received.csv"); }
     function downloadCSV(c,f){ const b=new Blob([c],{type:'text/csv'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download=f; l.click(); }
+// --- SWIPE NAVIGATION LOGIC ---
+let touchstartX = 0;
+let touchendX = 0;
+
+const ledgerView = document.getElementById('viewLedger');
+
+ledgerView.addEventListener('touchstart', e => {
+    touchstartX = e.changedTouches[0].screenX;
+}, false);
+
+ledgerView.addEventListener('touchend', e => {
+    touchendX = e.changedTouches[0].screenX;
+    handleGesture();
+}, false);
+
+function handleGesture() {
+    const swipeThreshold = 100; // Minimum pixels to qualify as a swipe
+    
+    // Swipe Left (Show Next Account)
+    if (touchstartX - touchendX > swipeThreshold) {
+        navigateAccount(1);
+    }
+    
+    // Swipe Right (Show Previous Account)
+    if (touchendX - touchstartX > swipeThreshold) {
+        navigateAccount(-1);
+    }
+}
+
+function navigateAccount(direction) {
+    if (currentIdx === null || localDB.length === 0) return;
+
+    // Calculate new index with wrapping (circular navigation)
+    let newIdx = currentIdx + direction;
+    
+    if (newIdx >= localDB.length) newIdx = 0; // Go to first if at end
+    if (newIdx < 0) newIdx = localDB.length - 1; // Go to last if at beginning
+
+    // Add a small fade effect for smoother transition
+    ledgerView.style.opacity = '0';
+    
+    setTimeout(() => {
+        viewLedger(newIdx);
+        ledgerView.style.opacity = '1';
+        // Scroll to top of ledger when switching
+        window.scrollTo(0, 0);
+    }, 150);
+}
 </script>
 </body>
 </html>
