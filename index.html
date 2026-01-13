@@ -520,10 +520,24 @@
     };
 
     // --- FIREBASE LISTENERS ---
+// --- FIREBASE LISTENERS ---
     db.collection("loans").onSnapshot((snap) => {
         localDB = [];
-        snap.forEach(d => { let data = d.data(); data.uid = d.id; localDB.push(data); });
-        updateDashboard(); renderGivenList(); checkNotifications();
+        snap.forEach(d => { 
+            let data = d.data(); 
+            data.uid = d.id; 
+            localDB.push(data); 
+        });
+
+        // ADD THIS PART TO SORT IN DESCENDING ORDER
+        // This sorts by loanNo (handling numbers correctly)
+        localDB.sort((a, b) => {
+            return b.loanNo.localeCompare(a.loanNo, undefined, {numeric: true, sensitivity: 'base'});
+        });
+
+        updateDashboard(); 
+        renderGivenList(); 
+        checkNotifications();
         document.getElementById('loader').style.display='none';
         if(currentIdx !== null) viewLedger(currentIdx);
     }, (error) => console.error(error));
