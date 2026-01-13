@@ -297,21 +297,21 @@
 
             <div class="table-responsive mt-3">
                 <table class="table table-bordered table-sm text-center mb-0" style="font-size:0.75rem;">
-                    <thead class="table-light">
-                        <tr>
-                            <th>#</th>
-                            <th data-lang="due_date">Due Date</th>
-                            <th data-lang="due">Due</th>
-                            <th data-lang="penalty">Day/Penalty</th>
-                            <th data-lang="paid_date">Paid Date</th>
-                            <th data-lang="receipt">Rcpt</th>
-                            <th data-lang="paid">Paid</th>
-                            <th style="background: #e3f2fd;" data-lang="int_recv">Int Recv</th>
-                            <th style="background: #e8f5e9;" data-lang="prin_recv">Prin Recv</th>
-                            <th style="background: #fff3e0;" data-lang="prin_bal">Prin Bal</th>
-                            <th class="no-print" data-lang="action">Action</th>
-                        </tr>
-                    </thead>
+<thead class="table-light">
+    <tr>
+        <th>#</th>
+        <th data-lang="due_date">Due Date</th>
+        <th data-lang="due">Due</th>
+        <th data-lang="penalty">Day/Penalty</th>
+        <th data-lang="paid_date">Paid Date</th>
+        <th data-lang="receipt">Rcpt</th>
+        <th data-lang="paid">Paid</th>
+        <th style="background: #e3f2fd;" data-lang="prin_recv">Prin Recv</th>
+        <th style="background: #e8f5e9;" data-lang="int_recv">Int Recv</th>
+        <th style="background: #fff3e0;" data-lang="prin_bal">Prin Bal</th>
+        <th class="no-print">Action</th>
+    </tr>
+</thead>
                     <tbody id="detailTableBody"></tbody>
                 </table>
             </div>
@@ -707,23 +707,37 @@
         renderScheduleTable(d.schedule, rate);
     }
 
-    function renderScheduleTable(schedule, penaltyRate) {
-        const tb = document.getElementById('detailTableBody'); tb.innerHTML = '';
+function renderScheduleTable(schedule, penaltyRate) {
+        const tb = document.getElementById('detailTableBody'); 
+        tb.innerHTML = '';
         const d = localDB[currentIdx];
         const today = new Date();
         
+        // Initial principal from the loan record to start the running balance
         let runningPrincipalBalance = parseFloat(d.loan.principal) || 0;
+        
+        // Fixed factor: total interest divided by the total number of dues
         const totalInterest = parseFloat(d.loan.totalInt) || 0;
         const numberOfDues = parseInt(d.loan.dues) || 1;
-        const interestPerDue = totalInterest / numberOfDues;
+        const interestFactor = totalInterest / numberOfDues;
 
         schedule.forEach((s, i) => {
             let actionBtn = '', intRecv = 0, prinRecv = 0, penaltyDisplay = '-';
             
             if (s.isPaid) {
                 const paidAmt = parseFloat(s.paidAmount) || 0;
-                intRecv = paidAmt - interestPerDue;
-                prinRecv = paidAmt - intRecv;
+                
+                // --- YOUR SPECIFIC CALCULATION LOGIC ---
+                
+                // 1. principle amount recived = due amount -(total intrest/number of due)
+                // (Using paidAmt as the "due amount" received)
+                prinRecv = paidAmt - interestFactor;
+                
+                // 2. intrest recived = due amount - principle amount recived
+                intRecv = paidAmt - prinRecv;
+                
+                // 3. principle balance = principle amount - principle amount recived
+                // This updates the running balance for the current row
                 runningPrincipalBalance -= prinRecv;
 
                 if(paidAmt > s.expectedAmt) {
@@ -748,9 +762,11 @@
                     <td class="fw-bold">${s.paidDate || '-'}</td>
                     <td>${s.receiptNo || '-'}</td>
                     <td class="fw-bold text-success">${s.paidAmount || '-'}</td>
-                    <td class="text-primary">${s.isPaid ? Math.round(intRecv) : '-'}</td>
-                    <td class="text-success">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
+                    
+                    <td class="text-primary">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
+                    <td class="text-success">${s.isPaid ? Math.round(intRecv) : '-'}</td>
                     <td class="fw-bold">${s.isPaid ? Math.round(runningPrincipalBalance) : '-'}</td>
+                    
                     <td class="no-print">${actionBtn}</td>
                 </tr>`;
         });
