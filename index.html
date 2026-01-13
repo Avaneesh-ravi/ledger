@@ -493,17 +493,27 @@
     };
 
     // --- FIREBASE LISTENERS ---
-db.collection("loans").onSnapshot((snap) => {
-    localDB = [];
-    snap.forEach(d => { let data = d.data(); data.uid = d.id; localDB.push(data); });
-    updateDashboard(); renderGivenList(); checkNotifications();
-    document.getElementById('loader').style.display='none';
-    if(currentIdx !== null) viewLedger(currentIdx); // This function already handles the phone2/prevLoan setText
-}, (error) => console.error(error));
-
-    db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
-        localHistory = []; snap.forEach(d => { let data = d.data(); data.uid = d.id; localHistory.push(data); });
-        renderHistory();
+// --- Updated Firebase Listener with Sorting ---
+db.collection("loans")
+    .orderBy("loanNo", "desc") // This sorts by Loan Number (e.g., 005, 004, 003...)
+    .onSnapshot((snap) => {
+        localDB = [];
+        snap.forEach(d => { 
+            let data = d.data(); 
+            data.uid = d.id; 
+            localDB.push(data); 
+        });
+        updateDashboard(); 
+        renderGivenList(); 
+        checkNotifications();
+        document.getElementById('loader').style.display='none';
+        
+        // If a ledger is currently open, refresh it with new data
+        if(currentIdx !== null) viewLedger(currentIdx); 
+    }, (error) => {
+        console.error("Sorting Error: ", error);
+        // Note: If this fails, you may need to click the link in the 
+        // browser console to create a Firestore Index.
     });
 
     // --- CORE FUNCTIONS ---
