@@ -610,9 +610,50 @@
     }
 
     function switchTab(id) { ['viewDashboard','viewQuickPay','viewLedger','viewGiven'].forEach(v=>document.getElementById(v).classList.add('d-none')); document.getElementById(id).classList.remove('d-none'); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); if(id=='viewDashboard')document.getElementById('navDash').classList.add('active'); if(id=='viewGiven')document.getElementById('navGiven').classList.add('active'); if(id=='viewQuickPay')document.getElementById('navPay').classList.add('active'); }
-    function openAddModal() { isEditing=false; document.getElementById('entryForm').reset(); document.getElementById('inDate').valueAsDate = new Date(); calculate(); new bootstrap.Modal(document.getElementById('addModal')).show(); }
+function openAddModal() {
+    isEditing = false;
+    document.getElementById('entryForm').reset();
+    
+    // CLEANUP: Force images and previews to be empty
+    document.getElementById('base64Borrower').value = "";
+    document.getElementById('base64Guarantor').value = "";
+    
+    const bPrev = document.getElementById('imgPreviewBorrower');
+    bPrev.src = "";
+    bPrev.style.display = "none";
+    
+    const gPrev = document.getElementById('imgPreviewGuarantor');
+    gPrev.src = "";
+    gPrev.style.display = "none";
+
+    document.getElementById('inDate').valueAsDate = new Date();
+    calculate();
+    new bootstrap.Modal(document.getElementById('addModal')).show();
+}
     function openCamera(t) { currentPhotoTarget=t; const m=new bootstrap.Modal(document.getElementById('cameraModal')); m.show(); navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}}).then(s=>{document.getElementById('cameraFeed').srcObject=s}).catch(e => alert(e.message)); }
-    function snapPhoto() { const v=document.getElementById('cameraFeed'); const c=document.getElementById('cameraCanvas'); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext('2d').drawImage(v,0,0); const u=c.toDataURL('image/jpeg',0.3); if(currentPhotoTarget=='borrower') document.getElementById('base64Borrower').value=u; else document.getElementById('base64Guarantor').value=u; bootstrap.Modal.getInstance(document.getElementById('cameraModal')).hide(); if(v.srcObject) v.srcObject.getTracks().forEach(t=>t.stop()); }
+function snapPhoto() {
+    const v = document.getElementById('cameraFeed');
+    const c = document.getElementById('cameraCanvas');
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    c.getContext('2d').drawImage(v, 0, 0);
+    const u = c.toDataURL('image/jpeg', 0.3); // Compressed quality
+
+    if (currentPhotoTarget == 'borrower') {
+        document.getElementById('base64Borrower').value = u;
+        const bPrev = document.getElementById('imgPreviewBorrower');
+        bPrev.src = u;
+        bPrev.style.display = "block";
+    } else {
+        document.getElementById('base64Guarantor').value = u;
+        const gPrev = document.getElementById('imgPreviewGuarantor');
+        gPrev.src = u;
+        gPrev.style.display = "block";
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById('cameraModal')).hide();
+    if (v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
+}
     function calculate() { const P=parseFloat(document.getElementById('inPrincipal').value)||0, N=parseInt(document.getElementById('inDues').value)||0, R=parseFloat(document.getElementById('inPercent').value)||0; if(N>0){ const e=Math.round(((P*(R/100)*N)+P)/N); document.getElementById('outExpected').innerText=e; document.getElementById('outTotalInt').innerText=(e*N)-P; } }
 
     function saveToCloud() {
@@ -786,25 +827,65 @@ function renderScheduleTable(schedule, penaltyRate) {
         });
     }
 
-    function editLoan() {
-        isEditing = true; editIdx = currentIdx; const d = localDB[currentIdx];
-        document.getElementById('inLoanNo').value = d.loanNo; document.getElementById('inBName').value = d.borrower;
-        document.getElementById('inBFather').value = d.borrowerInfo.father; 
-        document.getElementById('inBPhone').value = d.borrowerInfo.phone;
-        document.getElementById('inBPhone2').value = d.borrowerInfo.phone2 || ""; 
-        document.getElementById('inPrevLoan').value = d.borrowerInfo.prevLoan || ""; 
-        document.getElementById('inBAddress').value = d.borrowerInfo.address; document.getElementById('inBId').value = d.borrowerInfo.idProof;
-        document.getElementById('inGName').value = d.guarantor.name; document.getElementById('inGFather').value = d.guarantor.father;
-        document.getElementById('inGPhone').value = d.guarantor.phone; 
-        document.getElementById('inGPhone2').value = d.guarantor.phone2 || ""; 
-        document.getElementById('inGAddress').value = d.guarantor.address;
-        document.getElementById('inWitness').value = d.guarantor.witness; document.getElementById('inVName').value = d.vehicle.name;
-        document.getElementById('inVModel').value = d.vehicle.model; document.getElementById('inVReg').value = d.vehicle.reg;
-        document.getElementById('inDate').value = d.loan.date; document.getElementById('inPrincipal').value = d.loan.principal;
-        document.getElementById('inPercent').value = d.loan.percent; document.getElementById('inDues').value = d.loan.dues;
-        document.getElementById('inRemarks').value = d.loan.remarks; document.getElementById('base64Borrower').value = d.photos.borrower;
-        document.getElementById('base64Guarantor').value = d.photos.guarantor; calculate(); new bootstrap.Modal(document.getElementById('addModal')).show();
+function editLoan() {
+    isEditing = true;
+    editIdx = currentIdx;
+    const d = localDB[currentIdx];
+
+    // Basic Info
+    document.getElementById('inLoanNo').value = d.loanNo;
+    document.getElementById('inBName').value = d.borrower;
+    
+    // Borrower Info
+    document.getElementById('inBFather').value = d.borrowerInfo.father || ""; 
+    document.getElementById('inBPhone').value = d.borrowerInfo.phone || "";
+    document.getElementById('inBPhone2').value = d.borrowerInfo.phone2 || ""; 
+    document.getElementById('inPrevLoan').value = d.borrowerInfo.prevLoan || ""; 
+    document.getElementById('inBAddress').value = d.borrowerInfo.address || ""; 
+    document.getElementById('inBId').value = d.borrowerInfo.idProof || "";
+
+    // Photos - Critical Fix: Load existing or set empty
+    document.getElementById('base64Borrower').value = d.photos.borrower || "";
+    document.getElementById('base64Guarantor').value = d.photos.guarantor || "";
+
+    // Update Photo Previews for Edit mode
+    const bPrev = document.getElementById('imgPreviewBorrower');
+    if (d.photos.borrower) {
+        bPrev.src = d.photos.borrower;
+        bPrev.style.display = "block";
+    } else {
+        bPrev.style.display = "none";
     }
+
+    const gPrev = document.getElementById('imgPreviewGuarantor');
+    if (d.photos.guarantor) {
+        gPrev.src = d.photos.guarantor;
+        gPrev.style.display = "block";
+    } else {
+        gPrev.style.display = "none";
+    }
+
+    // Guarantor Info
+    document.getElementById('inGName').value = d.guarantor.name || ""; 
+    document.getElementById('inGFather').value = d.guarantor.father || "";
+    document.getElementById('inGPhone').value = d.guarantor.phone || ""; 
+    document.getElementById('inGPhone2').value = d.guarantor.phone2 || ""; 
+    document.getElementById('inGAddress').value = d.guarantor.address || "";
+    document.getElementById('inWitness').value = d.guarantor.witness || ""; 
+
+    // Vehicle & Loan Info
+    document.getElementById('inVName').value = d.vehicle.name || "";
+    document.getElementById('inVModel').value = d.vehicle.model || "";
+    document.getElementById('inVReg').value = d.vehicle.reg || "";
+    document.getElementById('inDate').value = d.loan.date; 
+    document.getElementById('inPrincipal').value = d.loan.principal;
+    document.getElementById('inPercent').value = d.loan.percent; 
+    document.getElementById('inDues').value = d.loan.dues;
+    document.getElementById('inRemarks').value = d.loan.remarks || "";
+
+    calculate(); // Refresh calculated fields in the modal
+    new bootstrap.Modal(document.getElementById('addModal')).show();
+}
 
     function openDueModal(sIdx) { duePayScheduleIdx = sIdx; const s = localDB[currentIdx].schedule[sIdx]; document.getElementById('duePayDate').valueAsDate = new Date(); document.getElementById('duePayAmt').value = s.expectedAmt; document.getElementById('duePayRcpt').value = ''; new bootstrap.Modal(document.getElementById('duePayModal')).show(); }
 
