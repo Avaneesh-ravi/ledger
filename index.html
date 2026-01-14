@@ -840,69 +840,64 @@ function snapPhoto() {
     }
 
 function renderScheduleTable(schedule, penaltyRate) {
-        const tb = document.getElementById('detailTableBody'); 
-        tb.innerHTML = '';
-        const d = localDB[currentIdx];
-        const today = new Date();
-        
-        // Initial principal from the loan record to start the running balance
-        let runningPrincipalBalance = parseFloat(d.loan.principal) || 0;
-        
-        // Fixed factor: total interest divided by the total number of dues
-        const totalInterest = parseFloat(d.loan.totalInt) || 0;
-        const numberOfDues = parseInt(d.loan.dues) || 1;
-        const interestFactor = totalInterest / numberOfDues;
+    const tb = document.getElementById('detailTableBody'); 
+    tb.innerHTML = '';
+    const d = localDB[currentIdx];
+    const today = new Date();
+    
+    // Initial principal to start the running balance
+    let runningPrincipalBalance = parseFloat(d.loan.principal) || 0;
+    
+    // Fixed factor: total interest divided by total dues
+    const totalInterest = parseFloat(d.loan.totalInt) || 0;
+    const numberOfDues = parseInt(d.loan.dues) || 1;
+    const interestFactor = totalInterest / numberOfDues;
 
-        schedule.forEach((s, i) => {
-            let actionBtn = '', intRecv = 0, prinRecv = 0, penaltyDisplay = '-';
+    schedule.forEach((s, i) => {
+        let actionBtn = '', intRecv = 0, prinRecv = 0, penaltyDisplay = '-';
+        
+        if (s.isPaid) {
+            const paidAmt = parseFloat(s.paidAmount) || 0;
             
-            if (s.isPaid) {
-                const paidAmt = parseFloat(s.paidAmount) || 0;
-                
-                // --- YOUR SPECIFIC CALCULATION LOGIC ---
-                
-                // 1. principle amount recived = due amount -(total intrest/number of due)
-                // (Using paidAmt as the "due amount" received)
-                prinRecv = paidAmt - interestFactor;
-                
-                // 2. intrest recived = due amount - principle amount recived
-                intRecv = paidAmt - prinRecv;
-                
-                // 3. principle balance = principle amount - principle amount recived
-                // This updates the running balance for the current row
-                runningPrincipalBalance -= prinRecv;
+            // --- FIXED CALCULATION LOGIC ---
+            // Interest is capped at the monthly factor (e.g., 450)
+            intRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
+            
+            // Principal received is the remainder (e.g., 4000 - 450 = 3550)
+            prinRecv = paidAmt - intRecv;
+            
+            // Running balance now correctly subtracts only the principal portion
+            runningPrincipalBalance -= prinRecv;
 
-                if(paidAmt > s.expectedAmt) {
-                    penaltyDisplay = `<span class="text-success small fw-bold">₹${Math.round(paidAmt - s.expectedAmt)} Paid</span>`;
-                }
-                actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button> <i class="fas fa-check text-success"></i>`;
-            } else {
-                const due = new Date(s.dueDate);
-                if (today > due) {
-                    const lateDays = Math.ceil((today - due) / (1000*60*60*24));
-                    penaltyDisplay = `<span class="text-danger small fw-bold">${lateDays}d (₹${lateDays * penaltyRate})</span>`;
-                }
-                actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="openDueModal(${i})">Pay</button>`;
+            if(paidAmt > s.expectedAmt) {
+                penaltyDisplay = `<span class="text-success small fw-bold">₹${Math.round(paidAmt - s.expectedAmt)} Extra</span>`;
             }
+            actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button> <i class="fas fa-check text-success"></i>`;
+        } else {
+            const due = new Date(s.dueDate);
+            if (today > due) {
+                const lateDays = Math.ceil((today - due) / (1000*60*60*24));
+                penaltyDisplay = `<span class="text-danger small fw-bold">${lateDays}d (₹${lateDays * penaltyRate})</span>`;
+            }
+            actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="openDueModal(${i})">Pay</button>`;
+        }
 
-            tb.innerHTML += `
-                <tr>
-                    <td>${s.sno}</td>
-                    <td>${s.dueDate}</td>
-                    <td class="fw-bold">₹${s.expectedAmt}</td>
-                    <td>${penaltyDisplay}</td>
-                    <td class="fw-bold">${s.paidDate || '-'}</td>
-                    <td>${s.receiptNo || '-'}</td>
-                    <td class="fw-bold text-success">${s.paidAmount || '-'}</td>
-                    
-                    <td class="text-primary">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
-                    <td class="text-success">${s.isPaid ? Math.round(intRecv) : '-'}</td>
-                    <td class="fw-bold">${s.isPaid ? Math.round(runningPrincipalBalance) : '-'}</td>
-                    
-                    <td class="no-print">${actionBtn}</td>
-                </tr>`;
-        });
-    }
+        tb.innerHTML += `
+            <tr>
+                <td>${s.sno}</td>
+                <td>${s.dueDate}</td>
+                <td class="fw-bold">₹${s.expectedAmt}</td>
+                <td>${penaltyDisplay}</td>
+                <td class="fw-bold">${s.paidDate || '-'}</td>
+                <td>${s.receiptNo || '-'}</td>
+                <td class="fw-bold text-success">${s.paidAmount || '-'}</td>
+                <td class="text-primary">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
+                <td class="text-success">${s.isPaid ? Math.round(intRecv) : '-'}</td>
+                <td class="fw-bold">${s.isPaid ? Math.round(runningPrincipalBalance) : '-'}</td>
+                <td class="no-print">${actionBtn}</td>
+            </tr>`;
+    });
+}
 
 function editLoan() {
     isEditing = true;
@@ -966,16 +961,31 @@ function editLoan() {
 
     function openDueModal(sIdx) { duePayScheduleIdx = sIdx; const s = localDB[currentIdx].schedule[sIdx]; document.getElementById('duePayDate').valueAsDate = new Date(); document.getElementById('duePayAmt').value = s.expectedAmt; document.getElementById('duePayRcpt').value = ''; new bootstrap.Modal(document.getElementById('duePayModal')).show(); }
 
-    function submitDuePayment() {
-        const date = document.getElementById('duePayDate').value, rcpt = document.getElementById('duePayRcpt').value, amt = document.getElementById('duePayAmt').value;
-        if(!date || !rcpt || !amt) { alert("Please fill all * fields"); return; }
-        if(localHistory.some(h => h.rcpt === rcpt)) { alert("Error: Receipt Number already exists!"); return; }
-        const newSchedule = [...localDB[currentIdx].schedule];
-        newSchedule[duePayScheduleIdx].isPaid = true; newSchedule[duePayScheduleIdx].paidAmount = amt; newSchedule[duePayScheduleIdx].paidDate = date; newSchedule[duePayScheduleIdx].receiptNo = rcpt;
-        db.collection("loans").doc(currentDocId).update({ schedule: newSchedule });
-        db.collection("transactions").add({ date: date, loanNo: localDB[currentIdx].loanNo, amt: amt, rcpt: rcpt });
-        bootstrap.Modal.getInstance(document.getElementById('duePayModal')).hide(); alert("Payment Saved!");
+function submitDuePayment() {
+    const date = document.getElementById('duePayDate').value, 
+          rcpt = document.getElementById('duePayRcpt').value.trim(), // added .trim()
+          amt = document.getElementById('duePayAmt').value;
+
+    if(!date || !rcpt || !amt) { alert("Please fill all * fields"); return; }
+
+    // --- UPDATED VALIDATION ---
+    // Allow repetition of "-" but block other duplicates
+    if(rcpt !== "-" && localHistory.some(h => h.rcpt === rcpt)) { 
+        alert("Error: Receipt Number already exists!"); 
+        return; 
     }
+    
+    const newSchedule = [...localDB[currentIdx].schedule];
+    newSchedule[duePayScheduleIdx].isPaid = true; 
+    newSchedule[duePayScheduleIdx].paidAmount = amt; 
+    newSchedule[duePayScheduleIdx].paidDate = date; 
+    newSchedule[duePayScheduleIdx].receiptNo = rcpt;
+    
+    db.collection("loans").doc(currentDocId).update({ schedule: newSchedule });
+    db.collection("transactions").add({ date: date, loanNo: localDB[currentIdx].loanNo, amt: amt, rcpt: rcpt });
+    bootstrap.Modal.getInstance(document.getElementById('duePayModal')).hide(); 
+    alert("Payment Saved!");
+}
 
     function openEditTxn(schedIndex) {
         const s = localDB[currentIdx].schedule[schedIndex];
@@ -1009,21 +1019,40 @@ function editLoan() {
         }
     }
 
-    function processQuickPay() {
-        const no = document.getElementById('qpLoanNo').value, date = document.getElementById('qpDate').value, amount = document.getElementById('qpAmount').value, receipt = document.getElementById('qpRcpt').value;
-        if(!no || !date || !amount || !receipt) return alert("Fill all * fields");
-        if(localHistory.some(h => h.rcpt === receipt)) return alert("Receipt Number exists!");
-        const l = localDB.find(x => x.loanNo == no);
-        if(!l) return alert("Loan Not Found");
-        const idx = l.schedule.findIndex(s => !s.isPaid);
-        if(idx === -1) return alert("Fully Paid");
-        const newSched = [...l.schedule];
-        newSched[idx].isPaid = true; newSched[idx].paidAmount = amount; newSched[idx].paidDate = date; newSched[idx].receiptNo = receipt;
-        db.collection("loans").doc(l.uid).update({ schedule: newSched });
-        db.collection("transactions").add({ date: date, loanNo: l.loanNo, amt: amount, rcpt: receipt });
-        alert("Saved!"); 
-        document.getElementById('qpLoanNo').value = ''; document.getElementById('qpName').value = ''; document.getElementById('qpAmount').value = ''; document.getElementById('qpRcpt').value = '';
+function processQuickPay() {
+    const no = document.getElementById('qpLoanNo').value, 
+          date = document.getElementById('qpDate').value, 
+          amount = document.getElementById('qpAmount').value, 
+          receipt = document.getElementById('qpRcpt').value.trim(); // added .trim()
+
+    if(!no || !date || !amount || !receipt) return alert("Fill all * fields");
+
+    // --- UPDATED VALIDATION ---
+    // Allow repetition of "-" but block other duplicates
+    if(receipt !== "-" && localHistory.some(h => h.rcpt === receipt)) {
+        return alert("Receipt Number exists!");
     }
+
+    const l = localDB.find(x => x.loanNo == no);
+    if(!l) return alert("Loan Not Found");
+    const idx = l.schedule.findIndex(s => !s.isPaid);
+    if(idx === -1) return alert("Fully Paid");
+    
+    const newSched = [...l.schedule];
+    newSched[idx].isPaid = true; 
+    newSched[idx].paidAmount = amount; 
+    newSched[idx].paidDate = date; 
+    newSched[idx].receiptNo = receipt;
+    
+    db.collection("loans").doc(l.uid).update({ schedule: newSched });
+    db.collection("transactions").add({ date: date, loanNo: l.loanNo, amt: amount, rcpt: receipt });
+    alert("Saved!"); 
+    
+    document.getElementById('qpLoanNo').value = ''; 
+    document.getElementById('qpName').value = ''; 
+    document.getElementById('qpAmount').value = ''; 
+    document.getElementById('qpRcpt').value = '';
+}
 
     function setText(id, t) { if(document.getElementById(id)) document.getElementById(id).innerText = t || ""; }
     
