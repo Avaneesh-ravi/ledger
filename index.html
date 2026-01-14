@@ -133,6 +133,21 @@
 </head>
 <body>
 
+
+<div id="loginOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#f8f9fa; z-index:9999; display:flex; justify-content:center; align-items:center;">
+    <div class="card shadow-lg p-4" style="width:320px; border-radius:15px;">
+        <div class="text-center mb-4">
+            <i class="fas fa-cloud-lock fa-3x text-primary mb-2"></i>
+            <h5 class="fw-bold">Finance Admin</h5>
+        </div>
+        <form onsubmit="event.preventDefault(); handleLogin();">
+            <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Admin Email" required>
+            <input type="password" id="loginPass" class="form-control mb-3" placeholder="Password" required>
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">ENTER CLOUD</button>
+        </form>
+    </div>
+</div>
+
 <div id="loader"><div class="spinner"></div><div class="mt-3 fw-bold text-muted">Connecting to Database...</div></div>
 
 <div class="header-bar">
@@ -544,13 +559,13 @@
         </div>
     </div>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // --- FIREBASE CONFIGURATION ---
+    // --- 1. FIREBASE CONFIGURATION (MUST BE FIRST) ---
     const firebaseConfig = {
       apiKey: "AIzaSyCUEjBkaIWmwQpdvrcUDHx_TnCm-4gGxE8",
       authDomain: "ledger-6e317.firebaseapp.com",
@@ -561,10 +576,81 @@
       measurementId: "G-58KY6P86NX"
     };
 
+    // Initialize Firebase before calling any Auth functions
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-    
-    // --- STATE MANAGEMENT ---
+
+    // --- 2. SECURE AUTHENTICATION ENGINE ---
+    function handleLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        
+        // Visual feedback
+        const btn = document.querySelector("#loginOverlay button");
+        btn.innerText = "Verifying...";
+        btn.disabled = true;
+
+        firebase.auth().signInWithEmailAndPassword(email, pass)
+            .catch(err => {
+                alert("Access Denied: " + err.message);
+                btn.innerText = "ENTER CLOUD";
+                btn.disabled = false;
+            });
+    }
+
+    // Automatically manages visibility based on login status
+// Automatically manages visibility and DATA LOADING based on login status
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        console.log("Session Verified: " + user.email);
+        
+        // START LOADING DATA NOW THAT WE ARE LOGGED IN
+        startDatabaseListeners(); 
+    } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+    }
+});
+
+// Wrap your listeners in this function
+function startDatabaseListeners() {
+    db.collection("loans").onSnapshot((snap) => {
+        localDB = [];
+        snap.forEach(d => { 
+            let data = d.data(); 
+            data.uid = d.id; 
+            localDB.push(data); 
+        });
+
+        localDB.sort((a, b) => {
+            return b.loanNo.localeCompare(a.loanNo, undefined, {numeric: true, sensitivity: 'base'});
+        });
+
+        updateDashboard(); 
+        renderGivenList(); 
+        checkNotifications();
+        
+        // HIDE THE LOADER ONLY AFTER DATA ARRIVES
+        document.getElementById('loader').style.display='none';
+        
+        if(currentIdx !== null) viewLedger(currentIdx);
+    }, (error) => {
+        console.error("Database Error:", error);
+        alert("Permissions Error: Make sure your Firebase Rules are published!");
+    });
+
+    db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
+        localHistory = []; 
+        snap.forEach(d => { 
+            let data = d.data(); 
+            data.uid = d.id; 
+            localHistory.push(data); 
+        });
+        renderHistory();
+    });
+}
+
+    // --- 3. STATE MANAGEMENT ---
     let localDB = [];
     let localHistory = [];
     let currentIdx = null;
@@ -575,7 +661,7 @@
     let editIdx = null;
     let duePayScheduleIdx = null;
 
-    // --- TRANSLATION DICTIONARY ---
+    // --- 4. TRANSLATION DICTIONARY ---
     const uiTranslations = {
         en: {
             given: "Given", received: "Received", balance: "Balance", interest: "Total Interest", accounts: "ACCOUNTS",
@@ -589,12 +675,8 @@
             save_transaction: "Save Transaction", confirm_payment: "CONFIRM PAYMENT", update_sync: "UPDATE & SYNC",
             record_payment: "Record Due Payment", edit_transaction: "Edit Transaction", new_account: "New Account", create_account: "CREATE ACCOUNT",
             payment_date: "Payment Date", dues: "Dues",
-            penalty_calc: "PENALTY CALCULATOR", rate_day: "Rate/Day", late_days: "Late Days",prin_recv: "Prin. Received",
-        int_recv: "Int. Received",
-        given: "Given",
-        received: "Received",
-        balance: "Balance",
-        interest: "Total Interest"
+            penalty_calc: "PENALTY CALCULATOR", rate_day: "Rate/Day", late_days: "Late Days", prin_recv: "Prin. Received",
+            int_recv: "Int. Received"
         },
         ta: {
             given: "கொடுக்கப்பட்டது", received: "பெறப்பட்டது", balance: "நிலுவை", interest: "வட்டி மொத்தம்", accounts: "கணக்குகள்",
@@ -608,17 +690,12 @@
             save_transaction: "சேமிக்க", confirm_payment: "உறுதிப்படுத்து", update_sync: "புதுப்பி",
             record_payment: "தவணை வரவு", edit_transaction: "திருத்தம்", new_account: "புதிய கணக்கு", create_account: "கணக்கை உருவாக்கு",
             payment_date: "செலுத்தும் தேதி", dues: "தவணைகள்",
-            penalty_calc: "அபராத கால்குலேட்டர்", rate_day: "கட்டணம்/நாள்", late_days: "தாமத நாட்கள்",prin_recv: "அசல் வரவு",
-        int_recv: "வட்டி வரவு",
-        given: "கொடுக்கப்பட்டது",
-        received: "பெறப்பட்டது",
-        balance: "நிலுவை",
-        interest: "வட்டி மொத்தம்"
+            penalty_calc: "அபராத கால்குலேட்டர்", rate_day: "கட்டணம்/நாள்", late_days: "தாமத நாட்கள்", prin_recv: "அசல் வரவு",
+            int_recv: "வட்டி வரவு"
         }
     };
 
-    // --- FIREBASE LISTENERS ---
-// --- FIREBASE LISTENERS ---
+    // --- 5. FIREBASE LISTENERS ---
     db.collection("loans").onSnapshot((snap) => {
         localDB = [];
         snap.forEach(d => { 
@@ -627,8 +704,6 @@
             localDB.push(data); 
         });
 
-        // ADD THIS PART TO SORT IN DESCENDING ORDER
-        // This sorts by loanNo (handling numbers correctly)
         localDB.sort((a, b) => {
             return b.loanNo.localeCompare(a.loanNo, undefined, {numeric: true, sensitivity: 'base'});
         });
@@ -638,10 +713,15 @@
         checkNotifications();
         document.getElementById('loader').style.display='none';
         if(currentIdx !== null) viewLedger(currentIdx);
-    }, (error) => console.error(error));
+    }, (error) => console.error("Snapshot error:", error));
 
     db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
-        localHistory = []; snap.forEach(d => { let data = d.data(); data.uid = d.id; localHistory.push(data); });
+        localHistory = []; 
+        snap.forEach(d => { 
+            let data = d.data(); 
+            data.uid = d.id; 
+            localHistory.push(data); 
+        });
         renderHistory();
     });
 
