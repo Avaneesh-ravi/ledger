@@ -13,6 +13,45 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
+
+/* Navigation Arrows - Visible only on Desktop/Laptop */
+.nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    background: rgba(30, 70, 32, 0.1);
+    color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 1000;
+    border: none;
+}
+.nav-arrow:hover { background: var(--primary); color: white; }
+.arrow-left { left: 20px; }
+.arrow-right { right: 20px; }
+
+/* Hide arrows on mobile */
+@media (max-width: 992px) {
+    .nav-arrow { display: none; }
+}
+
+/* Ledger transition effect */
+.ledger-sheet {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.slide-out-left { transform: translateX(-100px); opacity: 0; }
+.slide-out-right { transform: translateX(100px); opacity: 0; }
+
+
+        .ledger-sheet {
+    transition: opacity 0.2s ease-in-out;
+}
 #viewLedger {
     touch-action: pan-y; /* Critical: Allows native vertical scrolling while we handle horizontal */
     user-select: none;
@@ -76,6 +115,20 @@
             #viewLedger { display: block !important; }
             .ledger-sheet { border: 2px solid #000; box-shadow: none; margin: 0; padding: 0; width: 100%; }
         }
+
+/* Ensures the container stays stable during the swipe animation */
+#viewLedger {
+    overflow-x: hidden; 
+    width: 100%;
+    position: relative;
+}
+
+/* Prevent accidental text selection during fast swiping on mobile */
+.ledger-sheet {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
     </style>
 </head>
 <body>
@@ -226,6 +279,10 @@
 </div>
 
     <div id="viewLedger" class="d-none">
+
+<button class="nav-arrow arrow-left no-print" onclick="navigateAccount(-1)"><i class="fas fa-chevron-left"></i></button>
+<button class="nav-arrow arrow-right no-print" onclick="navigateAccount(1)"><i class="fas fa-chevron-right"></i></button>
+
         <div class="d-flex justify-content-between align-items-center mb-3 no-print">
             <button class="btn btn-light shadow-sm btn-sm" onclick="switchTab('viewDashboard')"><i class="fas fa-arrow-left"></i> <span data-lang="back">Back</span></button>
             <div>
@@ -236,10 +293,15 @@
         </div>
         <div class="ledger-sheet">
             <div class="border-bottom pb-2 mb-3">
+                
                 <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="fw-bold text-success m-0"><span data-lang="loan_no">LOAN NO</span>: #<span id="detailLoanNo"></span></h4>
-                    <div class="text-end"><span class="badge bg-light text-dark border" id="detailDate"></span></div>
-                </div>
+    <h4 class="fw-bold text-success m-0">
+        <span data-lang="loan_no">LOAN NO</span>: #<span id="detailLoanNo"></span>
+    </h4>
+    <span class="badge rounded-pill bg-dark opacity-75" id="accountCounter">0 / 0</span>
+    <div class="text-end"><span class="badge bg-light text-dark border" id="detailDate"></span></div>
+</div>
+                
                 <div id="prevLoanDisplay" class="small fw-bold text-danger mt-1"></div>
             </div>
             
@@ -757,6 +819,8 @@ function snapPhoto() {
             });
         }
         switchTab('viewLedger');
+        const counter = document.getElementById('accountCounter');
+    if(counter) counter.innerText = `${idx + 1} / ${localDB.length}`;
     }
 
     function calculatePenaltyTotals() {
@@ -990,6 +1054,12 @@ function editLoan() {
         document.getElementById('dashPending').innerText = (localDB.reduce((a,x)=>a+(x.loan.expected*x.loan.dues),0) - tC).toLocaleString();
         document.getElementById('dashInterest').innerText = tI.toLocaleString();
         document.getElementById('totalCount').innerText = localDB.length;
+   
+        if (currentIdx !== null) {
+        const counter = document.getElementById('accountCounter');
+        if(counter) counter.innerText = `${currentIdx + 1} / ${localDB.length}`;
+    }
+   
     }
 
     function renderGivenList() { const tb = document.getElementById('givenTableBody'); tb.innerHTML = ''; localDB.forEach(x => tb.innerHTML += `<tr><td>${x.loanNo}</td><td>${x.loan.date}</td><td>${x.borrower}</td><td>${x.loan.principal}</td></tr>`); }
@@ -999,65 +1069,81 @@ function editLoan() {
     function exportReceived() { let c="Date,No,Rcpt,Amt\n"; localHistory.forEach(h=>{c+=`${h.date},${h.loanNo},${h.rcpt},${h.amt}\n`}); downloadCSV(c,"Received.csv"); }
     function downloadCSV(c,f){ const b=new Blob([c],{type:'text/csv'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download=f; l.click(); }
 
-// --- OPTIMIZED SWIPE & NAVIGATION LOGIC ---
+// --- ADVANCED NAVIGATION ENGINE ---
 let touchstartX = 0;
-let touchstartY = 0;
-const ledgerView = document.getElementById('viewLedger');
+let touchstartY = 0; // Added Y tracking to distinguish between vertical scroll and horizontal swipe
 
-// 1. Capture the start of the touch
-ledgerView.addEventListener('touchstart', e => {
+function navigateAccount(direction) {
+    if (localDB.length === 0 || currentIdx === null) return;
+    
+    const ledger = document.querySelector('.ledger-sheet');
+    
+    // Visual feedback for direction
+    if(direction === 1) ledger.classList.add('slide-out-left');
+    else ledger.classList.add('slide-out-right');
+
+    setTimeout(() => {
+        let nextIdx = currentIdx + direction;
+        
+        // Circular Navigation logic
+        if (nextIdx >= localDB.length) nextIdx = 0;
+        if (nextIdx < 0) nextIdx = localDB.length - 1;
+        
+        viewLedger(nextIdx);
+        
+        // Reset animation classes
+        ledger.classList.remove('slide-out-left', 'slide-out-right');
+        window.scrollTo(0, 0); 
+    }, 200);
+}
+
+// Logic to identify if we should ignore the swipe
+function shouldIgnoreSwipe(e) {
+    const isTable = e.target.closest('.table-responsive');
+    const isInput = e.target.closest('input') || e.target.closest('textarea');
+    const isPenaltyInput = e.target.closest('.penalty-input');
+    
+    return isTable || isInput || isPenaltyInput;
+}
+
+document.addEventListener('touchstart', e => {
+    if (shouldIgnoreSwipe(e)) {
+        touchstartX = 0;
+        return;
+    }
     touchstartX = e.changedTouches[0].screenX;
     touchstartY = e.changedTouches[0].screenY;
 }, {passive: true});
 
-// 2. Capture the end and calculate logic
-ledgerView.addEventListener('touchend', e => {
+document.addEventListener('touchend', e => {
+    if (touchstartX === 0) return;
+    
     const touchendX = e.changedTouches[0].screenX;
     const touchendY = e.changedTouches[0].screenY;
     
-    // PROTECTION: Ignore swipe if finger is on the repayment table or inside a modal
-    if (e.target.closest('.table-responsive') || e.target.closest('.modal')) return;
+    const dx = touchendX - touchstartX;
+    const dy = touchendY - touchstartY;
 
-    const diffX = touchstartX - touchendX;
-    const diffY = touchstartY - touchendY;
+    // Guard 1: Ignore if it's more of a vertical scroll than a horizontal swipe
+    if (Math.abs(dy) > Math.abs(dx)) return;
 
-    // LOGICAL THRESHOLDS
-    // Math.abs(diffX) > 120: Must move finger 120px horizontally (prevents accidental triggers)
-    // Math.abs(diffY) < 60:  If finger moves too much vertically, assume user is just scrolling
-    if (Math.abs(diffX) > 120 && Math.abs(diffY) < 60) {
-        if (diffX > 0) {
-            navigateAccount(1);  // Swipe Left -> Next Account
-        } else {
-            navigateAccount(-1); // Swipe Right -> Previous Account
-        }
+    // Guard 2: Sensitivity Threshold (100px)
+    if (Math.abs(dx) > 100) {
+        if (document.getElementById('viewLedger').classList.contains('d-none')) return;
+        
+        if (dx > 0) navigateAccount(-1); // Swipe Right -> Prev
+        else navigateAccount(1);        // Swipe Left -> Next
     }
 }, {passive: true});
 
-/**
- * direction: 1 for Next, -1 for Previous
- */
-function navigateAccount(direction) {
-    if (currentIdx === null || localDB.length === 0) return;
+// Laptop Keyboard Support
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('viewLedger').classList.contains('d-none')) return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-    // Calculate new index with wrap-around logic
-    let newIdx = currentIdx + direction;
-    if (newIdx >= localDB.length) newIdx = 0; 
-    if (newIdx < 0) newIdx = localDB.length - 1;
-
-    // Visual Transition
-    ledgerView.style.opacity = '0';
-    
-    setTimeout(() => {
-        // Reset scroll position so next account starts at the top
-        window.scrollTo(0, 0);
-        
-        // Re-use your existing viewLedger function to load data
-        viewLedger(newIdx);
-        
-        ledgerView.style.opacity = '1';
-    }, 150);
-}
-
+    if (e.key === "ArrowRight") navigateAccount(1);
+    if (e.key === "ArrowLeft") navigateAccount(-1);
+});
 
 </script>
 </body>
