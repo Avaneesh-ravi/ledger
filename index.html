@@ -150,27 +150,40 @@
 <div class="container pt-4">
     
     <div id="viewDashboard">
-        <div class="stat-card">
-            <div class="row text-center g-3">
-                <div class="col-6 border-end border-white border-opacity-25">
-                    <div class="stat-label" data-lang="given">Given</div>
-                    <div class="stat-val">₹<span id="dashGiven">0</span></div>
-                </div>
-                <div class="col-6">
-                    <div class="stat-label" data-lang="received">Received</div>
-                    <div class="stat-val">₹<span id="dashCollected">0</span></div>
-                </div>
-                <div class="col-12"><hr class="my-1 border-white border-opacity-25"></div>
-                <div class="col-6 border-end border-white border-opacity-25">
-                    <div class="stat-label text-warning" data-lang="balance">Balance</div>
-                    <div class="stat-val text-warning">₹<span id="dashPending">0</span></div>
-                </div>
-                <div class="col-6">
-                    <div class="stat-label text-info" data-lang="interest">Total Interest</div>
-                    <div class="stat-val text-info">₹<span id="dashInterest">0</span></div>
-                </div>
-            </div>
+<div class="stat-card">
+    <div class="row text-center g-3">
+        <div class="col-6 border-end border-white border-opacity-25">
+            <div class="stat-label" data-lang="given">Given</div>
+            <div class="stat-val">₹<span id="dashGiven">0</span></div>
         </div>
+        <div class="col-6">
+            <div class="stat-label" data-lang="received">Received</div>
+            <div class="stat-val">₹<span id="dashCollected">0</span></div>
+        </div>
+        
+        <div class="col-12"><hr class="my-1 border-white border-opacity-25"></div>
+        
+        <div class="col-6 border-end border-white border-opacity-25">
+            <div class="stat-label text-info" data-lang="prin_recv">Prin. Received</div>
+            <div class="stat-val text-info">₹<span id="dashPrinRecv">0</span></div>
+        </div>
+        <div class="col-6">
+            <div class="stat-label text-warning" data-lang="int_recv">Int. Received</div>
+            <div class="stat-val text-warning">₹<span id="dashIntRecv">0</span></div>
+        </div>
+        
+        <div class="col-12"><hr class="my-1 border-white border-opacity-25"></div>
+        
+        <div class="col-6 border-end border-white border-opacity-25">
+            <div class="stat-label text-warning" data-lang="balance">Balance</div>
+            <div class="stat-val text-warning">₹<span id="dashPending">0</span></div>
+        </div>
+        <div class="col-6">
+            <div class="stat-label text-info" data-lang="interest">Total Interest</div>
+            <div class="stat-val text-info">₹<span id="dashInterest">0</span></div>
+        </div>
+    </div>
+</div>
 
         <div class="mb-4 position-relative">
             <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 12px;"></i>
@@ -576,7 +589,12 @@
             save_transaction: "Save Transaction", confirm_payment: "CONFIRM PAYMENT", update_sync: "UPDATE & SYNC",
             record_payment: "Record Due Payment", edit_transaction: "Edit Transaction", new_account: "New Account", create_account: "CREATE ACCOUNT",
             payment_date: "Payment Date", dues: "Dues",
-            penalty_calc: "PENALTY CALCULATOR", rate_day: "Rate/Day", late_days: "Late Days"
+            penalty_calc: "PENALTY CALCULATOR", rate_day: "Rate/Day", late_days: "Late Days",prin_recv: "Prin. Received",
+        int_recv: "Int. Received",
+        given: "Given",
+        received: "Received",
+        balance: "Balance",
+        interest: "Total Interest"
         },
         ta: {
             given: "கொடுக்கப்பட்டது", received: "பெறப்பட்டது", balance: "நிலுவை", interest: "வட்டி மொத்தம்", accounts: "கணக்குகள்",
@@ -590,7 +608,12 @@
             save_transaction: "சேமிக்க", confirm_payment: "உறுதிப்படுத்து", update_sync: "புதுப்பி",
             record_payment: "தவணை வரவு", edit_transaction: "திருத்தம்", new_account: "புதிய கணக்கு", create_account: "கணக்கை உருவாக்கு",
             payment_date: "செலுத்தும் தேதி", dues: "தவணைகள்",
-            penalty_calc: "அபராத கால்குலேட்டர்", rate_day: "கட்டணம்/நாள்", late_days: "தாமத நாட்கள்"
+            penalty_calc: "அபராத கால்குலேட்டர்", rate_day: "கட்டணம்/நாள்", late_days: "தாமத நாட்கள்",prin_recv: "அசல் வரவு",
+        int_recv: "வட்டி வரவு",
+        given: "கொடுக்கப்பட்டது",
+        received: "பெறப்பட்டது",
+        balance: "நிலுவை",
+        interest: "வட்டி மொத்தம்"
         }
     };
 
@@ -1070,26 +1093,67 @@ function processQuickPay() {
         }
     }
 
-    function updateDashboard() {
-        const list = document.getElementById('loansList'); list.innerHTML = '';
-        let tG = 0, tC = 0, tI = 0;
-        localDB.forEach((x, i) => {
-            const exp = x.loan.expected * x.loan.dues, pd = x.schedule.reduce((a,s)=>a+(parseFloat(s.paidAmount)||0),0);
-            tG += parseFloat(x.loan.principal); tC += pd; tI += parseFloat(x.loan.totalInt) || 0;
-            list.innerHTML += `<div class="col-md-6"><div class="loan-card ${pd>=exp?'closed':'active'}" onclick="viewLedger(${i})"><div class="d-flex justify-content-between"><strong>#${x.loanNo}</strong><span>₹${pd}/${exp}</span></div><div class="text-primary fw-bold">${x.borrower}</div></div></div>`;
+function updateDashboard() {
+    const list = document.getElementById('loansList'); 
+    if (!list) return;
+    list.innerHTML = '';
+    
+    let tG = 0, tC = 0, tI = 0, tPR = 0, tIR = 0, tTotalExp = 0;
+
+    localDB.forEach((loan, i) => {
+        // Calculation Factors
+        const totalInt = parseFloat(loan.loan.totalInt) || 0;
+        const numDues = parseInt(loan.loan.dues) || 1;
+        const interestFactor = totalInt / numDues;
+        const exp = loan.loan.expected * loan.loan.dues;
+        let loanPaid = 0;
+        
+        loan.schedule.forEach(s => {
+            if(s.isPaid) {
+                const paidAmt = parseFloat(s.paidAmount) || 0;
+                loanPaid += paidAmt;
+                
+                // Splitting logic for the new boxes
+                const rowIntRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
+                const rowPrinRecv = paidAmt - rowIntRecv;
+                
+                tIR += rowIntRecv;
+                tPR += rowPrinRecv;
+            }
         });
-        document.getElementById('dashGiven').innerText = tG.toLocaleString(); 
-        document.getElementById('dashCollected').innerText = tC.toLocaleString();
-        document.getElementById('dashPending').innerText = (localDB.reduce((a,x)=>a+(x.loan.expected*x.loan.dues),0) - tC).toLocaleString();
-        document.getElementById('dashInterest').innerText = tI.toLocaleString();
-        document.getElementById('totalCount').innerText = localDB.length;
-   
-        if (currentIdx !== null) {
-        const counter = document.getElementById('accountCounter');
-        if(counter) counter.innerText = `${currentIdx + 1} / ${localDB.length}`;
+
+        tG += parseFloat(loan.loan.principal) || 0;
+        tC += loanPaid;
+        tI += totalInt;
+        tTotalExp += exp;
+
+        list.innerHTML += `
+            <div class="col-md-6">
+                <div class="loan-card ${loanPaid >= exp ? 'closed' : 'active'}" onclick="viewLedger(${i})">
+                    <div class="d-flex justify-content-between">
+                        <strong>#${loan.loanNo}</strong>
+                        <span>₹${loanPaid.toLocaleString()}/${exp.toLocaleString()}</span>
+                    </div>
+                    <div class="text-primary fw-bold">${loan.borrower}</div>
+                </div>
+            </div>`;
+    });
+
+    // Safe updates to prevent script crashes
+    const setT = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
+
+    setT('dashGiven', tG.toLocaleString()); 
+    setT('dashCollected', tC.toLocaleString());
+    setT('dashPrinRecv', Math.round(tPR).toLocaleString());
+    setT('dashIntRecv', Math.round(tIR).toLocaleString());
+    setT('dashPending', (tTotalExp - tC).toLocaleString());
+    setT('dashInterest', tI.toLocaleString());
+    setT('totalCount', localDB.length);
+
+    if (currentIdx !== null) {
+        setT('accountCounter', `${currentIdx + 1} / ${localDB.length}`);
     }
-   
-    }
+}
 
     function renderGivenList() { const tb = document.getElementById('givenTableBody'); tb.innerHTML = ''; localDB.forEach(x => tb.innerHTML += `<tr><td>${x.loanNo}</td><td>${x.loan.date}</td><td>${x.borrower}</td><td>${x.loan.principal}</td></tr>`); }
     function renderHistory() { const tb = document.getElementById('qpHistoryBody'); tb.innerHTML = ''; localHistory.forEach(h => tb.innerHTML += `<tr><td>${h.date}</td><td>${h.loanNo}</td><td>${h.rcpt}</td><td>${h.amt}</td></tr>`); }
