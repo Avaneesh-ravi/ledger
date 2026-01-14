@@ -13,6 +13,19 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
+#viewLedger {
+    touch-action: pan-y; /* Critical: Allows native vertical scrolling while we handle horizontal */
+    user-select: none;
+    transition: opacity 0.15s ease-in-out;
+}
+
+/* Optional: Add a visual hint that the page is swipeable */
+.ledger-sheet {
+    position: relative;
+    overflow-x: hidden;
+}
+
+
         :root { --primary: #1e4620; --accent: #2e7d32; --bg-gray: #f8f9fa; --text-main: #2c3e50; }
         body { background-color: var(--bg-gray); font-family: 'Inter', sans-serif; padding-bottom: 90px; color: var(--text-main); }
         
@@ -985,6 +998,67 @@ function editLoan() {
     function exportGiven() { let c="No,Date,Name,Amt\n"; localDB.forEach(x=>{c+=`${x.loanNo},${x.loan.date},${x.borrower},${x.loan.principal}\n`}); downloadCSV(c,"Given.csv"); }
     function exportReceived() { let c="Date,No,Rcpt,Amt\n"; localHistory.forEach(h=>{c+=`${h.date},${h.loanNo},${h.rcpt},${h.amt}\n`}); downloadCSV(c,"Received.csv"); }
     function downloadCSV(c,f){ const b=new Blob([c],{type:'text/csv'}); const l=document.createElement('a'); l.href=URL.createObjectURL(b); l.download=f; l.click(); }
+
+// --- OPTIMIZED SWIPE & NAVIGATION LOGIC ---
+let touchstartX = 0;
+let touchstartY = 0;
+const ledgerView = document.getElementById('viewLedger');
+
+// 1. Capture the start of the touch
+ledgerView.addEventListener('touchstart', e => {
+    touchstartX = e.changedTouches[0].screenX;
+    touchstartY = e.changedTouches[0].screenY;
+}, {passive: true});
+
+// 2. Capture the end and calculate logic
+ledgerView.addEventListener('touchend', e => {
+    const touchendX = e.changedTouches[0].screenX;
+    const touchendY = e.changedTouches[0].screenY;
+    
+    // PROTECTION: Ignore swipe if finger is on the repayment table or inside a modal
+    if (e.target.closest('.table-responsive') || e.target.closest('.modal')) return;
+
+    const diffX = touchstartX - touchendX;
+    const diffY = touchstartY - touchendY;
+
+    // LOGICAL THRESHOLDS
+    // Math.abs(diffX) > 120: Must move finger 120px horizontally (prevents accidental triggers)
+    // Math.abs(diffY) < 60:  If finger moves too much vertically, assume user is just scrolling
+    if (Math.abs(diffX) > 120 && Math.abs(diffY) < 60) {
+        if (diffX > 0) {
+            navigateAccount(1);  // Swipe Left -> Next Account
+        } else {
+            navigateAccount(-1); // Swipe Right -> Previous Account
+        }
+    }
+}, {passive: true});
+
+/**
+ * direction: 1 for Next, -1 for Previous
+ */
+function navigateAccount(direction) {
+    if (currentIdx === null || localDB.length === 0) return;
+
+    // Calculate new index with wrap-around logic
+    let newIdx = currentIdx + direction;
+    if (newIdx >= localDB.length) newIdx = 0; 
+    if (newIdx < 0) newIdx = localDB.length - 1;
+
+    // Visual Transition
+    ledgerView.style.opacity = '0';
+    
+    setTimeout(() => {
+        // Reset scroll position so next account starts at the top
+        window.scrollTo(0, 0);
+        
+        // Re-use your existing viewLedger function to load data
+        viewLedger(newIdx);
+        
+        ledgerView.style.opacity = '1';
+    }, 150);
+}
+
+
 </script>
 </body>
 </html>
