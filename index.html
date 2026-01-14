@@ -635,10 +635,37 @@ function handleLogout() {
     // --- 4. DATABASE LISTENERS ---
     function startDatabaseListeners() {
         // Loans Listener
-
+        db.collection("loans").onSnapshot((snap) => {
+            localDB = [];
+            snap.forEach(d => { 
+                let data = d.data(); 
+                data.uid = d.id; 
+                localDB.push(data); 
+            });
+            localDB.sort((a, b) => b.loanNo.localeCompare(a.loanNo, undefined, {numeric: true, sensitivity: 'base'}));
+            
+            updateDashboard(); 
+            renderGivenList(); 
+            checkNotifications();
+            
+            // HIDE LOADER ONLY WHEN DATA ARRIVES
+            document.getElementById('loader').style.display='none';
+            if(currentIdx !== null) viewLedger(currentIdx);
+        }, (error) => {
+            console.error("Database Error:", error);
+            alert("Database Error: Check your Firebase Security Rules!");
+        });
 
         // Transactions Listener
-       
+        db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
+            localHistory = []; 
+            snap.forEach(d => { 
+                let data = d.data(); 
+                data.uid = d.id; 
+                localHistory.push(data); 
+            });
+            renderHistory();
+        });
     }
 
     // --- 5. TRANSLATION DICTIONARY ---
