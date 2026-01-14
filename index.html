@@ -158,7 +158,12 @@
             <span id="notifBadge" class="badge rounded-pill bg-danger notif-badge" style="display:none;">0</span>
         </div>
         <div class="lang-switch fw-bold text-primary me-3" onclick="toggleLang()" id="langBtn" style="cursor:pointer; font-size:0.9rem;">EN / தமிழ்</div>
-        <i class="fas fa-sync action-icon text-secondary" onclick="location.reload()"></i>
+        
+        <button class="btn btn-outline-danger btn-sm" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+
+        <i class="fas fa-sync action-icon text-secondary ms-3" onclick="location.reload()"></i>
     </div>
 </div>
 
@@ -565,7 +570,16 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // --- 1. FIREBASE CONFIGURATION (MUST BE FIRST) ---
+
+function handleLogout() {
+    if(confirm("Are you sure you want to logout?")) {
+        firebase.auth().signOut().then(() => {
+            location.reload(); // Refresh to show login screen again
+        });
+    }
+}
+
+    // --- 1. FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyCUEjBkaIWmwQpdvrcUDHx_TnCm-4gGxE8",
       authDomain: "ledger-6e317.firebaseapp.com",
@@ -576,17 +590,15 @@
       measurementId: "G-58KY6P86NX"
     };
 
-    // Initialize Firebase before calling any Auth functions
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // --- 2. SECURE AUTHENTICATION ENGINE ---
+    // --- 2. AUTHENTICATION LOGIC ---
     function handleLogin() {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPass').value;
-        
-        // Visual feedback
         const btn = document.querySelector("#loginOverlay button");
+        
         btn.innerText = "Verifying...";
         btn.disabled = true;
 
@@ -598,57 +610,16 @@
             });
     }
 
-    // Automatically manages visibility based on login status
-// Automatically manages visibility and DATA LOADING based on login status
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        document.getElementById('loginOverlay').style.display = 'none';
-        console.log("Session Verified: " + user.email);
-        
-        // START LOADING DATA NOW THAT WE ARE LOGGED IN
-        startDatabaseListeners(); 
-    } else {
-        document.getElementById('loginOverlay').style.display = 'flex';
-    }
-});
-
-// Wrap your listeners in this function
-function startDatabaseListeners() {
-    db.collection("loans").onSnapshot((snap) => {
-        localDB = [];
-        snap.forEach(d => { 
-            let data = d.data(); 
-            data.uid = d.id; 
-            localDB.push(data); 
-        });
-
-        localDB.sort((a, b) => {
-            return b.loanNo.localeCompare(a.loanNo, undefined, {numeric: true, sensitivity: 'base'});
-        });
-
-        updateDashboard(); 
-        renderGivenList(); 
-        checkNotifications();
-        
-        // HIDE THE LOADER ONLY AFTER DATA ARRIVES
-        document.getElementById('loader').style.display='none';
-        
-        if(currentIdx !== null) viewLedger(currentIdx);
-    }, (error) => {
-        console.error("Database Error:", error);
-        alert("Permissions Error: Make sure your Firebase Rules are published!");
+    firebase.auth().onAuthStateChanged((user) => {
+        if (user) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            console.log("Logged in as: " + user.email);
+            // ONLY START DATABASE AFTER LOGIN
+            startDatabaseListeners(); 
+        } else {
+            document.getElementById('loginOverlay').style.display = 'flex';
+        }
     });
-
-    db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
-        localHistory = []; 
-        snap.forEach(d => { 
-            let data = d.data(); 
-            data.uid = d.id; 
-            localHistory.push(data); 
-        });
-        renderHistory();
-    });
-}
 
     // --- 3. STATE MANAGEMENT ---
     let localDB = [];
@@ -661,7 +632,16 @@ function startDatabaseListeners() {
     let editIdx = null;
     let duePayScheduleIdx = null;
 
-    // --- 4. TRANSLATION DICTIONARY ---
+    // --- 4. DATABASE LISTENERS ---
+    function startDatabaseListeners() {
+        // Loans Listener
+
+
+        // Transactions Listener
+       
+    }
+
+    // --- 5. TRANSLATION DICTIONARY ---
     const uiTranslations = {
         en: {
             given: "Given", received: "Received", balance: "Balance", interest: "Total Interest", accounts: "ACCOUNTS",
@@ -695,35 +675,9 @@ function startDatabaseListeners() {
         }
     };
 
-    // --- 5. FIREBASE LISTENERS ---
-    db.collection("loans").onSnapshot((snap) => {
-        localDB = [];
-        snap.forEach(d => { 
-            let data = d.data(); 
-            data.uid = d.id; 
-            localDB.push(data); 
-        });
+ 
 
-        localDB.sort((a, b) => {
-            return b.loanNo.localeCompare(a.loanNo, undefined, {numeric: true, sensitivity: 'base'});
-        });
 
-        updateDashboard(); 
-        renderGivenList(); 
-        checkNotifications();
-        document.getElementById('loader').style.display='none';
-        if(currentIdx !== null) viewLedger(currentIdx);
-    }, (error) => console.error("Snapshot error:", error));
-
-    db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
-        localHistory = []; 
-        snap.forEach(d => { 
-            let data = d.data(); 
-            data.uid = d.id; 
-            localHistory.push(data); 
-        });
-        renderHistory();
-    });
 
     function checkNotifications() {
         const notifBadge = document.getElementById('notifBadge');
