@@ -347,21 +347,23 @@
                     <span class="field-lbl" data-lang="name">Name</span><span class="field-val translatable" id="detailBName"></span>
                     <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailBFather"></span>
                     <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailBAddress"></span>
-                  <span class="field-lbl mt-1" data-lang="phone">Phone</span>
-<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print mb-2" style="min-height: 54px;">
-    <div class="flex-grow-1 overflow-hidden">
-        <span class="fw-bold text-dark d-block text-truncate" id="detailBPhone" style="font-size: 0.95rem;"></span>
+                  <span class="field-lbl mt-1">Contact Info</span>
+<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print mb-2" style="min-height: 58px;">
+    <div class="flex-grow-1 overflow-hidden me-2">
+        <span class="fw-bold text-dark d-block text-truncate" id="detailBPhone" style="font-size: 0.9rem; line-height: 1.2;"></span>
+        <small class="text-muted" style="font-size: 0.7rem;">Tap icons to select number</small>
     </div>
-    <div class="d-flex gap-1 ms-2">
-        <button class="btn btn-primary d-flex align-items-center justify-content-center shadow-sm" 
-                onclick="makePhoneCall(currentIdx, 'borrower')" 
-                style="width: 42px; height: 42px; border-radius: 10px;">
+
+    <div class="d-flex gap-1">
+        <button class="btn btn-primary d-flex align-items-center justify-content-center" 
+                onclick="handleContact(currentIdx, 'borrower', 'call')" 
+                style="width: 44px; height: 44px; border-radius: 12px; border: none;">
             <i class="fas fa-phone-alt"></i>
         </button>
-        <button class="btn btn-success d-flex align-items-center justify-content-center shadow-sm" 
-                onclick="sendWhatsAppReminder(currentIdx, 'borrower')" 
-                style="width: 42px; height: 42px; border-radius: 10px;">
-            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i>
+        <button class="btn btn-success d-flex align-items-center justify-content-center" 
+                onclick="handleContact(currentIdx, 'borrower', 'whatsapp')" 
+                style="width: 44px; height: 44px; border-radius: 12px; border: none;">
+            <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i>
         </button>
     </div>
 </div>
@@ -377,21 +379,23 @@
                         <span class="field-lbl" data-lang="name">Name</span><span class="field-val translatable" id="detailGName"></span>
                         <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailGFather"></span>
                         <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailGAddress"></span>
-                       <span class="field-lbl mt-1" data-lang="phone">Phone</span>
-<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print mb-2" style="min-height: 54px;">
-    <div class="flex-grow-1 overflow-hidden">
-        <span class="fw-bold text-dark d-block text-truncate" id="detailBPhone" style="font-size: 0.95rem;"></span>
+                      <span class="field-lbl mt-1">Contact Info</span>
+<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print mb-2" style="min-height: 58px;">
+    <div class="flex-grow-1 overflow-hidden me-2">
+        <span class="fw-bold text-dark d-block text-truncate" id="detailBPhone" style="font-size: 0.9rem; line-height: 1.2;"></span>
+        <small class="text-muted" style="font-size: 0.7rem;">Tap icons to select number</small>
     </div>
-    <div class="d-flex gap-1 ms-2">
-        <button class="btn btn-primary d-flex align-items-center justify-content-center shadow-sm" 
-                onclick="makePhoneCall(currentIdx, 'borrower')" 
-                style="width: 42px; height: 42px; border-radius: 10px;">
+
+    <div class="d-flex gap-1">
+        <button class="btn btn-primary d-flex align-items-center justify-content-center" 
+                onclick="handleContact(currentIdx, 'borrower', 'call')" 
+                style="width: 44px; height: 44px; border-radius: 12px; border: none;">
             <i class="fas fa-phone-alt"></i>
         </button>
-        <button class="btn btn-success d-flex align-items-center justify-content-center shadow-sm" 
-                onclick="sendWhatsAppReminder(currentIdx, 'borrower')" 
-                style="width: 42px; height: 42px; border-radius: 10px;">
-            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i>
+        <button class="btn btn-success d-flex align-items-center justify-content-center" 
+                onclick="handleContact(currentIdx, 'borrower', 'whatsapp')" 
+                style="width: 44px; height: 44px; border-radius: 12px; border: none;">
+            <i class="fab fa-whatsapp" style="font-size: 1.3rem;"></i>
         </button>
     </div>
 </div>
@@ -604,7 +608,39 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+// --- Inside your <script> tag ---
 
+function handleContact(idx, type, action) {
+    const d = localDB[idx];
+    // This looks at either the borrower's info or the guarantor's info based on the 'type' passed
+    const phoneData = (type === 'borrower') ? d.borrowerInfo.phone : d.guarantor.phone;
+    
+    if (!phoneData) return alert("No number found");
+
+    // Cleans the string and splits it into an array of numbers
+    const numbers = phoneData.split(/[/,]/).map(n => n.replace(/\D/g, ''));
+
+    if (numbers.length > 1) {
+        // Asks you to pick between the two numbers detected
+        const choice = confirm(`Primary: ${numbers[0]}\nSecondary: ${numbers[1]}\n\nClick OK for Primary, Cancel for Secondary`);
+        const targetNum = choice ? numbers[0] : numbers[1];
+        executeAction(targetNum, action, d, type);
+    } else {
+        executeAction(numbers[0], action, d, type);
+    }
+}
+
+function executeAction(num, action, data, type) {
+    if (action === 'call') {
+        window.location.href = `tel:+91${num}`;
+    } else {
+        const name = (type === 'borrower') ? data.borrower : data.guarantor.name;
+        // Calculates real-time balance for the WhatsApp message
+        const balance = (data.loan.expected * data.loan.dues) - data.schedule.reduce((acc,s) => acc + (parseFloat(s.paidAmount)||0), 0);
+        const msg = encodeURI(`Dear ${name}, reminder for Loan #${data.loanNo}. Balance: ₹${balance.toLocaleString('en-IN')}.`);
+        window.open(`https://wa.me/91${num}?text=${msg}`, '_blank');
+    }
+}
 async function generateReceiptPDF(loanNo, name, rcpt, amt, date) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({
