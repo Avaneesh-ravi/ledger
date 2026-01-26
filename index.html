@@ -874,7 +874,7 @@ function snapPhoto() {
         document.getElementById('detailBPhoto').src = d.photos.borrower || ""; document.getElementById('detailGPhoto').src = d.photos.guarantor || "";
         document.getElementById('detailVehicle').innerText = `${d.vehicle.name} ${d.vehicle.model}`; document.getElementById('detailReg').innerText = d.vehicle.reg;
         document.getElementById('detailPrincipal').innerText = d.loan.principal; 
-        document.getElementById('detailTotalAmount').innerText = d.loan.expected * d.loan.dues;
+        document.getElementById('detailTotalAmount').innerText = (d.loan.expected * d.loan.dues).toLocaleString('en-IN');
         document.getElementById('detailExpected').innerText = d.loan.expected;
         document.getElementById('detailPercent').innerText = d.loan.percent; 
         document.getElementById('detailTotalInt').innerText = d.loan.totalInt;
@@ -884,7 +884,7 @@ function snapPhoto() {
         document.getElementById('detailRemarks').innerText = remText;
 
         const paid = d.schedule.reduce((acc,s) => acc + (parseFloat(s.paidAmount)||0), 0);
-        document.getElementById('detailRemaining').innerText = (d.loan.expected * d.loan.dues) - paid;
+        document.getElementById('detailRemaining').innerText = ((d.loan.expected * d.loan.dues) - paid).toLocaleString('en-IN');
         const storedRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
         document.getElementById('penRate').value = storedRate;
         
@@ -1188,28 +1188,27 @@ function updateDashboard() {
         tI += totalInt;
         tTotalExp += exp;
 
-        list.innerHTML += `
-            <div class="col-md-6">
-                <div class="loan-card ${loanPaid >= exp ? 'closed' : 'active'}" onclick="viewLedger(${i})">
-                    <div class="d-flex justify-content-between">
-                        <strong>#${loan.loanNo}</strong>
-                        <span>₹${loanPaid.toLocaleString()}/${exp.toLocaleString()}</span>
-                    </div>
-                    <div class="text-primary fw-bold">${loan.borrower}</div>
-                </div>
-            </div>`;
+list.innerHTML += `
+    <div class="col-md-6">
+        <div class="loan-card ${loanPaid >= exp ? 'closed' : 'active'}" onclick="viewLedger(${i})">
+            <div class="d-flex justify-content-between">
+                <strong>#${loan.loanNo}</strong>
+                <span>₹${loanPaid.toLocaleString('en-IN')}/${exp.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="text-primary fw-bold">${loan.borrower}</div>
+        </div>
+    </div>`;
     });
 
     // Safe updates to prevent script crashes
     const setT = (id, val) => { if(document.getElementById(id)) document.getElementById(id).innerText = val; };
 
-    setT('dashGiven', tG.toLocaleString()); 
-    setT('dashCollected', tC.toLocaleString());
-    setT('dashPrinRecv', Math.round(tPR).toLocaleString());
-    setT('dashIntRecv', Math.round(tIR).toLocaleString());
-    setT('dashPending', (tTotalExp - tC).toLocaleString());
-    setT('dashInterest', tI.toLocaleString());
-    setT('totalCount', localDB.length);
+setT('dashGiven', tG.toLocaleString('en-IN')); 
+setT('dashCollected', tC.toLocaleString('en-IN'));
+setT('dashPrinRecv', Math.round(tPR).toLocaleString('en-IN'));
+setT('dashIntRecv', Math.round(tIR).toLocaleString('en-IN'));
+setT('dashPending', (tTotalExp - tC).toLocaleString('en-IN'));
+setT('dashInterest', tI.toLocaleString('en-IN'));
 
     if (currentIdx !== null) {
         setT('accountCounter', `${currentIdx + 1} / ${localDB.length}`);
