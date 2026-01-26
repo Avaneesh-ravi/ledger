@@ -347,18 +347,21 @@
                     <span class="field-lbl" data-lang="name">Name</span><span class="field-val translatable" id="detailBName"></span>
                     <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailBFather"></span>
                     <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailBAddress"></span>
-                  <span class="field-lbl mt-1" data-lang="phone">Phone Details</span>
-<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print" style="min-height: 50px;">
-    <div>
-        <i class="fas fa-address-book text-muted me-2"></i>
-        <span class="fw-bold text-dark" id="detailBPhone" style="font-size: 0.95rem;"></span>
+                  <span class="field-lbl mt-1" data-lang="phone">Phone</span>
+<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print mb-2" style="min-height: 54px;">
+    <div class="flex-grow-1 overflow-hidden">
+        <span class="fw-bold text-dark d-block text-truncate" id="detailBPhone" style="font-size: 0.95rem;"></span>
     </div>
-    <div class="btn-group shadow-sm">
-        <button class="btn btn-outline-primary btn-sm px-3" onclick="makePhoneCall(currentIdx, 'borrower')" title="Call Primary">
+    <div class="d-flex gap-1 ms-2">
+        <button class="btn btn-primary d-flex align-items-center justify-content-center shadow-sm" 
+                onclick="makePhoneCall(currentIdx, 'borrower')" 
+                style="width: 42px; height: 42px; border-radius: 10px;">
             <i class="fas fa-phone-alt"></i>
         </button>
-        <button class="btn btn-outline-success btn-sm px-3" onclick="sendWhatsAppReminder(currentIdx, 'borrower')" title="WhatsApp Primary">
-            <i class="fab fa-whatsapp"></i>
+        <button class="btn btn-success d-flex align-items-center justify-content-center shadow-sm" 
+                onclick="sendWhatsAppReminder(currentIdx, 'borrower')" 
+                style="width: 42px; height: 42px; border-radius: 10px;">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i>
         </button>
     </div>
 </div>
@@ -374,18 +377,21 @@
                         <span class="field-lbl" data-lang="name">Name</span><span class="field-val translatable" id="detailGName"></span>
                         <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailGFather"></span>
                         <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailGAddress"></span>
-                        <span class="field-lbl mt-1" data-lang="phone">Phone Details</span>
-<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print" style="min-height: 50px;">
-    <div>
-        <i class="fas fa-address-book text-muted me-2"></i>
-        <span class="fw-bold text-dark" id="detailBPhone" style="font-size: 0.95rem;"></span>
+                       <span class="field-lbl mt-1" data-lang="phone">Phone</span>
+<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print mb-2" style="min-height: 54px;">
+    <div class="flex-grow-1 overflow-hidden">
+        <span class="fw-bold text-dark d-block text-truncate" id="detailBPhone" style="font-size: 0.95rem;"></span>
     </div>
-    <div class="btn-group shadow-sm">
-        <button class="btn btn-outline-primary btn-sm px-3" onclick="makePhoneCall(currentIdx, 'borrower')" title="Call Primary">
+    <div class="d-flex gap-1 ms-2">
+        <button class="btn btn-primary d-flex align-items-center justify-content-center shadow-sm" 
+                onclick="makePhoneCall(currentIdx, 'borrower')" 
+                style="width: 42px; height: 42px; border-radius: 10px;">
             <i class="fas fa-phone-alt"></i>
         </button>
-        <button class="btn btn-outline-success btn-sm px-3" onclick="sendWhatsAppReminder(currentIdx, 'borrower')" title="WhatsApp Primary">
-            <i class="fab fa-whatsapp"></i>
+        <button class="btn btn-success d-flex align-items-center justify-content-center shadow-sm" 
+                onclick="sendWhatsAppReminder(currentIdx, 'borrower')" 
+                style="width: 42px; height: 42px; border-radius: 10px;">
+            <i class="fab fa-whatsapp" style="font-size: 1.2rem;"></i>
         </button>
     </div>
 </div>
@@ -663,23 +669,23 @@ async function generateReceiptPDF(loanNo, name, rcpt, amt, date) {
 }
 
 
-function makePhoneCall(idx, type) {
+function getPrimaryNumber(idx, type) {
     const d = localDB[idx];
     const phoneData = (type === 'borrower') ? d.borrowerInfo.phone : d.guarantor.phone;
-    
-    if(!phoneData || phoneData.trim() === "") return alert("Phone number not found!");
-    
-    // Pick the first number if multiple exist (split by /)
-    const primaryPhone = phoneData.split('/')[0].replace(/\s/g, ''); 
-    
-    window.location.href = `tel:+91${primaryPhone}`;
+    if(!phoneData) return null;
+    // Takes the first number before the "/" and removes all spaces
+    return phoneData.split('/')[0].replace(/\D/g, ''); 
+}
+
+function makePhoneCall(idx, type) {
+    const num = getPrimaryNumber(idx, type);
+    if(!num) return alert("Number not found");
+    window.location.href = `tel:+91${num}`;
 }
 
 function sendWhatsAppReminder(idx, type) {
-    const d = localDB[idx];
-    const phoneData = (type === 'borrower') ? d.borrowerInfo.phone : d.guarantor.phone;
-    
-    if(!phoneData || phoneData.trim() === "") return alert("Phone number not found!");
+    const num = getPrimaryNumber(idx, type);
+    if(!num) return alert("Number not found");
 
     const primaryPhone = phoneData.split('/')[0].replace(/\s/g, '');
     const name = (type === 'borrower') ? d.borrower : d.guarantor.name;
