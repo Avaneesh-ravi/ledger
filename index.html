@@ -347,7 +347,21 @@
                     <span class="field-lbl" data-lang="name">Name</span><span class="field-val translatable" id="detailBName"></span>
                     <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailBFather"></span>
                     <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailBAddress"></span>
-                    <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val" id="detailBPhone"></span>
+                  <span class="field-lbl mt-1" data-lang="phone">Phone Details</span>
+<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print" style="min-height: 50px;">
+    <div>
+        <i class="fas fa-address-book text-muted me-2"></i>
+        <span class="fw-bold text-dark" id="detailBPhone" style="font-size: 0.95rem;"></span>
+    </div>
+    <div class="btn-group shadow-sm">
+        <button class="btn btn-outline-primary btn-sm px-3" onclick="makePhoneCall(currentIdx, 'borrower')" title="Call Primary">
+            <i class="fas fa-phone-alt"></i>
+        </button>
+        <button class="btn btn-outline-success btn-sm px-3" onclick="sendWhatsAppReminder(currentIdx, 'borrower')" title="WhatsApp Primary">
+            <i class="fab fa-whatsapp"></i>
+        </button>
+    </div>
+</div>
                     <span class="field-lbl mt-1" data-lang="id_proof">ID Proof</span><span class="field-val" id="detailBId"></span>
                 </div>
                 
@@ -360,7 +374,21 @@
                         <span class="field-lbl" data-lang="name">Name</span><span class="field-val translatable" id="detailGName"></span>
                         <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val translatable" id="detailGFather"></span>
                         <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val translatable" id="detailGAddress"></span>
-                        <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val" id="detailGPhone"></span>
+                        <span class="field-lbl mt-1" data-lang="phone">Phone Details</span>
+<div class="d-flex align-items-center justify-content-between p-2 rounded shadow-sm border bg-white no-print" style="min-height: 50px;">
+    <div>
+        <i class="fas fa-address-book text-muted me-2"></i>
+        <span class="fw-bold text-dark" id="detailBPhone" style="font-size: 0.95rem;"></span>
+    </div>
+    <div class="btn-group shadow-sm">
+        <button class="btn btn-outline-primary btn-sm px-3" onclick="makePhoneCall(currentIdx, 'borrower')" title="Call Primary">
+            <i class="fas fa-phone-alt"></i>
+        </button>
+        <button class="btn btn-outline-success btn-sm px-3" onclick="sendWhatsAppReminder(currentIdx, 'borrower')" title="WhatsApp Primary">
+            <i class="fab fa-whatsapp"></i>
+        </button>
+    </div>
+</div>
                         <hr class="my-2 text-muted">
                         <span class="field-lbl mt-1" data-lang="witness">Witness</span><span class="field-val translatable" id="detailWitness"></span>
                     </div>
@@ -568,8 +596,102 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+
+async function generateReceiptPDF(loanNo, name, rcpt, amt, date) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a6' // Compact size, perfect for mobile sharing
+    });
+
+    // --- Design Elements ---
+    doc.setDrawColor(30, 70, 32); // Your brand green
+    doc.rect(5, 5, 95, 138); // Border
+
+    // Header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(30, 70, 32);
+    doc.text("FINANCE CLOUD", 52.5, 15, { align: "center" });
+    
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text("Official Payment Receipt", 52.5, 20, { align: "center" });
+    doc.line(10, 25, 95, 25);
+
+    // Body Content
+    doc.setFontSize(10);
+    doc.setTextColor(0);
+    
+    let y = 35;
+    const lineHeight = 8;
+
+    const fields = [
+        ["Date:", date],
+        ["Receipt No:", rcpt],
+        ["Loan No:", "#" + loanNo],
+        ["Borrower:", name]
+    ];
+
+    fields.forEach(field => {
+        doc.setFont("helvetica", "bold");
+        doc.text(field[0], 15, y);
+        doc.setFont("helvetica", "normal");
+        doc.text(String(field[1]), 45, y);
+        y += lineHeight;
+    });
+
+    // Amount Box
+    doc.setFillColor(240, 240, 240);
+    doc.rect(15, y + 5, 75, 15, 'F');
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text("AMOUNT PAID:", 20, y + 15);
+    doc.text("Rs. " + parseFloat(amt).toLocaleString('en-IN'), 55, y + 15);
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.text("Thank you for your payment!", 52.5, 130, { align: "center" });
+    doc.text("Generated Digitally", 52.5, 135, { align: "center" });
+
+    // Save/Download
+    doc.save(`Receipt_${rcpt}.pdf`);
+}
+
+
+function makePhoneCall(idx, type) {
+    const d = localDB[idx];
+    const phoneData = (type === 'borrower') ? d.borrowerInfo.phone : d.guarantor.phone;
+    
+    if(!phoneData || phoneData.trim() === "") return alert("Phone number not found!");
+    
+    // Pick the first number if multiple exist (split by /)
+    const primaryPhone = phoneData.split('/')[0].replace(/\s/g, ''); 
+    
+    window.location.href = `tel:+91${primaryPhone}`;
+}
+
+function sendWhatsAppReminder(idx, type) {
+    const d = localDB[idx];
+    const phoneData = (type === 'borrower') ? d.borrowerInfo.phone : d.guarantor.phone;
+    
+    if(!phoneData || phoneData.trim() === "") return alert("Phone number not found!");
+
+    const primaryPhone = phoneData.split('/')[0].replace(/\s/g, '');
+    const name = (type === 'borrower') ? d.borrower : d.guarantor.name;
+    const loanNo = d.loanNo;
+    const balance = (d.loan.expected * d.loan.dues) - d.schedule.reduce((acc,s) => acc + (parseFloat(s.paidAmount)||0), 0);
+    
+    const intro = (type === 'borrower') ? `Dear ${name},` : `Dear ${name} (Guarantor for ${d.borrower}),`;
+    
+    const msg = encodeURI(`*Loan Payment Reminder*\n\n${intro}\nThis is a reminder regarding Loan #${loanNo}. \nThe current outstanding balance is *₹${balance.toLocaleString('en-IN')}*.\n\nPlease ignore if already paid.`);
+    
+    window.open(`https://wa.me/91${primaryPhone}?text=${msg}`, '_blank');
+}
 
 function handleLogout() {
     if(confirm("Are you sure you want to logout?")) {
@@ -860,14 +982,14 @@ function snapPhoto() {
         let bPhones = d.borrowerInfo.phone || "";
         if(d.borrowerInfo.phone2) bPhones += " / " + d.borrowerInfo.phone2;
         setText('detailBPhone', bPhones);
-        
+        if(document.getElementById('detailBPhonePrint')) document.getElementById('detailBPhonePrint').innerText = bPhones;
         setText('detailBId', d.borrowerInfo.idProof);
         setText('detailGName', d.guarantor.name); setText('detailGFather', d.guarantor.father);
         
         let gPhones = d.guarantor.phone || "";
         if(d.guarantor.phone2) gPhones += " / " + d.guarantor.phone2;
         setText('detailGPhone', gPhones);
-        
+        if(document.getElementById('detailGPhonePrint')) document.getElementById('detailGPhonePrint').innerText = gPhones;
         setText('detailGAddress', d.guarantor.address);
         setText('detailWitness', d.guarantor.witness);
         
@@ -956,7 +1078,14 @@ function renderScheduleTable(schedule, penaltyRate) {
             if(paidAmt > s.expectedAmt) {
                 penaltyDisplay = `<span class="text-success small fw-bold">₹${Math.round(paidAmt - s.expectedAmt)} Extra</span>`;
             }
-            actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button> <i class="fas fa-check text-success"></i>`;
+            actionBtn = `
+    <button class="btn btn-xs btn-outline-primary border-0" 
+        onclick="generateReceiptPDF('${d.loanNo}', '${d.borrower}', '${s.receiptNo}', '${s.paidAmount}', '${s.paidDate}')">
+        <i class="fas fa-file-download"></i>
+    </button>
+    <button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})">
+        <i class="fas fa-pen"></i>
+    </button>`;
         } else {
             const due = new Date(s.dueDate);
             if (today > due) {
