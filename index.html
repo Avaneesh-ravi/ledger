@@ -908,59 +908,71 @@ function snapPhoto() {
     }
 
     function calculatePenaltyTotals() {
-        const rate = parseFloat(document.getElementById('penRate').value) || 0;
-        let totalDays = 0;
-        const today = new Date();
-        const d = localDB[currentIdx];
-        d.schedule.forEach(s => {
-            if(!s.isPaid) {
-                const due = new Date(s.dueDate);
-                if(today > due) { totalDays += Math.ceil((today - due) / (1000*60*60*24)); }
-            }
-        });
-        document.getElementById('totalLateDays').innerText = totalDays;
-        document.getElementById('totalPenaltyAmt').innerText = totalDays * rate;
-        renderScheduleTable(d.schedule, rate);
-    }
+    const rate = parseFloat(document.getElementById('penRate').value) || 0;
+    let totalDays = 0;
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const d = localDB[currentIdx];
+
+    d.schedule.forEach(s => {
+        const due = new Date(s.dueDate);
+        due.setHours(0,0,0,0);
+
+        if(!s.isPaid) {
+            // Days late so far
+            if(today > due) totalDays += Math.ceil((today - due) / (1000*60*60*24));
+        } else {
+            // Days late when it was paid
+            const pDate = new Date(s.paidDate);
+            pDate.setHours(0,0,0,0);
+            if(pDate > due) totalDays += Math.ceil((pDate - due) / (1000*60*60*24));
+        }
+    });
+
+    document.getElementById('totalLateDays').innerText = totalDays;
+    document.getElementById('totalPenaltyAmt').innerText = (totalDays * rate).toLocaleString('en-IN');
+    renderScheduleTable(d.schedule, rate);
+}
 
 function renderScheduleTable(schedule, penaltyRate) {
     const tb = document.getElementById('detailTableBody'); 
     tb.innerHTML = '';
     const d = localDB[currentIdx];
     const today = new Date();
+    today.setHours(0,0,0,0);
     
-    // Initial principal to start the running balance
     let runningPrincipalBalance = parseFloat(d.loan.principal) || 0;
-    
-    // Fixed factor: total interest divided by total dues
     const totalInterest = parseFloat(d.loan.totalInt) || 0;
     const numberOfDues = parseInt(d.loan.dues) || 1;
     const interestFactor = totalInterest / numberOfDues;
 
     schedule.forEach((s, i) => {
         let actionBtn = '', intRecv = 0, prinRecv = 0, penaltyDisplay = '-';
-        
+        const due = new Date(s.dueDate);
+        due.setHours(0,0,0,0);
+
         if (s.isPaid) {
             const paidAmt = parseFloat(s.paidAmount) || 0;
-            
-            // --- FIXED CALCULATION LOGIC ---
-            // Interest is capped at the monthly factor (e.g., 450)
+            const pDate = new Date(s.paidDate);
+            pDate.setHours(0,0,0,0);
+
+            // Calculate Penalty even if paid (Finalized Penalty)
+            if (pDate > due) {
+                const lateDays = Math.ceil((pDate - due) / (1000 * 60 * 60 * 24));
+                penaltyDisplay = `<span class="text-muted small">${lateDays}d (₹${lateDays * penaltyRate})</span>`;
+            } else {
+                penaltyDisplay = `<i class="fas fa-check-circle text-success" title="Paid on time"></i>`;
+            }
+
             intRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
-            
-            // Principal received is the remainder (e.g., 4000 - 450 = 3550)
             prinRecv = paidAmt - intRecv;
-            
-            // Running balance now correctly subtracts only the principal portion
             runningPrincipalBalance -= prinRecv;
 
-            if(paidAmt > s.expectedAmt) {
-                penaltyDisplay = `<span class="text-success small fw-bold">₹${Math.round(paidAmt - s.expectedAmt)} Extra</span>`;
-            }
-            actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button> <i class="fas fa-check text-success"></i>`;
+            actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button>`;
         } else {
-            const due = new Date(s.dueDate);
+            // Live Penalty for unpaid dues
             if (today > due) {
-                const lateDays = Math.ceil((today - due) / (1000*60*60*24));
+                const lateDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
                 penaltyDisplay = `<span class="text-danger small fw-bold">${lateDays}d (₹${lateDays * penaltyRate})</span>`;
             }
             actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="openDueModal(${i})">Pay</button>`;
