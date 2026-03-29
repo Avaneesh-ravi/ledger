@@ -714,8 +714,13 @@ function handleLogout() {
         const today = new Date();
         today.setHours(0,0,0,0);
         localDB.forEach((loan, idx) => {
-            loan.schedule.forEach(s => {
-                if(!s.isPaid) {
+    // ✅ Skip fully paid / over-paid loans (balance <= 0)
+    const totalExp = loan.loan.expected * loan.loan.dues;
+    const totalPaid = loan.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+    if (totalPaid >= totalExp) return; // Skip this loan entirely
+
+    loan.schedule.forEach(s => {
+        if(!s.isPaid) {
                     const due = new Date(s.dueDate);
                     if(today > due) {
                         const daysLate = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
