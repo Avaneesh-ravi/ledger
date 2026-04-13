@@ -1916,10 +1916,10 @@
             const savedMonth = mSel.value;
             const savedYear = ySel.value;
             mSel.innerHTML = '';
-            months.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.text = curLang === 'ta' ? tamilMonths[i] : m; mSel.appendChild(o); });
+            months.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.text = curLang === 'ta' ? tamilMonths[i] : m; o.style.color = '#2c3e50'; o.style.background = '#fff'; mSel.appendChild(o); });
             ySel.innerHTML = '';
             const yr = new Date().getFullYear();
-            for (let y = yr; y >= yr - 3; y--) { const o = document.createElement('option'); o.value = y; o.text = y; ySel.appendChild(o); }
+            for (let y = yr; y >= yr - 3; y--) { const o = document.createElement('option'); o.value = y; o.text = y; o.style.color = '#2c3e50'; o.style.background = '#fff'; ySel.appendChild(o); }
             mSel.value = savedMonth !== '' ? savedMonth : new Date().getMonth();
             ySel.value = savedYear || yr;
             renderMonthlyProgress();
@@ -1945,6 +1945,12 @@
                         mDue++;
                         if (s.isPaid) {
                             mPaid++;
+                        }
+                    }
+                    
+                    if (s.isPaid && s.paidDate) {
+                        const pDate = new Date(s.paidDate);
+                        if (pDate.getFullYear() === year && pDate.getMonth() === month) {
                             const p = parseFloat(s.paidAmount) || 0;
                             mReceived += p;
                             const ir = p >= intFactor ? intFactor : p;
