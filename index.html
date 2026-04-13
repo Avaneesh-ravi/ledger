@@ -129,6 +129,30 @@
     -webkit-user-select: none;
 }
 
+/* Fix 4a: Bottom nav add button alignment */
+.add-btn-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Fix 4b: Photo and text size on small screens */
+@media (max-width: 480px) {
+    .photo-box { width: 65px; height: 80px; }
+    .field-val { font-size: 0.8rem; }
+    .field-lbl { font-size: 0.6rem; }
+}
+
+/* Fix 4c: Fin summary 2-column on small screens */
+@media (max-width: 480px) {
+    .fin-summary { grid-template-columns: repeat(2, 1fr); }
+    .fin-cell:nth-child(3n) { border-right: 1px solid #000; }
+    .fin-cell:nth-child(2n) { border-right: none; }
+    .fin-cell:nth-last-child(-n+2) { border-bottom: none; }
+    .fin-cell:nth-last-child(3) { border-bottom: 1px solid #000; }
+}
+
     </style>
 </head>
 <body>
@@ -160,8 +184,9 @@
         <div class="lang-switch fw-bold text-primary me-3" onclick="toggleLang()" id="langBtn" style="cursor:pointer; font-size:0.9rem;">EN / தமிழ்</div>
         
         <button class="btn btn-outline-danger btn-sm" onclick="handleLogout()">
-            <i class="fas fa-sign-out-alt"></i> Logout
-        </button>
+    <i class="fas fa-sign-out-alt"></i>
+    <span class="d-none d-sm-inline">Logout</span>
+</button>
 
         <i class="fas fa-sync action-icon text-secondary ms-3" onclick="location.reload()"></i>
     </div>
@@ -235,11 +260,18 @@
 
     <div id="viewQuickPay" class="d-none">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="fw-bold m-0" style="color: var(--primary);"><i class="fas fa-wallet me-2"></i><span data-lang="collection">Collection</span></h5>
+    <h5 class="fw-bold m-0" style="color: var(--primary);"><i class="fas fa-wallet me-2"></i><span data-lang="collection">Collection</span></h5>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm rounded-pill px-3 fw-bold" id="progressToggleBtn"
+            style="background:#185FA5; color:white; border:none;"
+            onclick="toggleMonthlyProgress()">
+            <i class="fas fa-chart-bar me-1"></i><span data-lang="progress">Progress</span>
+        </button>
         <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="exportReceived()">
             <i class="fas fa-file-excel me-1"></i> Excel
         </button>
     </div>
+</div>
 
     <div class="card border-0 shadow-sm mb-4 overflow-hidden" style="border-radius: 16px;">
         <div class="p-3 text-white" style="background: linear-gradient(135deg, var(--primary), var(--accent));">
@@ -276,7 +308,7 @@
                     <label class="small fw-bold text-muted mb-1"><span data-lang="receipt_no">Receipt No</span> <span class="required-star">*</span></label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-receipt"></i></span>
-                        <input type="text" id="qpRcpt" class="form-control mandatory-qp border-start-0" placeholder="Enter Receipt No">
+                       <input type="text" id="qpRcpt" class="form-control mandatory-qp border-start-0" placeholder="Enter Receipt No" inputmode="decimal" pattern="[0-9.\-]*" oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')">
                     </div>
                 </div>
                 <div class="col-12 mt-3">
@@ -287,8 +319,48 @@
             </div>
         </div>
     </div>
+    <div class="card border-0 shadow-sm mb-4 overflow-hidden" id="monthlyProgressCard" style="border-radius: 16px; display:none;">
+        <div class="p-3 text-white d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #185FA5, #378ADD);">
+            <h6 class="m-0 fw-bold"><i class="fas fa-chart-bar me-2"></i><span data-lang="monthly_progress">Monthly Progress</span></h6>
+            <div class="d-flex gap-2 align-items-center">
+    <div style="background:#1565C0; border-radius:20px; padding:2px 8px;">
+        <select id="progressMonth" class="border-0"
+            style="background:transparent; color:white; font-weight:bold; cursor:pointer; outline:none; font-size:0.85rem;"
+            onchange="renderMonthlyProgress()">
+        </select>
+    </div>
+    <div style="background:#1565C0; border-radius:20px; padding:2px 8px;">
+        <select id="progressYear" class="border-0"
+            style="background:transparent; color:white; font-weight:bold; cursor:pointer; outline:none; font-size:0.85rem;"
+            onchange="renderMonthlyProgress()">
+        </select>
+    </div>
+</div>
+        </div>
+        <div class="card-body p-3 bg-white">
+            <div class="row g-2 mb-3" id="monthlyStats">
+                <div class="col-6"><div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;"><div class="small text-muted fw-bold" data-lang="given" style="font-size:0.65rem;">GIVEN</div><div class="fw-bold text-dark" id="mGiven">₹0</div></div></div>
+                <div class="col-6"><div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;"><div class="small text-muted fw-bold" data-lang="received" style="font-size:0.65rem;">RECEIVED</div><div class="fw-bold text-success" id="mReceived">₹0</div></div></div>
+                <div class="col-6"><div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;"><div class="small text-muted fw-bold" data-lang="prin_recv" style="font-size:0.65rem;">PRIN. RECV</div><div class="fw-bold text-primary" id="mPrinRecv">₹0</div></div></div>
+                <div class="col-6"><div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;"><div class="small text-muted fw-bold" data-lang="int_recv" style="font-size:0.65rem;">INT. RECV</div><div class="fw-bold text-warning" id="mIntRecv">₹0</div></div></div>
+            </div>
+            <div style="background:#f8f9fa; border-radius:8px; padding:8px 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="small text-muted fw-bold" style="font-size:0.7rem;" data-lang="collection_progress">COLLECTION PROGRESS</span>
+                    <span class="fw-bold small text-success" id="mProgressPct">0%</span>
+                </div>
+                <div style="background:#dee2e6; border-radius:20px; height:10px; overflow:hidden;">
+                    <div id="mProgressBar" style="height:10px; border-radius:20px; background:linear-gradient(90deg,#2e7d32,#66bb6a); transition:width 0.5s ease; width:0%;"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                    <span class="small text-muted" style="font-size:0.7rem;"><span id="mPaidCount">0</span> <span data-lang="paid">paid</span></span>
+                    <span class="small text-muted" style="font-size:0.7rem;"><span id="mDueCount">0</span> <span data-lang="due">due</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="px-1 d-flex justify-content-between align-items-center mb-2">
+   <div class="px-1 d-flex justify-content-between align-items-center mb-2">
         <h6 class="text-muted small fw-bold m-0" data-lang="history">HISTORY</h6>
         <span class="badge bg-light text-muted border" style="font-size: 0.65rem;">Recent 10</span>
     </div>
@@ -308,7 +380,8 @@
                     </tbody>
             </table>
         </div>
-    </div>
+ </div>
+</div>
 </div>
 
     <div id="viewLedger" class="d-none">
@@ -405,18 +478,18 @@
 
             <div class="table-responsive mt-3">
                 <table class="table table-bordered table-sm text-center mb-0" style="font-size:0.75rem;">
-<thead class="table-light">
+                    <thead class="table-light">
     <tr>
         <th>#</th>
         <th data-lang="due_date">Due Date</th>
         <th data-lang="due">Due</th>
-        <th data-lang="penalty">Day/Penalty</th>
+        <th class="d-none d-md-table-cell" data-lang="penalty">Day/Penalty</th>
         <th data-lang="paid_date">Paid Date</th>
         <th data-lang="receipt">Rcpt</th>
         <th data-lang="paid">Paid</th>
-        <th style="background: #e3f2fd;" data-lang="prin_recv">Prin Recv</th>
-        <th style="background: #e8f5e9;" data-lang="int_recv">Int Recv</th>
-        <th style="background: #fff3e0;" data-lang="prin_bal">Prin Bal</th>
+        <th class="d-none d-md-table-cell" style="background: #e3f2fd;" data-lang="prin_recv">Prin Recv</th>
+        <th class="d-none d-md-table-cell" style="background: #e8f5e9;" data-lang="int_recv">Int Recv</th>
+        <th class="d-none d-md-table-cell" style="background: #fff3e0;" data-lang="prin_bal">Prin Bal</th>
         <th class="no-print">Action</th>
     </tr>
 </thead>
@@ -533,7 +606,9 @@
             <div class="modal-body">
                 <div class="row g-3">
                     <div class="col-12"><label class="small fw-bold"><span data-lang="payment_date">Payment Date</span> <span class="required-star">*</span></label><input type="date" id="duePayDate" class="form-control"></div>
-                    <div class="col-12"><label class="small fw-bold"><span data-lang="receipt_no">Receipt Number</span> <span class="required-star">*</span></label><input type="text" id="duePayRcpt" class="form-control" placeholder="Enter Receipt No"></div>
+                    <div class="col-12"><label class="small fw-bold"><span data-lang="receipt_no">Receipt Number</span> <span class="required-star">*</span></label>
+                       <input type="text" id="duePayRcpt" class="form-control" placeholder="Enter Receipt No" inputmode="decimal" pattern="[0-9.\-]*" oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')">
+                    </div>
                     <div class="col-12"><label class="small fw-bold"><span data-lang="amount">Amount</span> <span class="required-star">*</span></label><input type="number" id="duePayAmt" class="form-control fw-bold text-success"></div>
                 </div>
             </div>
@@ -556,7 +631,9 @@
                 <input type="hidden" id="editOldAmt">
                 <div class="row g-3">
                     <div class="col-12"><label class="small fw-bold" data-lang="payment_date">Correct Date</label><input type="date" id="editTxnDate" class="form-control"></div>
-                    <div class="col-12"><label class="small fw-bold" data-lang="receipt_no">Correct Receipt No</label><input type="text" id="editTxnRcpt" class="form-control"></div>
+                    <div class="col-12"><label class="small fw-bold" data-lang="receipt_no">Correct Receipt No</label>
+                        <input type="text" id="editTxnRcpt" class="form-control" inputmode="decimal" pattern="[0-9.\-]*" oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')">
+                    </div>
                     <div class="col-12"><label class="small fw-bold" data-lang="amount">Correct Amount</label><input type="number" id="editTxnAmt" class="form-control fw-bold text-success"></div>
                 </div>
             </div>
@@ -683,7 +760,10 @@ function handleLogout() {
             record_payment: "Record Due Payment", edit_transaction: "Edit Transaction", new_account: "New Account", create_account: "CREATE ACCOUNT",
             payment_date: "Payment Date", dues: "Dues",
             penalty_calc: "PENALTY CALCULATOR", rate_day: "Rate/Day", late_days: "Late Days", prin_recv: "Prin. Received",
-            int_recv: "Int. Received"
+            int_recv: "Int. Received",
+            monthly_progress: "Monthly Progress",
+collection_progress: "Collection Progress",
+progress: "Progress",
         },
         ta: {
             given: "கொடுக்கப்பட்டது", received: "பெறப்பட்டது", balance: "நிலுவை", interest: "வட்டி மொத்தம்", accounts: "கணக்குகள்",
@@ -698,7 +778,9 @@ function handleLogout() {
             record_payment: "தவணை வரவு", edit_transaction: "திருத்தம்", new_account: "புதிய கணக்கு", create_account: "கணக்கை உருவாக்கு",
             payment_date: "செலுத்தும் தேதி", dues: "தவணைகள்",
             penalty_calc: "அபராத கால்குலேட்டர்", rate_day: "கட்டணம்/நாள்", late_days: "தாமத நாட்கள்", prin_recv: "அசல் வரவு",
-            int_recv: "வட்டி வரவு"
+            int_recv: "வட்டி வரவு",monthly_progress: "மாதாந்திர முன்னேற்றம்",
+collection_progress: "வசூல் முன்னேற்றம்",
+progress: "முன்னேற்றம்",
         }
     };
 
@@ -768,13 +850,16 @@ function handleLogout() {
         });
 
         if(currentIdx !== null) {
-            if(curLang === 'ta') applyDynamicTranslation(localDB[currentIdx]); 
-            else viewLedger(currentIdx);
-        }
+    if(curLang === 'ta') applyDynamicTranslation(localDB[currentIdx]); 
+    else viewLedger(currentIdx);
+}
+initMonthlyFilter();
     }
 
-    function switchTab(id) { ['viewDashboard','viewQuickPay','viewLedger','viewGiven'].forEach(v=>document.getElementById(v).classList.add('d-none')); document.getElementById(id).classList.remove('d-none'); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); if(id=='viewDashboard')document.getElementById('navDash').classList.add('active'); if(id=='viewGiven')document.getElementById('navGiven').classList.add('active'); if(id=='viewQuickPay')document.getElementById('navPay').classList.add('active'); }
-function openAddModal() {
+    function switchTab(id) { ['viewDashboard','viewQuickPay','viewLedger','viewGiven'].forEach(v=>document.getElementById(v).classList.add('d-none')); document.getElementById(id).classList.remove('d-none'); document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active')); if(id=='viewDashboard')document.getElementById('navDash').classList.add('active'); if(id=='viewGiven')document.getElementById('navGiven').classList.add('active'); 
+    if(id=='viewQuickPay') document.getElementById('navPay').classList.add('active');
+}
+    function openAddModal() {
     isEditing = false;
     document.getElementById('entryForm').reset();
     
@@ -988,13 +1073,13 @@ function renderScheduleTable(schedule, penaltyRate) {
                 <td>${s.sno}</td>
                 <td>${s.dueDate}</td>
                 <td class="fw-bold">₹${s.expectedAmt}</td>
-                <td>${penaltyDisplay}</td>
+                <td class="d-none d-md-table-cell">${penaltyDisplay}</td>
                 <td class="fw-bold">${s.paidDate || '-'}</td>
                 <td>${s.receiptNo || '-'}</td>
                 <td class="fw-bold text-success">${s.paidAmount || '-'}</td>
-                <td class="text-primary">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
-                <td class="text-success">${s.isPaid ? Math.round(intRecv) : '-'}</td>
-                <td class="fw-bold">${s.isPaid ? Math.round(runningPrincipalBalance) : '-'}</td>
+                <td class="text-primary d-none d-md-table-cell">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
+                <td class="text-success d-none d-md-table-cell">${s.isPaid ? Math.round(intRecv) : '-'}</td>
+                <td class="fw-bold d-none d-md-table-cell">${s.isPaid ? Math.round(runningPrincipalBalance) : '-'}</td>
                 <td class="no-print">${actionBtn}</td>
             </tr>`;
     });
@@ -1071,10 +1156,10 @@ function submitDuePayment() {
 
     // --- UPDATED VALIDATION ---
     // Allow repetition of "-" but block other duplicates
-    if(rcpt !== "-" && localHistory.some(h => h.rcpt === rcpt)) { 
-        alert("Error: Receipt Number already exists!"); 
-        return; 
-    }
+    if(rcpt !== "-" && rcpt !== "." && localHistory.some(h => h.rcpt === rcpt)) { 
+    alert("Error: Receipt Number already exists!"); 
+    return; 
+}
     
     const newSchedule = [...localDB[currentIdx].schedule];
     newSchedule[duePayScheduleIdx].isPaid = true; 
@@ -1130,9 +1215,9 @@ function processQuickPay() {
 
     // --- UPDATED VALIDATION ---
     // Allow repetition of "-" but block other duplicates
-    if(receipt !== "-" && localHistory.some(h => h.rcpt === receipt)) {
-        return alert("Receipt Number exists!");
-    }
+    if(receipt !== "-" && receipt !== "." && localHistory.some(h => h.rcpt === receipt)) {
+    return alert("Receipt Number exists!");
+}
 
     const l = localDB.find(x => x.loanNo == no);
     if(!l) return alert("Loan Not Found");
@@ -1226,6 +1311,7 @@ setT('dashPrinRecv', Math.round(tPR).toLocaleString('en-IN'));
 setT('dashIntRecv', Math.round(tIR).toLocaleString('en-IN'));
 setT('dashPending', (tTotalExp - tC).toLocaleString('en-IN'));
 setT('dashInterest', tI.toLocaleString('en-IN'));
+setT('totalCount', localDB.length);
 
     if (currentIdx !== null) {
         setT('accountCounter', `${currentIdx + 1} / ${localDB.length}`);
@@ -1233,7 +1319,7 @@ setT('dashInterest', tI.toLocaleString('en-IN'));
 }
 
     function renderGivenList() { const tb = document.getElementById('givenTableBody'); tb.innerHTML = ''; localDB.forEach(x => tb.innerHTML += `<tr><td>${x.loanNo}</td><td>${x.loan.date}</td><td>${x.borrower}</td><td>${x.loan.principal}</td></tr>`); }
-    function renderHistory() { const tb = document.getElementById('qpHistoryBody'); tb.innerHTML = ''; localHistory.forEach(h => tb.innerHTML += `<tr><td>${h.date}</td><td>${h.loanNo}</td><td>${h.rcpt}</td><td>${h.amt}</td></tr>`); }
+    function renderHistory() { const tb = document.getElementById('qpHistoryBody'); tb.innerHTML = ''; [...localHistory].sort((a,b) => new Date(b.date) - new Date(a.date) || b.uid.localeCompare(a.uid)).forEach(h => tb.innerHTML += `<tr><td>${h.date}</td><td>${h.loanNo}</td><td>${h.rcpt}</td><td>${h.amt}</td></tr>`); }
     function filterLoans() { const q = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.loan-card').forEach(c => { c.parentElement.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; }); }
     function exportGiven() { let c="No,Date,Name,Amt\n"; localDB.forEach(x=>{c+=`${x.loanNo},${x.loan.date},${x.borrower},${x.loan.principal}\n`}); downloadCSV(c,"Given.csv"); }
     function exportReceived() { let c="Date,No,Rcpt,Amt\n"; localHistory.forEach(h=>{c+=`${h.date},${h.loanNo},${h.rcpt},${h.amt}\n`}); downloadCSV(c,"Received.csv"); }
@@ -1314,7 +1400,80 @@ document.addEventListener('keydown', (e) => {
     if (e.key === "ArrowRight") navigateAccount(1);
     if (e.key === "ArrowLeft") navigateAccount(-1);
 });
+function toggleMonthlyProgress() {
+    const card = document.getElementById('monthlyProgressCard');
+    const btn = document.getElementById('progressToggleBtn');
+    const isVisible = card.style.display !== 'none';
+    if(isVisible) {
+        card.style.display = 'none';
+        btn.style.background = '#185FA5';
+        btn.style.opacity = '1';
+    } else {
+        card.style.display = 'block';
+        btn.style.background = '#0d3f6e';
+        initMonthlyFilter();
+    }
+}
 
+function initMonthlyFilter() {
+    const mSel = document.getElementById('progressMonth');
+    const ySel = document.getElementById('progressYear');
+    if(!mSel || !ySel) return;
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const tamilMonths = ['ஜன','பிப்','மார்','ஏப்','மே','ஜூன்','ஜூல்','ஆக','செப்','அக்','நவ','டிச'];
+    const savedMonth = mSel.value;
+    const savedYear = ySel.value;
+    mSel.innerHTML = '';
+    months.forEach((m,i) => { const o = document.createElement('option'); o.value = i; o.text = curLang === 'ta' ? tamilMonths[i] : m; mSel.appendChild(o); });
+    ySel.innerHTML = '';
+    const yr = new Date().getFullYear();
+    for(let y = yr; y >= yr - 3; y--) { const o = document.createElement('option'); o.value = y; o.text = y; ySel.appendChild(o); }
+   mSel.value = savedMonth !== '' ? savedMonth : new Date().getMonth();
+    ySel.value = savedYear || yr;
+    renderMonthlyProgress();
+}
+
+function renderMonthlyProgress() {
+    const month = parseInt(document.getElementById('progressMonth').value);
+    const year = parseInt(document.getElementById('progressYear').value);
+    let mGiven = 0, mReceived = 0, mPrinRecv = 0, mIntRecv = 0, mPaid = 0, mDue = 0;
+
+    localDB.forEach(loan => {
+        const loanDate = new Date(loan.loan.date);
+        if(loanDate.getFullYear() === year && loanDate.getMonth() === month) {
+            mGiven += parseFloat(loan.loan.principal) || 0;
+        }
+        const totalInt = parseFloat(loan.loan.totalInt) || 0;
+        const numDues = parseInt(loan.loan.dues) || 1;
+        const intFactor = totalInt / numDues;
+
+        loan.schedule.forEach(s => {
+            const due = new Date(s.dueDate);
+            if(due.getFullYear() === year && due.getMonth() === month) {
+                mDue++;
+                if(s.isPaid) {
+                    mPaid++;
+                    const p = parseFloat(s.paidAmount) || 0;
+                    mReceived += p;
+                    const ir = p >= intFactor ? intFactor : p;
+                    mIntRecv += ir;
+                    mPrinRecv += (p - ir);
+                }
+            }
+        });
+    });
+
+    const fmt = v => '₹' + Math.round(v).toLocaleString('en-IN');
+    document.getElementById('mGiven').innerText = fmt(mGiven);
+    document.getElementById('mReceived').innerText = fmt(mReceived);
+    document.getElementById('mPrinRecv').innerText = fmt(mPrinRecv);
+    document.getElementById('mIntRecv').innerText = fmt(mIntRecv);
+    const pct = mDue > 0 ? Math.round((mPaid / mDue) * 100) : 0;
+    document.getElementById('mProgressBar').style.width = pct + '%';
+    document.getElementById('mProgressPct').innerText = pct + '%';
+    document.getElementById('mPaidCount').innerText = mPaid;
+    document.getElementById('mDueCount').innerText = (mDue - mPaid);
+}
 </script>
 </body>
 </html>
