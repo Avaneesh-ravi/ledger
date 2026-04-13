@@ -742,6 +742,18 @@
                                 <div class="fw-bold text-warning" id="mIntRecv">₹0</div>
                             </div>
                         </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;">
+                                <div class="small text-muted fw-bold" data-lang="prin_receivable" style="font-size:0.65rem;">PRIN. RECEIVABLE</div>
+                                <div class="fw-bold text-info" id="mPrinReceivable">₹0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;">
+                                <div class="small text-muted fw-bold" data-lang="int_receivable" style="font-size:0.65rem;">INT. RECEIVABLE</div>
+                                <div class="fw-bold text-danger" id="mIntReceivable">₹0</div>
+                            </div>
+                        </div>
                     </div>
                     <div style="background:#f8f9fa; border-radius:8px; padding:8px 12px;">
                         <div class="d-flex justify-content-between align-items-center mb-1">
@@ -1238,6 +1250,8 @@
                 monthly_progress: "Monthly Progress",
                 collection_progress: "Collection Progress",
                 progress: "Progress",
+                prin_receivable: "Prin. Receivable",
+                int_receivable: "Int. Receivable",
             },
             ta: {
                 given: "கொடுக்கப்பட்டது", received: "பெறப்பட்டது", balance: "நிலுவை", interest: "வட்டி மொத்தம்", accounts: "கணக்குகள்",
@@ -1255,6 +1269,8 @@
                 int_recv: "வட்டி வரவு", monthly_progress: "மாதாந்திர முன்னேற்றம்",
                 collection_progress: "வசூல் முன்னேற்றம்",
                 progress: "முன்னேற்றம்",
+                prin_receivable: "வர வேண்டிய அசல்",
+                int_receivable: "வர வேண்டிய வட்டி",
             }
         };
 
@@ -1929,6 +1945,7 @@
             const month = parseInt(document.getElementById('progressMonth').value);
             const year = parseInt(document.getElementById('progressYear').value);
             let mGiven = 0, mReceived = 0, mPrinRecv = 0, mIntRecv = 0, mPaid = 0, mDue = 0;
+            let mPrinReceivable = 0, mIntReceivable = 0;
 
             localDB.forEach(loan => {
                 const loanDate = new Date(loan.loan.date);
@@ -1943,6 +1960,9 @@
                     const due = new Date(s.dueDate);
                     if (due.getFullYear() === year && due.getMonth() === month) {
                         mDue++;
+                        const expAmt = parseFloat(s.expectedAmt) || 0;
+                        mIntReceivable += intFactor;
+                        mPrinReceivable += (expAmt - intFactor);
                         if (s.isPaid) {
                             mPaid++;
                         }
@@ -1966,6 +1986,8 @@
             document.getElementById('mReceived').innerText = fmt(mReceived);
             document.getElementById('mPrinRecv').innerText = fmt(mPrinRecv);
             document.getElementById('mIntRecv').innerText = fmt(mIntRecv);
+            document.getElementById('mPrinReceivable').innerText = fmt(mPrinReceivable);
+            document.getElementById('mIntReceivable').innerText = fmt(mIntReceivable);
             const pct = mDue > 0 ? Math.round((mPaid / mDue) * 100) : 0;
             document.getElementById('mProgressBar').style.width = pct + '%';
             document.getElementById('mProgressPct').innerText = pct + '%';
