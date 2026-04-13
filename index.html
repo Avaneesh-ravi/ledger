@@ -476,20 +476,20 @@
 
             <div class="mt-3 field-lbl" data-lang="remarks">Remarks</div><div class="field-val translatable" id="detailRemarks"></div>
 
-            <div class="table-responsive mt-3">
+           <div class="table-responsive mt-3" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <table class="table table-bordered table-sm text-center mb-0" style="font-size:0.75rem;">
                     <thead class="table-light">
     <tr>
         <th>#</th>
         <th data-lang="due_date">Due Date</th>
         <th data-lang="due">Due</th>
-        <th class="d-none d-md-table-cell" data-lang="penalty">Day/Penalty</th>
+       <th data-lang="penalty">Day/Penalty</th>
         <th data-lang="paid_date">Paid Date</th>
         <th data-lang="receipt">Rcpt</th>
         <th data-lang="paid">Paid</th>
-        <th class="d-none d-md-table-cell" style="background: #e3f2fd;" data-lang="prin_recv">Prin Recv</th>
-        <th class="d-none d-md-table-cell" style="background: #e8f5e9;" data-lang="int_recv">Int Recv</th>
-        <th class="d-none d-md-table-cell" style="background: #fff3e0;" data-lang="prin_bal">Prin Bal</th>
+        <th style="background: #e3f2fd;" data-lang="prin_recv">Prin Recv</th>
+<th style="background: #e8f5e9;" data-lang="int_recv">Int Recv</th>
+<th style="background: #fff3e0;" data-lang="prin_bal">Prin Bal</th>
         <th class="no-print">Action</th>
     </tr>
 </thead>
@@ -1073,13 +1073,13 @@ function renderScheduleTable(schedule, penaltyRate) {
                 <td>${s.sno}</td>
                 <td>${s.dueDate}</td>
                 <td class="fw-bold">₹${s.expectedAmt}</td>
-                <td class="d-none d-md-table-cell">${penaltyDisplay}</td>
+                <td>${penaltyDisplay}</td>
                 <td class="fw-bold">${s.paidDate || '-'}</td>
                 <td>${s.receiptNo || '-'}</td>
                 <td class="fw-bold text-success">${s.paidAmount || '-'}</td>
-                <td class="text-primary d-none d-md-table-cell">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
-                <td class="text-success d-none d-md-table-cell">${s.isPaid ? Math.round(intRecv) : '-'}</td>
-                <td class="fw-bold d-none d-md-table-cell">${s.isPaid ? Math.round(runningPrincipalBalance) : '-'}</td>
+                <td class="text-primary">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
+<td class="text-success">${s.isPaid ? Math.round(intRecv) : '-'}</td>
+<td class="fw-bold">${s.isPaid ? Math.round(runningPrincipalBalance) : '-'}</td>
                 <td class="no-print">${actionBtn}</td>
             </tr>`;
     });
