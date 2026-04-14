@@ -1325,18 +1325,18 @@
             if (!p) { showToast('No phone number', 'error'); return; }
             window.open(`tel:${p}`, '_self');
         }
-        function openWhatsApp(e, phone, msg) {
+        function openWhatsApp(e, phone, encodedMsg) {
             if (e) e.stopPropagation();
             const p = cleanPhoneForWa(phone);
             if (!p) { showToast('No phone number', 'error'); return; }
-            window.open(`https://wa.me/${p}?text=${encodeURIComponent(msg)}`, '_blank');
+            window.open(`https://wa.me/${p}?text=${encodedMsg}`, '_blank');
         }
-        function openSMS(e, phone, msg) {
+        function openSMS(e, phone, encodedMsg) {
             if (e) e.stopPropagation();
             const p = cleanPhoneForWa(phone);
             if (!p) { showToast('No phone number', 'error'); return; }
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            window.open(`sms:${p}${isIOS ? '&' : '?'}body=${encodeURIComponent(msg)}`, '_self');
+            window.open(`sms:${p}${isIOS ? '&' : '?'}body=${encodedMsg}`, '_self');
         }
 
         function getReminderMessage(loan, type = 'general', specificDue = null) {
@@ -1352,17 +1352,22 @@
                 }
             });
 
-            if (curLang === 'ta') {
-                if (type === 'due' && specificDue) {
-                    return `வணக்கம் ${loan.borrower}, உங்கள் கடன் எண் #${loan.loanNo}-க்கான தவணை தொகையான ₹${specificDue.amt} (${specificDue.date}) அன்று செலுத்த வேண்டியுள்ளது. மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}. அபராதம் தவிர்க்க உடனடியாக செலுத்தவும்.`;
-                }
-                return `வணக்கம் ${loan.borrower}, உங்கள் கடன் எண் #${loan.loanNo}-க்கான மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}.`;
+            let engMsg = '';
+            let tamMsg = '';
+
+            if (type === 'due' && specificDue) {
+                engMsg = `Hello ${loan.borrower}, your payment of ₹${specificDue.amt} for loan #${loan.loanNo} was due on ${specificDue.date}. Total Pending Balance: ₹${totalPending}. Pending Due Balance: ₹${pendingDue}. Please pay to avoid penalty.`;
+                tamMsg = `வணக்கம் ${loan.borrower}, உங்கள் கடன் எண் #${loan.loanNo}-க்கான தவணை தொகையான ₹${specificDue.amt} (${specificDue.date}) அன்று செலுத்த வேண்டியுள்ளது. மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}. அபராதம் தவிர்க்க உடனடியாக செலுத்தவும்.`;
+            } else if (type === 'guarantor') {
+                engMsg = `Hello ${loan.guarantor.name}, the loan #${loan.loanNo} for ${loan.borrower} has a Total Pending Balance of ₹${totalPending} and a Pending Due Balance of ₹${pendingDue}. Please remind them.`;
+                tamMsg = `வணக்கம் ${loan.guarantor.name}, ${loan.borrower} அவர்களின் கடன் எண் #${loan.loanNo}-க்கான மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}. தயவுசெய்து நினைவூட்டவும்.`;
             } else {
-                if (type === 'due' && specificDue) {
-                    return `Hello ${loan.borrower}, your payment of ₹${specificDue.amt} for loan #${loan.loanNo} was due on ${specificDue.date}. Total Pending Balance: ₹${totalPending}. Pending Due Balance: ₹${pendingDue}. Please pay to avoid penalty.`;
-                }
-                return `Hello ${loan.borrower}, your loan #${loan.loanNo} has a Total Pending Balance of ₹${totalPending} and a Pending Due Balance of ₹${pendingDue}.`;
+                engMsg = `Hello ${loan.borrower}, your loan #${loan.loanNo} has a Total Pending Balance of ₹${totalPending} and a Pending Due Balance of ₹${pendingDue}.`;
+                tamMsg = `வணக்கம் ${loan.borrower}, உங்கள் கடன் எண் #${loan.loanNo}-க்கான மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}.`;
             }
+
+            const combined = engMsg + '\n\n' + tamMsg;
+            return encodeURIComponent(combined).replace(/'/g, "%27");
         }
 
         // ============================================================
@@ -1929,6 +1934,7 @@
             const gEl = document.getElementById('detailGPhone');
             if (gEl) {
                 const gPhones = [d.guarantor.phone, d.guarantor.phone2].filter(Boolean);
+                const gReminderMsg = getReminderMessage(d, 'guarantor');
                 if (gPhones.length === 0) {
                     gEl.innerHTML = `<span>-</span>`;
                 } else {
@@ -1937,8 +1943,8 @@
                             <span class="fw-bold mb-1 mb-sm-0">${ph} ${gPhones.length > 1 ? `<span class="badge bg-light text-dark border ms-1">P${idx + 1}</span>` : ''}</span>
                             <div class="d-flex gap-2">
                                <button class="btn btn-outline-info rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openCall(event, '${ph}')" aria-label="Call"><i class="fas fa-phone small"></i></button>
-                               <button class="btn btn-outline-success rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openWhatsApp(event, '${ph}', '${reminderMsg}')" aria-label="WhatsApp"><i class="fab fa-whatsapp" style="font-size:1.1rem;"></i></button>
-                               <button class="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openSMS(event, '${ph}', '${reminderMsg}')" aria-label="SMS"><i class="fas fa-sms small"></i></button>
+                               <button class="btn btn-outline-success rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openWhatsApp(event, '${ph}', '${gReminderMsg}')" aria-label="WhatsApp"><i class="fab fa-whatsapp" style="font-size:1.1rem;"></i></button>
+                               <button class="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openSMS(event, '${ph}', '${gReminderMsg}')" aria-label="SMS"><i class="fas fa-sms small"></i></button>
                             </div>
                         </div>
                     `).join('');
