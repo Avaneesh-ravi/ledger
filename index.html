@@ -1340,34 +1340,58 @@
         }
 
         function getReminderMessage(loan, type = 'general', specificDue = null) {
-            const paid = loan.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
-            const totalPending = Math.max(0, (loan.loan.expected * loan.loan.dues) - paid);
+            const paidAmount = loan.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+            const totalExpected = loan.loan.expected * loan.loan.dues;
+            const balanceAmount = Math.max(0, totalExpected - paidAmount);
 
             const today = new Date(); today.setHours(0, 0, 0, 0);
-            let pendingDue = 0;
+            const penaltyRate = loan.penaltyRate !== undefined ? loan.penaltyRate : 5;
+
+            let delayedList = [];
+            let totalPenalty = 0;
+            let totalDaysLate = 0;
+            let paidDuesCount = 0;
+
             loan.schedule.forEach(s => {
-                const dueDt = new Date(s.dueDate); dueDt.setHours(0, 0, 0, 0);
-                if (!s.isPaid && today >= dueDt) {
-                    pendingDue += parseFloat(s.expectedAmt) || 0;
+                if (s.isPaid) {
+                    paidDuesCount++;
+                } else {
+                    const dueDt = new Date(s.dueDate); dueDt.setHours(0, 0, 0, 0);
+                    if (today > dueDt) {
+                        const daysLate = Math.ceil((today - dueDt) / 86400000);
+                        const expected = parseFloat(s.expectedAmt) || 0;
+                        const penalty = daysLate * penaltyRate;
+                        totalDaysLate += daysLate;
+                        totalPenalty += penalty;
+                        delayedList.push(`• தேதி: ${s.dueDate} | தொகை: ₹${expected} | தாமதம்: ${daysLate} நாட்கள் | அபராதம்: ₹${penalty}`);
+                    }
                 }
             });
 
-            let engMsg = '🏢 *Amman Consulting and Finance*\n\n';
-            let tamMsg = '🏢 *அம்மன் கன்சல்டிங் & பைனான்ஸ்*\n\n';
+            let unpaidDuesCount = (parseInt(loan.loan.dues) || 1) - paidDuesCount;
 
-            if (type === 'due' && specificDue) {
-                engMsg += `👋 Hello ${loan.borrower},\nYour payment of ₹${specificDue.amt} for loan #${loan.loanNo} was due on ${specificDue.date}.\n💰 Total Pending: ₹${totalPending}\n📉 Pending Due: ₹${pendingDue}\n⚠️ Please pay to avoid penalty.`;
-                tamMsg += `👋 வணக்கம் ${loan.borrower},\nஉங்கள் கடன் எண் #${loan.loanNo}-க்கான தவணை தொகையான ₹${specificDue.amt} (${specificDue.date}) அன்று செலுத்த வேண்டியுள்ளது.\n💰 மொத்த நிலுவை: ₹${totalPending}\n📉 தவணை நிலுவை: ₹${pendingDue}\n⚠️ அபராதம் தவிர்க்க உடனடியாக செலுத்தவும்.`;
-            } else if (type === 'guarantor') {
-                engMsg += `👋 Hello ${loan.guarantor.name},\nThe loan #${loan.loanNo} for ${loan.borrower} has a\n💰 Total Pending: ₹${totalPending}\n📉 Pending Due: ₹${pendingDue}\n🙏 Please remind them.`;
-                tamMsg += `👋 வணக்கம் ${loan.guarantor.name},\n${loan.borrower} அவர்களின் கடன் எண் #${loan.loanNo}-க்கான\n💰 மொத்த நிலுவை: ₹${totalPending}\n📉 தவணை நிலுவை: ₹${pendingDue}\n🙏 தயவுசெய்து நினைவூட்டவும்.`;
+            let tamMsg = '🏢 *அம்மன் கன்சல்டிங் & பைனான்ஸ்*\n\n';
+            let targetName = type === 'guarantor' ? loan.guarantor.name : loan.borrower;
+
+            tamMsg += `👋 வணக்கம் ${targetName},\n`;
+            if (type === 'guarantor') {
+                tamMsg += `${loan.borrower} அவர்களின் கடன் எண் #${loan.loanNo}-க்கான தவணை நினைவூட்டல்:\n\n`;
             } else {
-                engMsg += `👋 Hello ${loan.borrower},\nYour loan #${loan.loanNo} has a\n💰 Total Pending: ₹${totalPending}\n📉 Pending Due: ₹${pendingDue}`;
-                tamMsg += `👋 வணக்கம் ${loan.borrower},\nஉங்கள் கடன் எண் #${loan.loanNo}-க்கான\n💰 மொத்த நிலுவை: ₹${totalPending}\n📉 தவணை நிலுவை: ₹${pendingDue}`;
+                tamMsg += `உங்கள் கடன் எண் #${loan.loanNo}-க்கான தவணை நினைவூட்டல்:\n\n`;
             }
 
-            const combined = engMsg + '\n\n' + tamMsg;
-            return encodeURIComponent(combined).replace(/'/g, "%27");
+            tamMsg += `✅ செலுத்திய தொகை: ₹${paidAmount} (${paidDuesCount} தவணைகள்)\n`;
+            tamMsg += `💰 மொத்த நிலுவை: ₹${balanceAmount} (${unpaidDuesCount} தவணைகள்)\n`;
+
+            if (delayedList.length > 0) {
+                tamMsg += `\n⚠️ தாமதமான தவணைகள் (${delayedList.length}):\n${delayedList.join('\n')}\n`;
+                tamMsg += `\n⏳ தாமதமான நாட்கள் அளவீடு: ${totalDaysLate} நாட்கள்\n`;
+                tamMsg += `💸 அபராதத் தொகை: ₹${totalPenalty}\n`;
+            }
+
+            tamMsg += `\n🙏 அபராதம் தவிர்க்க உடனடியாக செலுத்தவும்.`;
+
+            return encodeURIComponent(tamMsg).replace(/'/g, "%27");
         }
 
         // ============================================================
@@ -1429,6 +1453,8 @@
         let isEditing = false;
         let editIdx = null;
         let duePayScheduleIdx = null;
+        let overdueIndices = [];
+        let activeNavList = null;
 
         // ============================================================
         // DATABASE LISTENERS
@@ -1521,6 +1547,8 @@
                 });
             });
 
+            overdueIndices = overdueItems.map(item => item.idx);
+
             notifBadge.style.display = overdueItems.length > 0 ? 'block' : 'none';
             notifBadge.innerText = overdueItems.length;
             noNotifs.style.display = overdueItems.length === 0 ? 'block' : 'none';
@@ -1557,7 +1585,15 @@
         }
 
         function openNotifModal() { new bootstrap.Modal(document.getElementById('notifModal')).show(); }
-        function openNotifLedger(idx) { bootstrap.Modal.getInstance(document.getElementById('notifModal')).hide(); viewLedger(idx); }
+        function openNotifLedger(idx) {
+            activeNavList = overdueIndices;
+            bootstrap.Modal.getInstance(document.getElementById('notifModal')).hide();
+            viewLedger(idx);
+        }
+        function openDashboardLedger(idx) {
+            activeNavList = null;
+            viewLedger(idx);
+        }
 
         // ============================================================
         // LANGUAGE TOGGLE
@@ -1627,7 +1663,7 @@
 
                 rows.push(`
             <div class="col-md-6">
-                <div class="loan-card ${loanPaid >= exp ? 'closed' : 'active'}" onclick="viewLedger(${i})" role="button" aria-label="View loan ${loan.loanNo}">
+                <div class="loan-card ${loanPaid >= exp ? 'closed' : 'active'}" onclick="openDashboardLedger(${i})" role="button" aria-label="View loan ${loan.loanNo}">
                     <div class="d-flex justify-content-between">
                         <strong>#${loan.loanNo}</strong>
                         <span>₹${fmtRaw(loanPaid)}/${fmtRaw(exp)}</span>
@@ -1710,14 +1746,17 @@
         // NAVIGATION — swipe + arrows + keyboard
         // ============================================================
         function navigateAccount(direction) {
-            if (localDB.length === 0 || currentIdx === null) return;
+            const listToUse = activeNavList || Array.from(localDB.keys());
+            if (listToUse.length === 0 || currentIdx === null) return;
             const ledger = document.querySelector('.ledger-sheet');
             ledger.classList.add(direction === 1 ? 'slide-out-left' : 'slide-out-right');
             setTimeout(() => {
-                let nextIdx = currentIdx + direction;
-                if (nextIdx >= localDB.length) nextIdx = 0;
-                if (nextIdx < 0) nextIdx = localDB.length - 1;
-                viewLedger(nextIdx);
+                let pos = listToUse.indexOf(currentIdx);
+                if (pos === -1) pos = 0;
+                let nextPos = pos + direction;
+                if (nextPos >= listToUse.length) nextPos = 0;
+                if (nextPos < 0) nextPos = listToUse.length - 1;
+                viewLedger(listToUse[nextPos]);
                 ledger.classList.remove('slide-out-left', 'slide-out-right');
                 window.scrollTo(0, 0);
             }, NAV_ANIM_DELAY);
@@ -1987,7 +2026,14 @@
             }
             switchTab('viewLedger');
             const counter = document.getElementById('accountCounter');
-            if (counter) counter.innerText = `${idx + 1} / ${localDB.length}`;
+            if (counter) {
+                if (activeNavList) {
+                    const pos = activeNavList.indexOf(idx) + 1;
+                    counter.innerText = `${pos} / ${activeNavList.length} (Delayed)`;
+                } else {
+                    counter.innerText = `${idx + 1} / ${localDB.length}`;
+                }
+            }
         }
 
         // ============================================================
