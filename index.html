@@ -1311,6 +1311,61 @@
         const debouncedFilter = debounce(filterLoans, DEBOUNCE_DELAY);
 
         // ============================================================
+        // SMS & WHATSAPP HELPERS
+        // ============================================================
+        function cleanPhoneForWa(phone) {
+            if (!phone) return '';
+            let p = String(phone).replace(/[^0-9]/g, '');
+            if (p.length === 10) return '91' + p;
+            return p;
+        }
+        function openCall(e, phone) {
+            if (e) e.stopPropagation();
+            let p = String(phone).replace(/[^0-9+]/g, '');
+            if (!p) { showToast('No phone number', 'error'); return; }
+            window.open(`tel:${p}`, '_self');
+        }
+        function openWhatsApp(e, phone, msg) {
+            if (e) e.stopPropagation();
+            const p = cleanPhoneForWa(phone);
+            if (!p) { showToast('No phone number', 'error'); return; }
+            window.open(`https://wa.me/${p}?text=${encodeURIComponent(msg)}`, '_blank');
+        }
+        function openSMS(e, phone, msg) {
+            if (e) e.stopPropagation();
+            const p = cleanPhoneForWa(phone);
+            if (!p) { showToast('No phone number', 'error'); return; }
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            window.open(`sms:${p}${isIOS ? '&' : '?'}body=${encodeURIComponent(msg)}`, '_self');
+        }
+
+        function getReminderMessage(loan, type = 'general', specificDue = null) {
+            const paid = loan.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+            const totalPending = Math.max(0, (loan.loan.expected * loan.loan.dues) - paid);
+
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            let pendingDue = 0;
+            loan.schedule.forEach(s => {
+                const dueDt = new Date(s.dueDate); dueDt.setHours(0, 0, 0, 0);
+                if (!s.isPaid && today >= dueDt) {
+                    pendingDue += parseFloat(s.expectedAmt) || 0;
+                }
+            });
+
+            if (curLang === 'ta') {
+                if (type === 'due' && specificDue) {
+                    return `வணக்கம் ${loan.borrower}, உங்கள் கடன் எண் #${loan.loanNo}-க்கான தவணை தொகையான ₹${specificDue.amt} (${specificDue.date}) அன்று செலுத்த வேண்டியுள்ளது. மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}. அபராதம் தவிர்க்க உடனடியாக செலுத்தவும்.`;
+                }
+                return `வணக்கம் ${loan.borrower}, உங்கள் கடன் எண் #${loan.loanNo}-க்கான மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}.`;
+            } else {
+                if (type === 'due' && specificDue) {
+                    return `Hello ${loan.borrower}, your payment of ₹${specificDue.amt} for loan #${loan.loanNo} was due on ${specificDue.date}. Total Pending Balance: ₹${totalPending}. Pending Due Balance: ₹${pendingDue}. Please pay to avoid penalty.`;
+                }
+                return `Hello ${loan.borrower}, your loan #${loan.loanNo} has a Total Pending Balance of ₹${totalPending} and a Pending Due Balance of ₹${pendingDue}.`;
+            }
+        }
+
+        // ============================================================
         // FIREBASE CONFIGURATION
         // ============================================================
         const firebaseConfig = {
@@ -1466,14 +1521,34 @@
             noNotifs.style.display = overdueItems.length === 0 ? 'block' : 'none';
 
             // Build all HTML at once — no innerHTML += in loop
-            notifList.innerHTML = overdueItems.map(item => `
+            notifList.innerHTML = overdueItems.map(item => {
+                const loan = localDB[item.idx];
+                const phones = [loan.borrowerInfo.phone, loan.borrowerInfo.phone2].filter(Boolean);
+                const sched = loan.schedule.find(s => s.dueDate === item.date) || loan.schedule[0];
+                const msg = getReminderMessage(loan, 'due', { amt: sched.expectedAmt, date: item.date });
+
+                const buttonsHtml = phones.map((ph, idx) => `
+                <div class="d-flex gap-2 justify-content-end mb-2 mt-1">
+                   ${phones.length > 1 ? `<span class="badge bg-light text-dark border align-self-center">P${idx + 1}</span>` : ''}
+                   <button class="btn btn-outline-info rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openCall(event, '${ph}')" aria-label="Call"><i class="fas fa-phone small"></i></button>
+                   <button class="btn btn-outline-success rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openWhatsApp(event, '${ph}', '${msg}')" aria-label="WhatsApp"><i class="fab fa-whatsapp" style="font-size:1.1rem;"></i></button>
+                   <button class="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openSMS(event, '${ph}', '${msg}')" aria-label="SMS"><i class="fas fa-sms small"></i></button>
+                </div>`).join('');
+
+                return `
         <div class="list-group-item notif-item p-3" onclick="openNotifLedger(${item.idx})" role="button">
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <h6 class="mb-1 fw-bold text-danger">#${item.no} - ${item.name}</h6>
                 <small class="badge bg-danger">${item.days} Days Late</small>
             </div>
-            <small class="text-muted">Due Date: ${item.date}</small>
-        </div>`).join('');
+            <div class="d-flex justify-content-between align-items-center mt-2">
+                <small class="text-muted">Due Date: ${item.date}</small>
+                <div>
+                   ${buttonsHtml}
+                </div>
+            </div>
+        </div>`;
+            }).join('');
         }
 
         function openNotifModal() { new bootstrap.Modal(document.getElementById('notifModal')).show(); }
@@ -1820,7 +1895,33 @@
             setText('detailBName', d.borrower);
             setText('detailBFather', d.borrowerInfo.father);
             setText('detailBAddress', d.borrowerInfo.address);
-            setText('detailBPhone', [d.borrowerInfo.phone, d.borrowerInfo.phone2].filter(Boolean).join(' / '));
+
+            // Compute paid early for SMS template
+            const paid = d.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+            const balance = (d.loan.expected * d.loan.dues) - paid;
+            const primaryPhone = d.borrowerInfo.phone || d.borrowerInfo.phone2 || '';
+            const allPhones = [d.borrowerInfo.phone, d.borrowerInfo.phone2].filter(Boolean).join(' / ');
+            const reminderMsg = getReminderMessage(d, 'general');
+
+            const pEl = document.getElementById('detailBPhone');
+            if (pEl) {
+                const phones = [d.borrowerInfo.phone, d.borrowerInfo.phone2].filter(Boolean);
+                if (phones.length === 0) {
+                    pEl.innerHTML = `<span>-</span>`;
+                } else {
+                    pEl.innerHTML = phones.map((ph, idx) => `
+                        <div class="d-flex flex-wrap flex-sm-nowrap justify-content-between align-items-center mt-2">
+                            <span class="fw-bold mb-1 mb-sm-0">${ph} ${phones.length > 1 ? `<span class="badge bg-light text-dark border ms-1">P${idx + 1}</span>` : ''}</span>
+                            <div class="d-flex gap-2">
+                               <button class="btn btn-outline-info rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openCall(event, '${ph}')" aria-label="Call"><i class="fas fa-phone small"></i></button>
+                               <button class="btn btn-outline-success rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openWhatsApp(event, '${ph}', '${reminderMsg}')" aria-label="WhatsApp"><i class="fab fa-whatsapp" style="font-size:1.1rem;"></i></button>
+                               <button class="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:36px;height:36px;" onclick="openSMS(event, '${ph}', '${reminderMsg}')" aria-label="SMS"><i class="fas fa-sms small"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+
             setText('detailBId', d.borrowerInfo.idProof);
             setText('detailGName', d.guarantor.name);
             setText('detailGFather', d.guarantor.father);
@@ -1840,8 +1941,7 @@
             document.getElementById('detailPercent').innerText = d.loan.percent;
             document.getElementById('detailTotalInt').innerText = fmtRaw(d.loan.totalInt);
 
-            const paid = d.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
-            document.getElementById('detailRemaining').innerText = fmtRaw((d.loan.expected * d.loan.dues) - paid);
+            document.getElementById('detailRemaining').innerText = fmtRaw(balance);
 
             let remText = d.loan.remarks || '';
             if (d.borrowerInfo.prevLoan) remText = '[PREV: ' + d.borrowerInfo.prevLoan + '] ' + remText;
@@ -1894,11 +1994,26 @@
                     runningPrinBalance -= prinRecv;
                     actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})" aria-label="Edit transaction ${s.sno}"><i class="fas fa-pen"></i></button>`;
                 } else {
+                    let reminderIcons = '';
                     if (today > due) {
                         const ld = Math.ceil((today - due) / 86400000);
                         penaltyDisplay = `<span class="text-danger small fw-bold">${ld}d (₹${ld * penaltyRate})</span>`;
+                        const phones = [d.borrowerInfo.phone, d.borrowerInfo.phone2].filter(Boolean);
+                        if (phones.length > 0) {
+                            const msg = getReminderMessage(d, 'due', { amt: s.expectedAmt, date: s.dueDate });
+                            reminderIcons = phones.map((ph, idx) => `
+                            <div class="mt-2 d-flex gap-1 justify-content-center align-items-center">
+                               ${phones.length > 1 ? `<span class="badge bg-light text-dark border px-1 py-1" style="font-size:0.6rem;">P${idx + 1}</span>` : ''}
+                               <button class="btn btn-outline-info rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:32px;height:32px;" onclick="openCall(event, '${ph}')" aria-label="Call"><i class="fas fa-phone small"></i></button>
+                               <button class="btn btn-outline-success rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:32px;height:32px;" onclick="openWhatsApp(event, '${ph}', '${msg}')" aria-label="WhatsApp"><i class="fab fa-whatsapp" style="font-size:1rem;"></i></button>
+                               <button class="btn btn-outline-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm p-0 flex-shrink-0" style="width:32px;height:32px;" onclick="openSMS(event, '${ph}', '${msg}')" aria-label="SMS"><i class="fas fa-sms small"></i></button>
+                            </div>`).join('');
+                        }
                     }
-                    actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="openDueModal(${i})" aria-label="Record payment for due ${s.sno}">Pay</button>`;
+                    actionBtn = `<div class="d-flex flex-column align-items-center">
+                        <button class="btn btn-sm btn-outline-success w-100" onclick="openDueModal(${i})" aria-label="Record payment for due ${s.sno}">Pay</button>
+                        ${reminderIcons}
+                    </div>`;
                 }
 
                 rows.push(`<tr>
