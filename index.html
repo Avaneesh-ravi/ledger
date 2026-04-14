@@ -1352,18 +1352,18 @@
                 }
             });
 
-            let engMsg = '';
-            let tamMsg = '';
+            let engMsg = '🏢 *Amman Consulting and Finance*\n\n';
+            let tamMsg = '🏢 *அம்மன் கன்சல்டிங் & பைனான்ஸ்*\n\n';
 
             if (type === 'due' && specificDue) {
-                engMsg = `Hello ${loan.borrower}, your payment of ₹${specificDue.amt} for loan #${loan.loanNo} was due on ${specificDue.date}. Total Pending Balance: ₹${totalPending}. Pending Due Balance: ₹${pendingDue}. Please pay to avoid penalty.`;
-                tamMsg = `வணக்கம் ${loan.borrower}, உங்கள் கடன் எண் #${loan.loanNo}-க்கான தவணை தொகையான ₹${specificDue.amt} (${specificDue.date}) அன்று செலுத்த வேண்டியுள்ளது. மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}. அபராதம் தவிர்க்க உடனடியாக செலுத்தவும்.`;
+                engMsg += `👋 Hello ${loan.borrower},\nYour payment of ₹${specificDue.amt} for loan #${loan.loanNo} was due on ${specificDue.date}.\n💰 Total Pending: ₹${totalPending}\n📉 Pending Due: ₹${pendingDue}\n⚠️ Please pay to avoid penalty.`;
+                tamMsg += `👋 வணக்கம் ${loan.borrower},\nஉங்கள் கடன் எண் #${loan.loanNo}-க்கான தவணை தொகையான ₹${specificDue.amt} (${specificDue.date}) அன்று செலுத்த வேண்டியுள்ளது.\n💰 மொத்த நிலுவை: ₹${totalPending}\n📉 தவணை நிலுவை: ₹${pendingDue}\n⚠️ அபராதம் தவிர்க்க உடனடியாக செலுத்தவும்.`;
             } else if (type === 'guarantor') {
-                engMsg = `Hello ${loan.guarantor.name}, the loan #${loan.loanNo} for ${loan.borrower} has a Total Pending Balance of ₹${totalPending} and a Pending Due Balance of ₹${pendingDue}. Please remind them.`;
-                tamMsg = `வணக்கம் ${loan.guarantor.name}, ${loan.borrower} அவர்களின் கடன் எண் #${loan.loanNo}-க்கான மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}. தயவுசெய்து நினைவூட்டவும்.`;
+                engMsg += `👋 Hello ${loan.guarantor.name},\nThe loan #${loan.loanNo} for ${loan.borrower} has a\n💰 Total Pending: ₹${totalPending}\n📉 Pending Due: ₹${pendingDue}\n🙏 Please remind them.`;
+                tamMsg += `👋 வணக்கம் ${loan.guarantor.name},\n${loan.borrower} அவர்களின் கடன் எண் #${loan.loanNo}-க்கான\n💰 மொத்த நிலுவை: ₹${totalPending}\n📉 தவணை நிலுவை: ₹${pendingDue}\n🙏 தயவுசெய்து நினைவூட்டவும்.`;
             } else {
-                engMsg = `Hello ${loan.borrower}, your loan #${loan.loanNo} has a Total Pending Balance of ₹${totalPending} and a Pending Due Balance of ₹${pendingDue}.`;
-                tamMsg = `வணக்கம் ${loan.borrower}, உங்கள் கடன் எண் #${loan.loanNo}-க்கான மொத்த நிலுவை தொகை: ₹${totalPending}. தவணை நிலுவை தொகை: ₹${pendingDue}.`;
+                engMsg += `👋 Hello ${loan.borrower},\nYour loan #${loan.loanNo} has a\n💰 Total Pending: ₹${totalPending}\n📉 Pending Due: ₹${pendingDue}`;
+                tamMsg += `👋 வணக்கம் ${loan.borrower},\nஉங்கள் கடன் எண் #${loan.loanNo}-க்கான\n💰 மொத்த நிலுவை: ₹${totalPending}\n📉 தவணை நிலுவை: ₹${pendingDue}`;
             }
 
             const combined = engMsg + '\n\n' + tamMsg;
