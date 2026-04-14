@@ -8,90 +8,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <style>
-        /* Navigation Arrows - Visible only on Desktop/Laptop */
-        .nav-arrow {
-            position: fixed;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
-            background: rgba(30, 70, 32, 0.1);
-            color: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.3s;
-            z-index: 1000;
-            border: none;
-        }
-
-        .nav-arrow:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .arrow-left {
-            left: 20px;
-        }
-
-        .arrow-right {
-            right: 20px;
-        }
-
-        /* Hide arrows on mobile */
-        @media (max-width: 992px) {
-            .nav-arrow {
-                display: none;
-            }
-        }
-
-        /* Ledger transition effect */
-        .ledger-sheet {
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .slide-out-left {
-            transform: translateX(-100px);
-            opacity: 0;
-        }
-
-        .slide-out-right {
-            transform: translateX(100px);
-            opacity: 0;
-        }
-
-
-        .ledger-sheet {
-            transition: opacity 0.2s ease-in-out;
-        }
-
-        #viewLedger {
-            touch-action: pan-y;
-            /* Critical: Allows native vertical scrolling while we handle horizontal */
-            user-select: none;
-            transition: opacity 0.15s ease-in-out;
-        }
-
-        /* Optional: Add a visual hint that the page is swipeable */
-        .ledger-sheet {
-            position: relative;
-            overflow-x: hidden;
-        }
-
-
+        /* ===== CSS VARIABLES — single source of truth ===== */
         :root {
             --primary: #1e4620;
             --accent: #2e7d32;
             --bg-gray: #f8f9fa;
             --text-main: #2c3e50;
+            --swipe-threshold: 100px;
+            /* named constant mirrored in JS */
         }
 
         body {
@@ -101,6 +30,7 @@
             color: var(--text-main);
         }
 
+        /* ===== HEADER ===== */
         .header-bar {
             background: white;
             padding: 12px 20px;
@@ -121,6 +51,7 @@
             font-size: 1.1rem;
         }
 
+        /* ===== LOADER ===== */
         #loader {
             position: fixed;
             top: 0;
@@ -154,8 +85,9 @@
             }
         }
 
+        /* ===== STAT CARD ===== */
         .stat-card {
-            background: linear-gradient(145deg, #1e4620, #2e7d32);
+            background: linear-gradient(145deg, var(--primary), var(--accent));
             color: white;
             border-radius: 16px;
             padding: 20px;
@@ -175,6 +107,7 @@
             letter-spacing: 0.5px;
         }
 
+        /* ===== LOAN CARD ===== */
         .loan-card {
             background: white;
             border: 1px solid #e0e0e0;
@@ -199,6 +132,7 @@
             opacity: 0.8;
         }
 
+        /* ===== LEDGER SHEET (merged — was 3 separate blocks) ===== */
         .ledger-sheet {
             background: white;
             border: 1px solid #ddd;
@@ -208,8 +142,72 @@
             max-width: 900px;
             margin-left: auto;
             margin-right: auto;
+            position: relative;
+            overflow-x: hidden;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
+        .slide-out-left {
+            transform: translateX(-100px);
+            opacity: 0;
+        }
+
+        .slide-out-right {
+            transform: translateX(100px);
+            opacity: 0;
+        }
+
+        /* ===== VIEW LEDGER WRAPPER ===== */
+        #viewLedger {
+            touch-action: pan-y;
+            user-select: none;
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+            transition: opacity 0.15s ease-in-out;
+        }
+
+        /* ===== NAV ARROWS (desktop only) ===== */
+        .nav-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(30, 70, 32, 0.1);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            z-index: 1000;
+            border: none;
+        }
+
+        .nav-arrow:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .arrow-left {
+            left: 20px;
+        }
+
+        .arrow-right {
+            right: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .nav-arrow {
+                display: none;
+            }
+        }
+
+        /* ===== FINANCIAL SUMMARY GRID ===== */
         .fin-summary {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -260,6 +258,7 @@
             margin: 0 auto 5px;
         }
 
+        /* ===== PENALTY CARD ===== */
         .penalty-card {
             background-color: #fff5f5;
             border: 1px solid #ffc9c9;
@@ -294,6 +293,7 @@
             border-radius: 4px;
         }
 
+        /* ===== NOTIFICATION ===== */
         .notif-btn {
             position: relative;
             margin-right: 15px;
@@ -319,6 +319,7 @@
             background: #ffeaea;
         }
 
+        /* ===== BOTTOM NAV ===== */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -342,6 +343,13 @@
             color: var(--accent);
         }
 
+        .add-btn-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         .add-btn {
             width: 55px;
             height: 55px;
@@ -354,8 +362,10 @@
             font-size: 24px;
             margin-top: -30px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
         }
 
+        /* ===== CAMERA ===== */
         .camera-video {
             width: 100%;
             height: 250px;
@@ -378,6 +388,7 @@
             margin-left: 2px;
         }
 
+        /* ===== PRINT ===== */
         @media print {
             * {
                 -webkit-print-color-adjust: exact !important;
@@ -406,28 +417,7 @@
             }
         }
 
-        /* Ensures the container stays stable during the swipe animation */
-        #viewLedger {
-            overflow-x: hidden;
-            width: 100%;
-            position: relative;
-        }
-
-        /* Prevent accidental text selection during fast swiping on mobile */
-        .ledger-sheet {
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        /* Fix 4a: Bottom nav add button alignment */
-        .add-btn-wrapper {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Fix 4b: Photo and text size on small screens */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .photo-box {
                 width: 65px;
@@ -441,10 +431,7 @@
             .field-lbl {
                 font-size: 0.6rem;
             }
-        }
 
-        /* Fix 4c: Fin summary 2-column on small screens */
-        @media (max-width: 480px) {
             .fin-summary {
                 grid-template-columns: repeat(2, 1fr);
             }
@@ -465,53 +452,164 @@
                 border-bottom: 1px solid #000;
             }
         }
+
+        /* ===== CUSTOM TOAST (replaces alert()) ===== */
+        #toastContainer {
+            position: fixed;
+            top: 70px;
+            right: 16px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast-msg {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            animation: slideIn 0.25s ease;
+            pointer-events: auto;
+            max-width: 320px;
+        }
+
+        .toast-success {
+            background: var(--accent);
+        }
+
+        .toast-error {
+            background: #c62828;
+        }
+
+        .toast-info {
+            background: #185FA5;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(60px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(60px);
+            }
+        }
+
+        /* ===== CUSTOM CONFIRM DIALOG (replaces confirm()) ===== */
+        #confirmOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #confirmOverlay.show {
+            display: flex;
+        }
+
+        #confirmBox {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 28px;
+            max-width: 320px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+        }
+
+        #confirmBox h6 {
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        #confirmBox p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
 <body>
 
+    <!-- ===== CUSTOM TOAST CONTAINER ===== -->
+    <div id="toastContainer" role="status" aria-live="polite"></div>
 
+    <!-- ===== CUSTOM CONFIRM DIALOG ===== -->
+    <div id="confirmOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+        <div id="confirmBox">
+            <h6 id="confirmTitle">Are you sure?</h6>
+            <p id="confirmMsg"></p>
+            <div class="d-flex gap-2 justify-content-center">
+                <button id="confirmNo" class="btn btn-light px-4" onclick="resolveConfirm(false)">Cancel</button>
+                <button id="confirmYes" class="btn btn-danger px-4" onclick="resolveConfirm(true)">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== LOGIN OVERLAY ===== -->
     <div id="loginOverlay"
-        style="position:fixed; top:0; left:0; width:100%; height:100%; background:#f8f9fa; z-index:9999; display:flex; justify-content:center; align-items:center;">
-        <div class="card shadow-lg p-4" style="width:320px; border-radius:15px;">
+        style="position:fixed;top:0;left:0;width:100%;height:100%;background:#f8f9fa;z-index:9999;display:flex;justify-content:center;align-items:center;">
+        <div class="card shadow-lg p-4" style="width:320px;border-radius:15px;">
             <div class="text-center mb-4">
-                <i class="fas fa-cloud-lock fa-3x text-primary mb-2"></i>
+                <i class="fas fa-cloud fa-3x text-success mb-2"></i>
                 <h5 class="fw-bold">Finance Admin</h5>
             </div>
             <form onsubmit="event.preventDefault(); handleLogin();">
-                <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Admin Email" required>
-                <input type="password" id="loginPass" class="form-control mb-3" placeholder="Password" required>
-                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">ENTER CLOUD</button>
+                <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Admin Email" required
+                    autocomplete="email">
+                <input type="password" id="loginPass" class="form-control mb-3" placeholder="Password" required
+                    autocomplete="current-password">
+                <button type="submit" class="btn btn-success w-100 py-2 fw-bold">ENTER CLOUD</button>
             </form>
         </div>
     </div>
 
+    <!-- ===== LOADER ===== -->
     <div id="loader">
         <div class="spinner"></div>
         <div class="mt-3 fw-bold text-muted">Connecting to Database...</div>
     </div>
 
+    <!-- ===== HEADER ===== -->
     <div class="header-bar">
         <div class="app-title"><i class="fas fa-cloud me-2"></i>Finance Cloud</div>
         <div class="d-flex align-items-center">
-            <div class="notif-btn" onclick="openNotifModal()">
+            <div class="notif-btn" onclick="openNotifModal()" role="button" aria-label="View delayed payments">
                 <i class="fas fa-bell fa-lg text-secondary"></i>
                 <span id="notifBadge" class="badge rounded-pill bg-danger notif-badge" style="display:none;">0</span>
             </div>
             <div class="lang-switch fw-bold text-primary me-3" onclick="toggleLang()" id="langBtn"
-                style="cursor:pointer; font-size:0.9rem;">EN / தமிழ்</div>
-
-            <button class="btn btn-outline-danger btn-sm" onclick="handleLogout()">
+                style="cursor:pointer;font-size:0.9rem;" role="button" aria-label="Toggle language">EN / தமிழ்</div>
+            <button class="btn btn-outline-danger btn-sm" onclick="handleLogout()" aria-label="Logout">
                 <i class="fas fa-sign-out-alt"></i>
-                <span class="d-none d-sm-inline">Logout</span>
+                <span class="d-none d-sm-inline"> Logout</span>
             </button>
-
-            <i class="fas fa-sync action-icon text-secondary ms-3" onclick="location.reload()"></i>
+            <i class="fas fa-sync action-icon text-secondary ms-3" onclick="location.reload()" role="button"
+                aria-label="Refresh" style="cursor:pointer;"></i>
         </div>
     </div>
 
+    <!-- ===== MAIN CONTAINER ===== -->
     <div class="container pt-4">
 
+        <!-- DASHBOARD -->
         <div id="viewDashboard">
             <div class="stat-card">
                 <div class="row text-center g-3">
@@ -523,11 +621,9 @@
                         <div class="stat-label" data-lang="received">Received</div>
                         <div class="stat-val">₹<span id="dashCollected">0</span></div>
                     </div>
-
                     <div class="col-12">
                         <hr class="my-1 border-white border-opacity-25">
                     </div>
-
                     <div class="col-6 border-end border-white border-opacity-25">
                         <div class="stat-label text-info" data-lang="prin_recv">Prin. Received</div>
                         <div class="stat-val text-info">₹<span id="dashPrinRecv">0</span></div>
@@ -536,11 +632,9 @@
                         <div class="stat-label text-warning" data-lang="int_recv">Int. Received</div>
                         <div class="stat-val text-warning">₹<span id="dashIntRecv">0</span></div>
                     </div>
-
                     <div class="col-12">
                         <hr class="my-1 border-white border-opacity-25">
                     </div>
-
                     <div class="col-6 border-end border-white border-opacity-25">
                         <div class="stat-label text-warning" data-lang="balance">Balance</div>
                         <div class="stat-val text-warning">₹<span id="dashPending">0</span></div>
@@ -551,21 +645,28 @@
                     </div>
                 </div>
             </div>
-
             <div class="mb-4 position-relative">
-                <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 12px;"></i>
+                <i class="fas fa-search position-absolute text-muted" style="left:15px;top:12px;"></i>
                 <input type="text" id="searchInput" class="form-control rounded-pill ps-5"
-                    placeholder="Search accounts..." onkeyup="filterLoans()">
+                    placeholder="Search accounts..." oninput="debouncedFilter()" aria-label="Search accounts">
             </div>
-            <h6 class="fw-bold text-muted small mb-3"><span data-lang="accounts">ACCOUNTS</span> (<span
-                    id="totalCount">0</span>)</h6>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 id="filterAllLbl" class="fw-bold small m-0 text-primary"
+                    style="cursor:pointer; text-decoration:underline;" onclick="setFilterMode('all')"><span
+                        data-lang="accounts">ACCOUNTS</span> (<span id="totalCount">0</span>)</h6>
+                <h6 id="filterClosedLbl" class="fw-bold text-muted small m-0" style="cursor:pointer;"
+                    onclick="setFilterMode('closed')"><span data-lang="closed_accounts">CLOSED</span> (<span
+                        id="closedCount">0</span>)</h6>
+            </div>
             <div class="row g-3" id="loansList"></div>
         </div>
 
+        <!-- GIVEN LIST -->
         <div id="viewGiven" class="d-none">
             <div class="d-flex justify-content-between mb-3">
                 <h5 class="fw-bold" data-lang="disbursement_report">Disbursement Report</h5>
-                <button class="btn btn-success btn-sm" onclick="exportGiven()">Excel</button>
+                <button class="btn btn-success btn-sm" onclick="exportGiven()"
+                    aria-label="Export to Excel">Excel</button>
             </div>
             <div class="table-responsive bg-white rounded shadow-sm">
                 <table class="table table-striped mb-0 text-center">
@@ -582,24 +683,26 @@
             </div>
         </div>
 
+        <!-- QUICK PAY -->
         <div id="viewQuickPay" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h5 class="fw-bold m-0" style="color: var(--primary);"><i class="fas fa-wallet me-2"></i><span
+                <h5 class="fw-bold m-0" style="color:var(--primary);"><i class="fas fa-wallet me-2"></i><span
                         data-lang="collection">Collection</span></h5>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-sm rounded-pill px-3 fw-bold" id="progressToggleBtn"
-                        style="background:#185FA5; color:white; border:none;" onclick="toggleMonthlyProgress()">
+                    <button class="btn btn-sm rounded-pill px-3 fw-bold"
+                        style="background:#185FA5;color:white;border:none;" onclick="toggleMonthlyProgress()"
+                        aria-label="Show monthly progress">
                         <i class="fas fa-chart-bar me-1"></i><span data-lang="progress">Progress</span>
                     </button>
-                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="exportReceived()">
+                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="exportReceived()"
+                        aria-label="Export received to Excel">
                         <i class="fas fa-file-excel me-1"></i> Excel
                     </button>
                 </div>
             </div>
-
-            <div class="card border-0 shadow-sm mb-4 overflow-hidden" style="border-radius: 16px;">
-                <div class="p-3 text-white" style="background: linear-gradient(135deg, var(--primary), var(--accent));">
-                    <h6 class="m-0 fw-600"><i class="fas fa-plus-circle me-2"></i><span data-lang="new_payment">New
+            <div class="card border-0 shadow-sm mb-4 overflow-hidden" style="border-radius:16px;">
+                <div class="p-3 text-white" style="background:linear-gradient(135deg, var(--primary), var(--accent));">
+                    <h6 class="m-0 fw-bold"><i class="fas fa-plus-circle me-2"></i><span data-lang="new_payment">New
                             Payment</span></h6>
                 </div>
                 <div class="card-body p-3 bg-white">
@@ -610,15 +713,14 @@
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-light border-end-0"><i
                                         class="fas fa-hashtag"></i></span>
-                                <input type="text" id="qpLoanNo"
-                                    class="form-control fw-bold mandatory-qp border-start-0" onblur="fetchDetails()"
-                                    placeholder="001">
+                                <input type="text" id="qpLoanNo" class="form-control fw-bold border-start-0"
+                                    onblur="fetchDetails()" placeholder="001" aria-label="Loan number">
                             </div>
                         </div>
                         <div class="col-8">
                             <label class="small fw-bold text-muted mb-1" data-lang="borrower">Borrower</label>
                             <input type="text" id="qpName" class="form-control form-control-sm bg-light fw-500" readonly
-                                placeholder="Name will appear...">
+                                placeholder="Name will appear..." aria-label="Borrower name (auto-filled)">
                         </div>
                         <div class="col-6">
                             <label class="small fw-bold text-muted mb-1"><span data-lang="date">Date</span> <span
@@ -626,7 +728,8 @@
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-light border-end-0"><i
                                         class="fas fa-calendar-alt"></i></span>
-                                <input type="date" id="qpDate" class="form-control mandatory-qp border-start-0">
+                                <input type="date" id="qpDate" class="form-control border-start-0"
+                                    aria-label="Payment date">
                             </div>
                         </div>
                         <div class="col-6">
@@ -636,7 +739,8 @@
                                 <span class="input-group-text bg-light border-end-0"><i
                                         class="fas fa-indian-rupee-sign"></i></span>
                                 <input type="number" id="qpAmount"
-                                    class="form-control fw-bold text-success mandatory-qp border-start-0">
+                                    class="form-control fw-bold text-success border-start-0"
+                                    aria-label="Payment amount">
                             </div>
                         </div>
                         <div class="col-12">
@@ -645,9 +749,10 @@
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text bg-light border-end-0"><i
                                         class="fas fa-receipt"></i></span>
-                                <input type="text" id="qpRcpt" class="form-control mandatory-qp border-start-0"
+                                <input type="text" id="qpRcpt" class="form-control border-start-0"
                                     placeholder="Enter Receipt No" inputmode="decimal" pattern="[0-9.\-]*"
-                                    oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')">
+                                    oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')"
+                                    aria-label="Receipt number">
                             </div>
                         </div>
                         <div class="col-12 mt-3">
@@ -660,17 +765,14 @@
                     </div>
                 </div>
             </div>
-
-
             <div class="px-1 d-flex justify-content-between align-items-center mb-2">
                 <h6 class="text-muted small fw-bold m-0" data-lang="history">HISTORY</h6>
-                <span class="badge bg-light text-muted border" style="font-size: 0.65rem;">Recent 10</span>
+                <span class="badge bg-light text-muted border" style="font-size:0.65rem;">All Entries</span>
             </div>
-
-            <div class="card border-0 shadow-sm" style="border-radius: 12px; overflow: hidden;">
+            <div class="card border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 text-center align-middle" style="font-size: 0.85rem;">
-                        <thead style="background-color: #f1f3f5;">
+                    <table class="table table-hover mb-0 text-center align-middle" style="font-size:0.85rem;">
+                        <thead style="background-color:#f1f3f5;">
                             <tr>
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="date">Date</th>
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="no">No</th>
@@ -678,92 +780,96 @@
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="amt">Amt</th>
                             </tr>
                         </thead>
-                        <tbody id="qpHistoryBody" class="border-top-0">
-                        </tbody>
+                        <tbody id="qpHistoryBody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
+        <!-- MONTHLY PROGRESS -->
         <div id="viewProgress" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <button class="btn btn-light shadow-sm btn-sm" onclick="switchTab('viewQuickPay')">
+                <button class="btn btn-light shadow-sm btn-sm" onclick="switchTab('viewQuickPay')" aria-label="Back">
                     <i class="fas fa-arrow-left"></i> <span data-lang="back">Back</span>
                 </button>
             </div>
-            <div class="card border-0 shadow-sm mb-4 overflow-hidden" id="monthlyProgressCard"
-                style="border-radius: 16px;">
+            <div class="card border-0 shadow-sm mb-4 overflow-hidden" style="border-radius:16px;">
                 <div class="p-3 text-white d-flex justify-content-between align-items-center"
-                    style="background: linear-gradient(135deg, #185FA5, #378ADD);">
+                    style="background:linear-gradient(135deg,#185FA5,#378ADD);">
                     <h6 class="m-0 fw-bold"><i class="fas fa-chart-bar me-2"></i><span
                             data-lang="monthly_progress">Monthly Progress</span></h6>
                     <div class="d-flex gap-2 align-items-center">
-                        <div style="background:#1565C0; border-radius:20px; padding:2px 8px;">
-                            <select id="progressMonth" class="border-0"
-                                style="background:transparent; color:white; font-weight:bold; cursor:pointer; outline:none; font-size:0.85rem;"
-                                onchange="renderMonthlyProgress()">
-                            </select>
+                        <div style="background:#1565C0;border-radius:20px;padding:2px 8px;">
+                            <select id="progressMonth" class="border-0" aria-label="Select month"
+                                style="background:transparent;color:white;font-weight:bold;cursor:pointer;outline:none;font-size:0.85rem;"
+                                onchange="renderMonthlyProgress()"></select>
                         </div>
-                        <div style="background:#1565C0; border-radius:20px; padding:2px 8px;">
-                            <select id="progressYear" class="border-0"
-                                style="background:transparent; color:white; font-weight:bold; cursor:pointer; outline:none; font-size:0.85rem;"
-                                onchange="renderMonthlyProgress()">
-                            </select>
+                        <div style="background:#1565C0;border-radius:20px;padding:2px 8px;">
+                            <select id="progressYear" class="border-0" aria-label="Select year"
+                                style="background:transparent;color:white;font-weight:bold;cursor:pointer;outline:none;font-size:0.85rem;"
+                                onchange="renderMonthlyProgress()"></select>
                         </div>
                     </div>
                 </div>
                 <div class="card-body p-3 bg-white">
-                    <div class="row g-2 mb-3" id="monthlyStats">
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded"
+                        style="background:#e8f5e9; border:1px dashed #a5d6a7;">
+                        <span class="small fw-bold text-success" data-lang="loans_added">Loans Added</span>
+                        <span class="badge bg-success rounded-pill px-3" id="mLoansAdded">0</span>
+                    </div>
+                    <div class="row g-2 mb-3">
                         <div class="col-6">
-                            <div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;">
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa;border:1px solid #e9ecef;">
                                 <div class="small text-muted fw-bold" data-lang="given" style="font-size:0.65rem;">GIVEN
                                 </div>
                                 <div class="fw-bold text-dark" id="mGiven">₹0</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;">
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa;border:1px solid #e9ecef;">
                                 <div class="small text-muted fw-bold" data-lang="received" style="font-size:0.65rem;">
                                     RECEIVED</div>
                                 <div class="fw-bold text-success" id="mReceived">₹0</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;">
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa;border:1px solid #e9ecef;">
                                 <div class="small text-muted fw-bold" data-lang="prin_recv" style="font-size:0.65rem;">
                                     PRIN. RECV</div>
                                 <div class="fw-bold text-primary" id="mPrinRecv">₹0</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;">
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa;border:1px solid #e9ecef;">
                                 <div class="small text-muted fw-bold" data-lang="int_recv" style="font-size:0.65rem;">
                                     INT. RECV</div>
                                 <div class="fw-bold text-warning" id="mIntRecv">₹0</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;">
-                                <div class="small text-muted fw-bold" data-lang="prin_receivable" style="font-size:0.65rem;">PRIN. RECEIVABLE</div>
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa;border:1px solid #e9ecef;">
+                                <div class="small text-muted fw-bold" data-lang="prin_receivable"
+                                    style="font-size:0.65rem;">PRIN. RECEIVABLE</div>
                                 <div class="fw-bold text-info" id="mPrinReceivable">₹0</div>
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="p-2 rounded text-center" style="background:#f8f9fa; border:1px solid #e9ecef;">
-                                <div class="small text-muted fw-bold" data-lang="int_receivable" style="font-size:0.65rem;">INT. RECEIVABLE</div>
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa;border:1px solid #e9ecef;">
+                                <div class="small text-muted fw-bold" data-lang="int_receivable"
+                                    style="font-size:0.65rem;">INT. RECEIVABLE</div>
                                 <div class="fw-bold text-danger" id="mIntReceivable">₹0</div>
                             </div>
                         </div>
                     </div>
-                    <div style="background:#f8f9fa; border-radius:8px; padding:8px 12px;">
+                    <div style="background:#f8f9fa;border-radius:8px;padding:8px 12px;">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="small text-muted fw-bold" style="font-size:0.7rem;"
                                 data-lang="collection_progress">COLLECTION PROGRESS</span>
                             <span class="fw-bold small text-success" id="mProgressPct">0%</span>
                         </div>
-                        <div style="background:#dee2e6; border-radius:20px; height:10px; overflow:hidden;">
+                        <div style="background:#dee2e6;border-radius:20px;height:10px;overflow:hidden;">
                             <div id="mProgressBar"
-                                style="height:10px; border-radius:20px; background:linear-gradient(90deg,#2e7d32,#66bb6a); transition:width 0.5s ease; width:0%;">
+                                style="height:10px;border-radius:20px;background:linear-gradient(90deg,#2e7d32,#66bb6a);transition:width 0.5s ease;width:0%;">
                             </div>
                         </div>
                         <div class="d-flex justify-content-between mt-1">
@@ -777,85 +883,76 @@
             </div>
         </div>
 
-
+        <!-- LEDGER VIEW -->
         <div id="viewLedger" class="d-none">
-
-            <button class="nav-arrow arrow-left no-print" onclick="navigateAccount(-1)"><i
+            <button class="nav-arrow arrow-left no-print" onclick="navigateAccount(-1)" aria-label="Previous account"><i
                     class="fas fa-chevron-left"></i></button>
-            <button class="nav-arrow arrow-right no-print" onclick="navigateAccount(1)"><i
+            <button class="nav-arrow arrow-right no-print" onclick="navigateAccount(1)" aria-label="Next account"><i
                     class="fas fa-chevron-right"></i></button>
 
             <div class="d-flex justify-content-between align-items-center mb-3 no-print">
-                <button class="btn btn-light shadow-sm btn-sm" onclick="switchTab('viewDashboard')"><i
-                        class="fas fa-arrow-left"></i> <span data-lang="back">Back</span></button>
+                <button class="btn btn-light shadow-sm btn-sm" onclick="switchTab('viewDashboard')"
+                    aria-label="Back to dashboard"><i class="fas fa-arrow-left"></i> <span
+                        data-lang="back">Back</span></button>
                 <div>
-                    <button class="btn btn-warning shadow-sm btn-sm me-2" onclick="editLoan()"><i
+                    <button class="btn btn-warning shadow-sm btn-sm me-2" onclick="editLoan()" aria-label="Edit loan"><i
                             class="fas fa-edit"></i></button>
-                    <button class="btn btn-danger shadow-sm btn-sm me-2" onclick="deleteLoan()"><i
-                            class="fas fa-trash"></i></button>
-                    <button class="btn btn-dark shadow-sm btn-sm" onclick="printLedger()"><i
+                    <button class="btn btn-danger shadow-sm btn-sm me-2" onclick="deleteLoan()"
+                        aria-label="Delete loan"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-dark shadow-sm btn-sm" onclick="printLedger()" aria-label="Print ledger"><i
                             class="fas fa-print"></i></button>
                 </div>
             </div>
             <div class="ledger-sheet">
                 <div class="border-bottom pb-2 mb-3">
-
                     <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="fw-bold text-success m-0">
-                            <span data-lang="loan_no">LOAN NO</span>: #<span id="detailLoanNo"></span>
-                        </h4>
+                        <h4 class="fw-bold text-success m-0"><span data-lang="loan_no">LOAN NO</span>: #<span
+                                id="detailLoanNo"></span></h4>
                         <span class="badge rounded-pill bg-dark opacity-75" id="accountCounter">0 / 0</span>
                         <div class="text-end"><span class="badge bg-light text-dark border" id="detailDate"></span>
                         </div>
                     </div>
-
                     <div id="prevLoanDisplay" class="small fw-bold text-danger mt-1"></div>
                 </div>
-
                 <div class="row">
                     <div class="col-6 border-end pe-3">
                         <div class="text-center mb-2">
-                            <img id="detailBPhoto" src="" class="photo-box">
+                            <img id="detailBPhoto" src="" class="photo-box" alt="Borrower photo">
                             <span class="badge bg-success" data-lang="borrower">BORROWER</span>
                         </div>
-                        <span class="field-lbl" data-lang="name">Name</span><span class="field-val translatable"
+                        <span class="field-lbl" data-lang="name">Name</span><span class="field-val"
                             id="detailBName"></span>
-                        <span class="field-lbl mt-1" data-lang="father">Father</span><span
-                            class="field-val translatable" id="detailBFather"></span>
-                        <span class="field-lbl mt-1" data-lang="address">Address</span><span
-                            class="field-val translatable" id="detailBAddress"></span>
+                        <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val"
+                            id="detailBFather"></span>
+                        <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val"
+                            id="detailBAddress"></span>
                         <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val"
                             id="detailBPhone"></span>
                         <span class="field-lbl mt-1" data-lang="id_proof">ID Proof</span><span class="field-val"
                             id="detailBId"></span>
                     </div>
-
                     <div class="col-6 ps-3">
                         <div class="text-center mb-2">
-                            <img id="detailGPhoto" src="" class="photo-box">
+                            <img id="detailGPhoto" src="" class="photo-box" alt="Guarantor photo">
                             <span class="badge bg-secondary" data-lang="guarantor">GUARANTOR</span>
                         </div>
-                        <div class="guarantor-details">
-                            <span class="field-lbl" data-lang="name">Name</span><span class="field-val translatable"
-                                id="detailGName"></span>
-                            <span class="field-lbl mt-1" data-lang="father">Father</span><span
-                                class="field-val translatable" id="detailGFather"></span>
-                            <span class="field-lbl mt-1" data-lang="address">Address</span><span
-                                class="field-val translatable" id="detailGAddress"></span>
-                            <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val"
-                                id="detailGPhone"></span>
-                            <hr class="my-2 text-muted">
-                            <span class="field-lbl mt-1" data-lang="witness">Witness</span><span
-                                class="field-val translatable" id="detailWitness"></span>
-                        </div>
+                        <span class="field-lbl" data-lang="name">Name</span><span class="field-val"
+                            id="detailGName"></span>
+                        <span class="field-lbl mt-1" data-lang="father">Father</span><span class="field-val"
+                            id="detailGFather"></span>
+                        <span class="field-lbl mt-1" data-lang="address">Address</span><span class="field-val"
+                            id="detailGAddress"></span>
+                        <span class="field-lbl mt-1" data-lang="phone">Phone</span><span class="field-val"
+                            id="detailGPhone"></span>
+                        <hr class="my-2 text-muted">
+                        <span class="field-lbl mt-1" data-lang="witness">Witness</span><span class="field-val"
+                            id="detailWitness"></span>
                     </div>
                 </div>
-
                 <div class="bg-light p-2 border rounded my-3 text-center">
                     <span class="fw-bold text-dark" id="detailVehicle"></span> | <span class="fw-bold text-dark"
                         id="detailReg"></span>
                 </div>
-
                 <div class="fin-summary">
                     <div class="fin-cell"><span class="field-lbl" data-lang="principal">Principal</span><span
                             class="fin-val">₹<span id="detailPrincipal"></span></span></div>
@@ -871,17 +968,16 @@
                             data-lang="balance">Balance</span><span class="fin-val text-danger fs-5">₹<span
                                 id="detailRemaining"></span></span></div>
                 </div>
-
                 <div class="penalty-card no-print">
                     <div class="penalty-header">
                         <span data-lang="penalty_calc">PENALTY CALCULATOR</span>
-                        <i class="fas fa-exclamation-circle"></i>
+                        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                     </div>
                     <div class="row text-center">
                         <div class="col-4 border-end border-danger border-opacity-25">
                             <div class="small text-muted mb-1" data-lang="rate_day">Rate/Day</div>
                             <input type="number" id="penRate" class="penalty-input" value="5"
-                                onchange="calculatePenaltyTotals()">
+                                onchange="calculatePenaltyTotals()" aria-label="Penalty rate per day">
                         </div>
                         <div class="col-4 border-end border-danger border-opacity-25">
                             <div class="small text-muted mb-1" data-lang="late_days">Late Days</div>
@@ -893,11 +989,9 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="mt-3 field-lbl" data-lang="remarks">Remarks</div>
-                <div class="field-val translatable" id="detailRemarks"></div>
-
-                <div class="table-responsive mt-3" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <div class="field-val" id="detailRemarks"></div>
+                <div class="table-responsive mt-3" style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
                     <table class="table table-bordered table-sm text-center mb-0" style="font-size:0.75rem;">
                         <thead class="table-light">
                             <tr>
@@ -908,9 +1002,9 @@
                                 <th data-lang="paid_date">Paid Date</th>
                                 <th data-lang="receipt">Rcpt</th>
                                 <th data-lang="paid">Paid</th>
-                                <th style="background: #e3f2fd;" data-lang="prin_recv">Prin Recv</th>
-                                <th style="background: #e8f5e9;" data-lang="int_recv">Int Recv</th>
-                                <th style="background: #fff3e0;" data-lang="prin_bal">Prin Bal</th>
+                                <th style="background:#e3f2fd;" data-lang="prin_recv">Prin Recv</th>
+                                <th style="background:#e8f5e9;" data-lang="int_recv">Int Recv</th>
+                                <th style="background:#fff3e0;" data-lang="prin_bal">Prin Bal</th>
                                 <th class="no-print">Action</th>
                             </tr>
                         </thead>
@@ -919,30 +1013,37 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('viewDashboard')" id="navDash"><i
-                class="fas fa-home"></i><br><small data-lang="home">Home</small></div>
-        <div class="nav-item" onclick="switchTab('viewGiven')" id="navGiven"><i class="fas fa-list-ul"></i><br><small
-                data-lang="given">Given</small></div>
-        <div class="add-btn-wrapper">
-            <div class="add-btn" onclick="openAddModal()"><i class="fas fa-plus"></i></div>
+    </div><!-- /container -->
+
+    <!-- ===== BOTTOM NAV ===== -->
+    <nav class="bottom-nav" aria-label="Main navigation">
+        <div class="nav-item active" onclick="switchTab('viewDashboard')" id="navDash" role="button" aria-label="Home">
+            <i class="fas fa-home"></i><br><small data-lang="home">Home</small>
         </div>
-        <div class="nav-item" onclick="switchTab('viewQuickPay')" id="navPay"><i class="fas fa-wallet"></i><br><small
-                data-lang="collect">Collect</small></div>
-    </div>
+        <div class="nav-item" onclick="switchTab('viewGiven')" id="navGiven" role="button" aria-label="Given list"><i
+                class="fas fa-list-ul"></i><br><small data-lang="given">Given</small></div>
+        <div class="add-btn-wrapper">
+            <div class="add-btn" onclick="openAddModal()" role="button" aria-label="Add new account"><i
+                    class="fas fa-plus"></i></div>
+        </div>
+        <div class="nav-item" onclick="switchTab('viewQuickPay')" id="navPay" role="button" aria-label="Quick collect">
+            <i class="fas fa-wallet"></i><br><small data-lang="collect">Collect</small>
+        </div>
+    </nav>
 
-    <div class="modal fade" id="notifModal" tabindex="-1">
+    <!-- ===== NOTIFICATIONS MODAL ===== -->
+    <div class="modal fade" id="notifModal" tabindex="-1" aria-labelledby="notifModalLabel" aria-modal="true"
+        role="dialog">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h6 class="modal-title fw-bold"><i class="fas fa-clock me-2"></i> Delayed Payments</h6>
-                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h6 class="modal-title fw-bold" id="notifModalLabel"><i class="fas fa-clock me-2"></i> Delayed
+                        Payments</h6>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <div id="notifList" class="list-group list-group-flush">
-                    </div>
+                    <div id="notifList" class="list-group list-group-flush"></div>
                     <div id="noNotifs" class="text-center p-4 text-muted">
                         <i class="fas fa-check-circle fa-2x text-success mb-2"></i><br>No Overdue Payments
                     </div>
@@ -951,92 +1052,98 @@
         </div>
     </div>
 
-    <div class="modal fade" id="addModal" tabindex="-1">
+    <!-- ===== ADD / EDIT MODAL ===== -->
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h6 class="modal-title fw-bold" data-lang="new_account">New Account</h6>
-                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h6 class="modal-title fw-bold" id="addModalLabel" data-lang="new_account">New Account</h6>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body bg-light">
-                    <form id="entryForm">
+                    <form id="entryForm" onsubmit="return false;">
                         <div class="card p-3 border-0 shadow-sm mb-3">
                             <div class="row g-2">
                                 <div class="col-4"><input type="text" class="form-control fw-bold" id="inLoanNo"
-                                        placeholder="Loan No"></div>
+                                        placeholder="Loan No" aria-label="Loan number"></div>
                                 <div class="col-8"><input type="text" class="form-control fw-bold" id="inBName"
-                                        placeholder="Borrower Name"></div>
+                                        placeholder="Borrower Name" aria-label="Borrower name"></div>
                             </div>
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-6">
-                                <div class="card p-2 text-center border-0" onclick="openCamera('borrower')"><i
-                                        class="fas fa-camera text-success"></i> Borrower<img id="imgPreviewBorrower"
-                                        class="preview-img mx-auto"></div>
+                                <div class="card p-2 text-center border-0" onclick="openCamera('borrower')"
+                                    role="button" aria-label="Take borrower photo" style="cursor:pointer;">
+                                    <i class="fas fa-camera text-success"></i> Borrower<img id="imgPreviewBorrower"
+                                        class="preview-img mx-auto" alt="Borrower photo preview">
+                                </div>
                             </div>
                             <div class="col-6">
-                                <div class="card p-2 text-center border-0" onclick="openCamera('guarantor')"><i
-                                        class="fas fa-camera text-secondary"></i> Guarantor<img id="imgPreviewGuarantor"
-                                        class="preview-img mx-auto"></div>
+                                <div class="card p-2 text-center border-0" onclick="openCamera('guarantor')"
+                                    role="button" aria-label="Take guarantor photo" style="cursor:pointer;">
+                                    <i class="fas fa-camera text-secondary"></i> Guarantor<img id="imgPreviewGuarantor"
+                                        class="preview-img mx-auto" alt="Guarantor photo preview">
+                                </div>
                             </div>
                         </div>
                         <input type="hidden" id="base64Borrower"><input type="hidden" id="base64Guarantor">
                         <div class="card p-3 border-0 shadow-sm mb-3">
                             <div class="row g-2">
                                 <div class="col-6"><input type="text" class="form-control" id="inBFather"
-                                        placeholder="Father"></div>
+                                        placeholder="Father" aria-label="Borrower father name"></div>
                                 <div class="col-6"><input type="text" class="form-control" id="inPrevLoan"
-                                        placeholder="Previous Loan Info (Manual)"></div>
+                                        placeholder="Previous Loan Info (Manual)" aria-label="Previous loan info"></div>
                                 <div class="col-6"><input type="tel" class="form-control" id="inBPhone"
-                                        placeholder="Mobile 1"></div>
+                                        placeholder="Mobile 1" aria-label="Borrower mobile 1"></div>
                                 <div class="col-6"><input type="tel" class="form-control" id="inBPhone2"
-                                        placeholder="Mobile 2"></div>
+                                        placeholder="Mobile 2" aria-label="Borrower mobile 2"></div>
                                 <div class="col-12"><input type="text" class="form-control" id="inBAddress"
-                                        placeholder="Address"></div>
+                                        placeholder="Address" aria-label="Borrower address"></div>
                                 <div class="col-12"><input type="text" class="form-control" id="inBId"
-                                        placeholder="ID Proof"></div>
+                                        placeholder="ID Proof" aria-label="Borrower ID proof"></div>
                             </div>
                         </div>
                         <div class="card p-3 border-0 shadow-sm mb-3">
                             <div class="row g-2">
                                 <div class="col-6"><input type="text" class="form-control fw-bold" id="inGName"
-                                        placeholder="Guarantor Name"></div>
+                                        placeholder="Guarantor Name" aria-label="Guarantor name"></div>
                                 <div class="col-6"><input type="text" class="form-control" id="inGFather"
-                                        placeholder="G. Father"></div>
+                                        placeholder="G. Father" aria-label="Guarantor father name"></div>
                                 <div class="col-6"><input type="tel" class="form-control" id="inGPhone"
-                                        placeholder="G. Mobile 1"></div>
+                                        placeholder="G. Mobile 1" aria-label="Guarantor mobile 1"></div>
                                 <div class="col-6"><input type="tel" class="form-control" id="inGPhone2"
-                                        placeholder="G. Mobile 2"></div>
+                                        placeholder="G. Mobile 2" aria-label="Guarantor mobile 2"></div>
                                 <div class="col-12"><input type="text" class="form-control" id="inGAddress"
-                                        placeholder="G. Address"></div>
+                                        placeholder="G. Address" aria-label="Guarantor address"></div>
                                 <div class="col-12"><input type="text" class="form-control" id="inWitness"
-                                        placeholder="Witness"></div>
+                                        placeholder="Witness" aria-label="Witness name"></div>
                             </div>
                         </div>
                         <div class="card p-3 border-0 shadow-sm mb-3">
                             <div class="row g-2">
                                 <div class="col-4"><input type="text" class="form-control" id="inVName"
-                                        placeholder="Make"></div>
+                                        placeholder="Make" aria-label="Vehicle make"></div>
                                 <div class="col-4"><input type="text" class="form-control" id="inVModel"
-                                        placeholder="Model"></div>
-                                <div class="col-4"><input type="text" class="form-control" id="inVReg" placeholder="No">
-                                </div>
+                                        placeholder="Model" aria-label="Vehicle model"></div>
+                                <div class="col-4"><input type="text" class="form-control" id="inVReg"
+                                        placeholder="Reg No" aria-label="Vehicle registration"></div>
                             </div>
                         </div>
                         <div class="card p-3 border-0 shadow-sm mb-3">
                             <div class="row g-2">
                                 <div class="col-6"><label class="small" data-lang="date">Date</label><input type="date"
-                                        class="form-control" id="inDate"></div>
+                                        class="form-control" id="inDate" aria-label="Loan date"></div>
                                 <div class="col-6"><label class="small" data-lang="principal">Principal</label><input
                                         type="number" class="form-control fw-bold" id="inPrincipal" value="17000"
-                                        oninput="calculate()"></div>
+                                        oninput="calculate()" aria-label="Principal amount"></div>
                                 <div class="col-6"><label class="small">Int %</label><input type="number"
-                                        class="form-control" id="inPercent" value="2.5" oninput="calculate()"></div>
+                                        class="form-control" id="inPercent" value="2.5" oninput="calculate()"
+                                        aria-label="Interest percentage"></div>
                                 <div class="col-6"><label class="small" data-lang="dues">Dues</label><input
-                                        type="number" class="form-control" id="inDues" value="10" oninput="calculate()">
-                                </div>
+                                        type="number" class="form-control" id="inDues" value="10" oninput="calculate()"
+                                        aria-label="Number of dues"></div>
                                 <div class="col-12"><input type="text" class="form-control" id="inRemarks"
-                                        placeholder="Remarks"></div>
+                                        placeholder="Remarks" aria-label="Remarks"></div>
                             </div>
                             <div class="row mt-3 text-center bg-light p-2 rounded mx-0">
                                 <div class="col-6 border-end"><small class="text-success fw-bold d-block">Per
@@ -1055,40 +1162,48 @@
         </div>
     </div>
 
-    <div class="modal fade" id="cameraModal" tabindex="-1">
+    <!-- ===== CAMERA MODAL ===== -->
+    <div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-modal="true"
+        role="dialog">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content bg-black">
-                <div class="modal-body p-0 text-center"><video id="cameraFeed" class="camera-video" autoplay
-                        playsinline></video><canvas id="cameraCanvas" style="display:none;"></canvas></div>
-                <div class="modal-footer border-0 justify-content-center"><button class="btn btn-light rounded-circle"
-                        style="width:60px; height:60px" onclick="snapPhoto()"><i
-                            class="fas fa-camera"></i></button><button class="btn btn-outline-light"
-                        data-bs-dismiss="modal">X</button></div>
+                <div class="modal-body p-0 text-center">
+                    <video id="cameraFeed" class="camera-video" autoplay playsinline aria-label="Camera feed"></video>
+                    <canvas id="cameraCanvas" style="display:none;"></canvas>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button class="btn btn-light rounded-circle" style="width:60px;height:60px" onclick="snapPhoto()"
+                        aria-label="Take photo"><i class="fas fa-camera"></i></button>
+                    <button class="btn btn-outline-light" data-bs-dismiss="modal" aria-label="Cancel">X</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="duePayModal" tabindex="-1">
+    <!-- ===== DUE PAYMENT MODAL ===== -->
+    <div class="modal fade" id="duePayModal" tabindex="-1" aria-labelledby="duePayModalLabel" aria-modal="true"
+        role="dialog">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
-                    <h6 class="modal-title fw-bold" data-lang="record_payment">Record Due Payment</h6>
-                    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h6 class="modal-title fw-bold" id="duePayModalLabel" data-lang="record_payment">Record Due Payment
+                    </h6>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12"><label class="small fw-bold"><span data-lang="payment_date">Payment
                                     Date</span> <span class="required-star">*</span></label><input type="date"
-                                id="duePayDate" class="form-control"></div>
+                                id="duePayDate" class="form-control" aria-label="Payment date"></div>
                         <div class="col-12"><label class="small fw-bold"><span data-lang="receipt_no">Receipt
                                     Number</span> <span class="required-star">*</span></label>
                             <input type="text" id="duePayRcpt" class="form-control" placeholder="Enter Receipt No"
                                 inputmode="decimal" pattern="[0-9.\-]*"
-                                oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')">
+                                oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')" aria-label="Receipt number">
                         </div>
                         <div class="col-12"><label class="small fw-bold"><span data-lang="amount">Amount</span> <span
                                     class="required-star">*</span></label><input type="number" id="duePayAmt"
-                                class="form-control fw-bold text-success"></div>
+                                class="form-control fw-bold text-success" aria-label="Payment amount"></div>
                     </div>
                 </div>
                 <div class="modal-footer border-0"><button class="btn btn-primary w-100 fw-bold"
@@ -1097,13 +1212,15 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editTxnModal" tabindex="-1">
+    <!-- ===== EDIT TRANSACTION MODAL ===== -->
+    <div class="modal fade" id="editTxnModal" tabindex="-1" aria-labelledby="editTxnModalLabel" aria-modal="true"
+        role="dialog">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header bg-warning">
-                    <h6 class="modal-title fw-bold text-dark"><i class="fas fa-edit"></i> <span
+                    <h6 class="modal-title fw-bold text-dark" id="editTxnModalLabel"><i class="fas fa-edit"></i> <span
                             data-lang="edit_transaction">Edit Transaction</span></h6>
-                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                    <button class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="editSchedIdx">
@@ -1112,14 +1229,17 @@
                     <input type="hidden" id="editOldAmt">
                     <div class="row g-3">
                         <div class="col-12"><label class="small fw-bold" data-lang="payment_date">Correct
-                                Date</label><input type="date" id="editTxnDate" class="form-control"></div>
+                                Date</label><input type="date" id="editTxnDate" class="form-control"
+                                aria-label="Corrected payment date"></div>
                         <div class="col-12"><label class="small fw-bold" data-lang="receipt_no">Correct Receipt
                                 No</label>
                             <input type="text" id="editTxnRcpt" class="form-control" inputmode="decimal"
-                                pattern="[0-9.\-]*" oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')">
+                                pattern="[0-9.\-]*" oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')"
+                                aria-label="Corrected receipt number">
                         </div>
                         <div class="col-12"><label class="small fw-bold" data-lang="amount">Correct Amount</label><input
-                                type="number" id="editTxnAmt" class="form-control fw-bold text-success"></div>
+                                type="number" id="editTxnAmt" class="form-control fw-bold text-success"
+                                aria-label="Corrected amount"></div>
                     </div>
                 </div>
                 <div class="modal-footer border-0"><button class="btn btn-warning w-100 fw-bold"
@@ -1127,66 +1247,121 @@
             </div>
         </div>
     </div>
+
+    <!-- ===== FIREBASE SDKs ===== -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        // ============================================================
+        // NAMED CONSTANTS (avoid magic numbers scattered in code)
+        // ============================================================
+        const SWIPE_THRESHOLD = 100;   // px  — minimum horizontal swipe distance
+        const NAV_ANIM_DELAY = 200;   // ms  — slide animation before loading next
+        const TOAST_DURATION = 3000;  // ms  — how long toasts stay visible
+        const DEBOUNCE_DELAY = 220;   // ms  — search debounce wait
+        const PHOTO_QUALITY = 0.3;   // 0-1 — JPEG compression for camera snaps
+        const YEAR_RANGE = 3;     // years back shown in monthly filter
 
-        function handleLogout() {
-            if (confirm("Are you sure you want to logout?")) {
-                firebase.auth().signOut().then(() => {
-                    location.reload(); // Refresh to show login screen again
-                });
-            }
+        // ============================================================
+        // TOAST — replaces alert()
+        // ============================================================
+        function showToast(msg, type = 'success') {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = `toast-msg toast-${type}`;
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => {
+                t.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => t.remove(), 300);
+            }, TOAST_DURATION);
         }
 
-        // --- 1. FIREBASE CONFIGURATION ---
+        // ============================================================
+        // CUSTOM CONFIRM — replaces confirm(), returns Promise<boolean>
+        // ============================================================
+        let _resolveConfirm = null;
+        function showConfirm(msg, title = 'Are you sure?') {
+            document.getElementById('confirmTitle').textContent = title;
+            document.getElementById('confirmMsg').textContent = msg;
+            document.getElementById('confirmOverlay').classList.add('show');
+            return new Promise(res => { _resolveConfirm = res; });
+        }
+        function resolveConfirm(val) {
+            document.getElementById('confirmOverlay').classList.remove('show');
+            if (_resolveConfirm) { _resolveConfirm(val); _resolveConfirm = null; }
+        }
+
+        // ============================================================
+        // CURRENCY FORMATTER — single consistent formatter
+        // ============================================================
+        const fmt = v => '₹' + Math.round(v).toLocaleString('en-IN');
+        const fmtRaw = v => Math.round(v).toLocaleString('en-IN');
+
+        // ============================================================
+        // DEBOUNCE HELPER
+        // ============================================================
+        function debounce(fn, delay) {
+            let timer;
+            return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
+        }
+        const debouncedFilter = debounce(filterLoans, DEBOUNCE_DELAY);
+
+        // ============================================================
+        // FIREBASE CONFIGURATION
+        // ============================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCUEjBkaIWmwQpdvrcUDHx_TnCm-4gGxE8",
             authDomain: "ledger-6e317.firebaseapp.com",
             projectId: "ledger-6e317",
             storageBucket: "ledger-6e317.firebasestorage.app",
             messagingSenderId: "1022642303716",
-            appId: "1:1022642303716:web:be1dc690ca4ea4c30472f1",
-            measurementId: "G-58KY6P86NX"
+            appId: "1:1022642303716:web:be1dc690ca4ea4c30472f1"
         };
-
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- 2. AUTHENTICATION LOGIC ---
+        // ============================================================
+        // AUTHENTICATION
+        // ============================================================
         function handleLogin() {
             const email = document.getElementById('loginEmail').value;
             const pass = document.getElementById('loginPass').value;
-            const btn = document.querySelector("#loginOverlay button");
-
-            btn.innerText = "Verifying...";
+            const btn = document.querySelector('#loginOverlay button[type="submit"]');
+            btn.textContent = 'Verifying...';
             btn.disabled = true;
-
             firebase.auth().signInWithEmailAndPassword(email, pass)
                 .catch(err => {
-                    alert("Access Denied: " + err.message);
-                    btn.innerText = "ENTER CLOUD";
+                    showToast('Access Denied: ' + err.message, 'error');
+                    btn.textContent = 'ENTER CLOUD';
                     btn.disabled = false;
                 });
         }
 
-        firebase.auth().onAuthStateChanged((user) => {
+        firebase.auth().onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('loginOverlay').style.display = 'none';
-                console.log("Logged in as: " + user.email);
-                // ONLY START DATABASE AFTER LOGIN
                 startDatabaseListeners();
             } else {
                 document.getElementById('loginOverlay').style.display = 'flex';
+                document.getElementById('loader').style.display = 'none';
             }
         });
 
-        // --- 3. STATE MANAGEMENT ---
+        async function handleLogout() {
+            const ok = await showConfirm('You will be signed out of Finance Cloud.', 'Logout?');
+            if (ok) firebase.auth().signOut().then(() => location.reload());
+        }
+
+        // ============================================================
+        // STATE
+        // ============================================================
         let localDB = [];
         let localHistory = [];
+        let filterMode = 'all'; // 'all' or 'closed'
         let currentIdx = null;
         let currentDocId = null;
         let currentPhotoTarget = null;
@@ -1195,150 +1370,125 @@
         let editIdx = null;
         let duePayScheduleIdx = null;
 
-        // --- 4. DATABASE LISTENERS ---
+        // ============================================================
+        // DATABASE LISTENERS
+        // ============================================================
         function startDatabaseListeners() {
-            // Loans Listener
-            db.collection("loans").onSnapshot((snap) => {
+            db.collection('loans').onSnapshot(snap => {
                 localDB = [];
-                snap.forEach(d => {
-                    let data = d.data();
-                    data.uid = d.id;
-                    localDB.push(data);
-                });
+                snap.forEach(d => { const data = d.data(); data.uid = d.id; localDB.push(data); });
                 localDB.sort((a, b) => b.loanNo.localeCompare(a.loanNo, undefined, { numeric: true, sensitivity: 'base' }));
-
                 updateDashboard();
                 renderGivenList();
                 checkNotifications();
-
-                // HIDE LOADER ONLY WHEN DATA ARRIVES
                 document.getElementById('loader').style.display = 'none';
                 if (currentIdx !== null) viewLedger(currentIdx);
-            }, (error) => {
-                console.error("Database Error:", error);
-                alert("Database Error: Check your Firebase Security Rules!");
+            }, err => {
+                console.error('DB Error:', err);
+                showToast('Database Error: Check your Firebase Security Rules!', 'error');
+                document.getElementById('loader').style.display = 'none';
             });
 
-            // Transactions Listener
-            db.collection("transactions").orderBy("date", "desc").onSnapshot((snap) => {
+            db.collection('transactions').orderBy('date', 'desc').onSnapshot(snap => {
                 localHistory = [];
-                snap.forEach(d => {
-                    let data = d.data();
-                    data.uid = d.id;
-                    localHistory.push(data);
-                });
+                snap.forEach(d => { const data = d.data(); data.uid = d.id; localHistory.push(data); });
                 renderHistory();
             });
         }
 
-        // --- 5. TRANSLATION DICTIONARY ---
+        // ============================================================
+        // TRANSLATION DICTIONARY
+        // ============================================================
         const uiTranslations = {
             en: {
-                given: "Given", received: "Received", balance: "Balance", interest: "Total Interest", accounts: "ACCOUNTS",
-                disbursement_report: "Disbursement Report", no: "No", date: "Date", name: "Name", amt: "Amt",
-                collection: "Collection", new_payment: "New Payment", loan_no: "Loan No", borrower: "Borrower", amount: "Amount", receipt_no: "Receipt No",
-                history: "HISTORY", receipt: "Rcpt", home: "Home", collect: "Collect", back: "Back",
-                father: "Father", address: "Address", phone: "Phone", id_proof: "ID Proof", guarantor: "GUARANTOR", witness: "Witness",
-                principal: "Principal", total_amt: "Total Amt", due_amt: "Due Amt", rate: "Rate", total_int: "Total Int",
-                remarks: "Remarks", due_date: "Due Date", due: "Due", penalty: "Day/Penalty", paid_date: "Paid Date", paid: "Paid", action: "Action",
-                int_recv: "Int Recv", prin_recv: "Prin Recv", prin_bal: "Prin Bal",
-                save_transaction: "Save Transaction", confirm_payment: "CONFIRM PAYMENT", update_sync: "UPDATE & SYNC",
-                record_payment: "Record Due Payment", edit_transaction: "Edit Transaction", new_account: "New Account", create_account: "CREATE ACCOUNT",
-                payment_date: "Payment Date", dues: "Dues",
-                penalty_calc: "PENALTY CALCULATOR", rate_day: "Rate/Day", late_days: "Late Days", prin_recv: "Prin. Received",
-                int_recv: "Int. Received",
-                monthly_progress: "Monthly Progress",
-                collection_progress: "Collection Progress",
-                progress: "Progress",
-                prin_receivable: "Prin. Receivable",
-                int_receivable: "Int. Receivable",
+                given: 'Given', received: 'Received', balance: 'Balance', interest: 'Total Interest', accounts: 'ACCOUNTS', closed_accounts: 'CLOSED',
+                disbursement_report: 'Disbursement Report', no: 'No', date: 'Date', name: 'Name', amt: 'Amt',
+                collection: 'Collection', new_payment: 'New Payment', loan_no: 'Loan No', borrower: 'BORROWER', amount: 'Amount', receipt_no: 'Receipt No',
+                history: 'HISTORY', receipt: 'Rcpt', home: 'Home', collect: 'Collect', back: 'Back',
+                father: 'Father', address: 'Address', phone: 'Phone', id_proof: 'ID Proof', guarantor: 'GUARANTOR', witness: 'Witness',
+                principal: 'Principal', total_amt: 'Total Amt', due_amt: 'Due Amt', rate: 'Rate', total_int: 'Total Int',
+                remarks: 'Remarks', due_date: 'Due Date', due: 'Due', penalty: 'Day/Penalty', paid_date: 'Paid Date', paid: 'Paid', action: 'Action',
+                int_recv: 'Int Recv', prin_recv: 'Prin Recv', prin_bal: 'Prin Bal',
+                save_transaction: 'Save Transaction', confirm_payment: 'CONFIRM PAYMENT', update_sync: 'UPDATE & SYNC',
+                record_payment: 'Record Due Payment', edit_transaction: 'Edit Transaction', new_account: 'New Account', create_account: 'CREATE ACCOUNT',
+                payment_date: 'Payment Date', dues: 'Dues',
+                penalty_calc: 'PENALTY CALCULATOR', rate_day: 'Rate/Day', late_days: 'Late Days',
+                monthly_progress: 'Monthly Progress', collection_progress: 'Collection Progress', progress: 'Progress',
+                prin_receivable: 'Prin. Receivable', int_receivable: 'Int. Receivable', loans_added: 'Loans Added',
             },
             ta: {
-                given: "கொடுக்கப்பட்டது", received: "பெறப்பட்டது", balance: "நிலுவை", interest: "வட்டி மொத்தம்", accounts: "கணக்குகள்",
-                disbursement_report: "கடன் அறிக்கை", no: "எண்", date: "தேதி", name: "பெயர்", amt: "தொகை",
-                collection: "வசூல்", new_payment: "புதிய வரவு", loan_no: "கடன் எண்", borrower: "கடன் பெற்றவர்", amount: "தொகை", receipt_no: "ரசீது எண்",
-                history: "வரலாறு", receipt: "ரசீது", home: "முகப்பு", collect: "வசூல்", back: "பின்செல்",
-                father: "தந்தை", address: "முகவரி", phone: "அலைபேசி", id_proof: "அடையாளம்", guarantor: "ஜாமீன்", witness: "சாட்சி",
-                principal: "அசல்", total_amt: "மொத்த தொகை", due_amt: "தவணை தொகை", rate: "வட்டி", total_int: "மொத்த வட்டி",
-                remarks: "குறிப்பு", due_date: "தவணை தேதி", due: "தவணை", penalty: "நாள்/அபராதம்", paid_date: "செலுத்திய தேதி", paid: "செலுத்தியது", action: "செயல்",
-                int_recv: "வட்டி வரவு", prin_recv: "அசல் வரவு", prin_bal: "அசல் நிலுவை",
-                save_transaction: "சேமிக்க", confirm_payment: "உறுதிப்படுத்து", update_sync: "புதுப்பி",
-                record_payment: "தவணை வரவு", edit_transaction: "திருத்தம்", new_account: "புதிய கணக்கு", create_account: "கணக்கை உருவாக்கு",
-                payment_date: "செலுத்தும் தேதி", dues: "தவணைகள்",
-                penalty_calc: "அபராத கால்குலேட்டர்", rate_day: "கட்டணம்/நாள்", late_days: "தாமத நாட்கள்", prin_recv: "அசல் வரவு",
-                int_recv: "வட்டி வரவு", monthly_progress: "மாதாந்திர முன்னேற்றம்",
-                collection_progress: "வசூல் முன்னேற்றம்",
-                progress: "முன்னேற்றம்",
-                prin_receivable: "வர வேண்டிய அசல்",
-                int_receivable: "வர வேண்டிய வட்டி",
+                given: 'கொடுக்கப்பட்டது', received: 'பெறப்பட்டது', balance: 'நிலுவை', interest: 'வட்டி மொத்தம்', accounts: 'கணக்குகள்', closed_accounts: 'முடிக்கப்பட்டவை',
+                disbursement_report: 'கடன் அறிக்கை', no: 'எண்', date: 'தேதி', name: 'பெயர்', amt: 'தொகை',
+                collection: 'வசூல்', new_payment: 'புதிய வரவு', loan_no: 'கடன் எண்', borrower: 'கடன் பெற்றவர்', amount: 'தொகை', receipt_no: 'ரசீது எண்',
+                history: 'வரலாறு', receipt: 'ரசீது', home: 'முகப்பு', collect: 'வசூல்', back: 'பின்செல்',
+                father: 'தந்தை', address: 'முகவரி', phone: 'அலைபேசி', id_proof: 'அடையாளம்', guarantor: 'ஜாமீன்', witness: 'சாட்சி',
+                principal: 'அசல்', total_amt: 'மொத்த தொகை', due_amt: 'தவணை தொகை', rate: 'வட்டி', total_int: 'மொத்த வட்டி',
+                remarks: 'குறிப்பு', due_date: 'தவணை தேதி', due: 'தவணை', penalty: 'நாள்/அபராதம்', paid_date: 'செலுத்திய தேதி', paid: 'செலுத்தியது', action: 'செயல்',
+                int_recv: 'வட்டி வரவு', prin_recv: 'அசல் வரவு', prin_bal: 'அசல் நிலுவை',
+                save_transaction: 'சேமிக்க', confirm_payment: 'உறுதிப்படுத்து', update_sync: 'புதுப்பி',
+                record_payment: 'தவணை வரவு', edit_transaction: 'திருத்தம்', new_account: 'புதிய கணக்கு', create_account: 'கணக்கை உருவாக்கு',
+                payment_date: 'செலுத்தும் தேதி', dues: 'தவணைகள்',
+                penalty_calc: 'அபராத கால்குலேட்டர்', rate_day: 'கட்டணம்/நாள்', late_days: 'தாமத நாட்கள்',
+                monthly_progress: 'மாதாந்திர முன்னேற்றம்', collection_progress: 'வசூல் முன்னேற்றம்', progress: 'முன்னேற்றம்',
+                prin_receivable: 'வர வேண்டிய அசல்', int_receivable: 'வர வேண்டிய வட்டி', loans_added: 'வழங்கப்பட்ட கடன்கள்',
             }
         };
 
-
-
-
-
+        // ============================================================
+        // NOTIFICATIONS
+        // ============================================================
         function checkNotifications() {
             const notifBadge = document.getElementById('notifBadge');
             const notifList = document.getElementById('notifList');
             const noNotifs = document.getElementById('noNotifs');
             let overdueItems = [];
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+
             localDB.forEach((loan, idx) => {
-                // ✅ Skip fully paid / over-paid loans (balance <= 0)
                 const totalExp = loan.loan.expected * loan.loan.dues;
                 const totalPaid = loan.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
-                if (totalPaid >= totalExp) return; // Skip this loan entirely
-
+                if (totalPaid >= totalExp) return;
                 loan.schedule.forEach(s => {
                     if (!s.isPaid) {
                         const due = new Date(s.dueDate);
                         if (today > due) {
-                            const daysLate = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
+                            const daysLate = Math.ceil((today - due) / 86400000);
                             if (!overdueItems.some(i => i.idx === idx)) {
-                                overdueItems.push({ idx: idx, no: loan.loanNo, name: loan.borrower, days: daysLate, date: s.dueDate });
+                                overdueItems.push({ idx, no: loan.loanNo, name: loan.borrower, days: daysLate, date: s.dueDate });
                             }
                         }
                     }
                 });
             });
-            if (overdueItems.length > 0) {
-                notifBadge.style.display = 'block';
-                notifBadge.innerText = overdueItems.length;
-                noNotifs.style.display = 'none';
-            } else {
-                notifBadge.style.display = 'none';
-                noNotifs.style.display = 'block';
-            }
-            notifList.innerHTML = '';
-            overdueItems.forEach(item => {
-                const html = `
-            <div class="list-group-item notif-item p-3" onclick="openNotifLedger(${item.idx})">
-                <div class="d-flex w-100 justify-content-between align-items-center">
-                    <h6 class="mb-1 fw-bold text-danger">#${item.no} - ${item.name}</h6>
-                    <small class="badge bg-danger">${item.days} Days Late</small>
-                </div>
-                <small class="text-muted">Due Date: ${item.date}</small>
-            </div>`;
-                notifList.innerHTML += html;
-            });
+
+            notifBadge.style.display = overdueItems.length > 0 ? 'block' : 'none';
+            notifBadge.innerText = overdueItems.length;
+            noNotifs.style.display = overdueItems.length === 0 ? 'block' : 'none';
+
+            // Build all HTML at once — no innerHTML += in loop
+            notifList.innerHTML = overdueItems.map(item => `
+        <div class="list-group-item notif-item p-3" onclick="openNotifLedger(${item.idx})" role="button">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <h6 class="mb-1 fw-bold text-danger">#${item.no} - ${item.name}</h6>
+                <small class="badge bg-danger">${item.days} Days Late</small>
+            </div>
+            <small class="text-muted">Due Date: ${item.date}</small>
+        </div>`).join('');
         }
 
         function openNotifModal() { new bootstrap.Modal(document.getElementById('notifModal')).show(); }
         function openNotifLedger(idx) { bootstrap.Modal.getInstance(document.getElementById('notifModal')).hide(); viewLedger(idx); }
 
+        // ============================================================
+        // LANGUAGE TOGGLE
+        // ============================================================
         function toggleLang() {
             curLang = curLang === 'en' ? 'ta' : 'en';
-            document.getElementById('langBtn').innerText = curLang === 'en' ? "EN / தமிழ்" : "தமிழ் / EN";
-
-            // Translate all elements with data-lang attribute
-            const elements = document.querySelectorAll('[data-lang]');
-            elements.forEach(el => {
+            document.getElementById('langBtn').innerText = curLang === 'en' ? 'EN / தமிழ்' : 'தமிழ் / EN';
+            document.querySelectorAll('[data-lang]').forEach(el => {
                 const key = el.getAttribute('data-lang');
                 if (uiTranslations[curLang][key]) el.innerText = uiTranslations[curLang][key];
             });
-
             if (currentIdx !== null) {
                 if (curLang === 'ta') applyDynamicTranslation(localDB[currentIdx]);
                 else viewLedger(currentIdx);
@@ -1346,67 +1496,249 @@
             initMonthlyFilter();
         }
 
+        // ============================================================
+        // TAB SWITCHING
+        // ============================================================
         function switchTab(id) {
             ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
-                if (document.getElementById(v)) document.getElementById(v).classList.add('d-none');
+                const el = document.getElementById(v);
+                if (el) el.classList.add('d-none');
             });
             document.getElementById(id).classList.remove('d-none');
             document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-            if (id == 'viewDashboard') document.getElementById('navDash').classList.add('active');
-            if (id == 'viewGiven') document.getElementById('navGiven').classList.add('active');
-            if (id == 'viewQuickPay') document.getElementById('navPay').classList.add('active');
+            if (id === 'viewDashboard') document.getElementById('navDash').classList.add('active');
+            if (id === 'viewGiven') document.getElementById('navGiven').classList.add('active');
+            if (id === 'viewQuickPay') document.getElementById('navPay').classList.add('active');
         }
+
+        // ============================================================
+        // DASHBOARD UPDATE — no innerHTML += in loop
+        // ============================================================
+        function updateDashboard() {
+            const list = document.getElementById('loansList');
+            if (!list) return;
+
+            let tG = 0, tC = 0, tI = 0, tPR = 0, tIR = 0, tTotalExp = 0, closedCount = 0;
+            const rows = [];
+
+            localDB.forEach((loan, i) => {
+                const totalInt = parseFloat(loan.loan.totalInt) || 0;
+                const numDues = parseInt(loan.loan.dues) || 1;
+                const interestFactor = totalInt / numDues;
+                const exp = loan.loan.expected * loan.loan.dues;
+                let loanPaid = 0;
+
+                loan.schedule.forEach(s => {
+                    if (s.isPaid) {
+                        const paidAmt = parseFloat(s.paidAmount) || 0;
+                        loanPaid += paidAmt;
+                        const rowIntRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
+                        const rowPrinRecv = paidAmt - rowIntRecv;
+                        tIR += rowIntRecv;
+                        tPR += rowPrinRecv;
+                    }
+                });
+
+                tG += parseFloat(loan.loan.principal) || 0;
+                tC += loanPaid;
+                tI += totalInt;
+                tTotalExp += exp;
+                if (loanPaid >= exp) closedCount++;
+
+                rows.push(`
+            <div class="col-md-6">
+                <div class="loan-card ${loanPaid >= exp ? 'closed' : 'active'}" onclick="viewLedger(${i})" role="button" aria-label="View loan ${loan.loanNo}">
+                    <div class="d-flex justify-content-between">
+                        <strong>#${loan.loanNo}</strong>
+                        <span>₹${fmtRaw(loanPaid)}/${fmtRaw(exp)}</span>
+                    </div>
+                    <div class="text-primary fw-bold">${loan.borrower}</div>
+                </div>
+            </div>`);
+            });
+
+            list.innerHTML = rows.join('');
+
+            const setT = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+            setT('dashGiven', fmtRaw(tG));
+            setT('dashCollected', fmtRaw(tC));
+            setT('dashPrinRecv', fmtRaw(tPR));
+            setT('dashIntRecv', fmtRaw(tIR));
+            setT('dashPending', fmtRaw(tTotalExp - tC));
+            setT('dashInterest', fmtRaw(tI));
+            setT('totalCount', localDB.length);
+            setT('closedCount', closedCount);
+            if (currentIdx !== null) setT('accountCounter', `${currentIdx + 1} / ${localDB.length}`);
+            filterLoans();
+        }
+
+        // ============================================================
+        // GIVEN LIST & HISTORY — no innerHTML += in loop
+        // ============================================================
+        function renderGivenList() {
+            const tb = document.getElementById('givenTableBody');
+            tb.innerHTML = localDB.map(x => `<tr><td>${x.loanNo}</td><td>${x.loan.date}</td><td>${x.borrower}</td><td>${x.loan.principal}</td></tr>`).join('');
+        }
+
+        function renderHistory() {
+            const tb = document.getElementById('qpHistoryBody');
+            const sorted = [...localHistory].sort((a, b) => new Date(b.date) - new Date(a.date) || b.uid.localeCompare(a.uid));
+            tb.innerHTML = sorted.map(h => `<tr><td>${h.date}</td><td>${h.loanNo}</td><td>${h.rcpt}</td><td>${h.amt}</td></tr>`).join('');
+        }
+
+        // ============================================================
+        // SEARCH & FILTER
+        // ============================================================
+        function setFilterMode(mode) {
+            filterMode = mode;
+            const elAll = document.getElementById('filterAllLbl');
+            const elClosed = document.getElementById('filterClosedLbl');
+            if (elAll && elClosed) {
+                if (filterMode === 'all') {
+                    elAll.className = 'fw-bold small m-0 text-primary';
+                    elAll.style.textDecoration = 'underline';
+                    elClosed.className = 'fw-bold text-muted small m-0';
+                    elClosed.style.textDecoration = 'none';
+                } else {
+                    elAll.className = 'fw-bold text-muted small m-0';
+                    elAll.style.textDecoration = 'none';
+                    elClosed.className = 'fw-bold small m-0 text-primary';
+                    elClosed.style.textDecoration = 'underline';
+                }
+            }
+            filterLoans();
+        }
+
+        function filterLoans() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.loan-card').forEach(c => {
+                const matchesText = c.innerText.toLowerCase().includes(q);
+                const isClosed = c.classList.contains('closed');
+                const matchesFilter = filterMode === 'all' || (filterMode === 'closed' && isClosed);
+                c.parentElement.style.display = (matchesText && matchesFilter) ? 'block' : 'none';
+            });
+        }
+
+        // ============================================================
+        // EXPORT
+        // ============================================================
+        function exportGiven() { let c = "No,Date,Name,Amt\n"; localDB.forEach(x => { c += `${x.loanNo},${x.loan.date},${x.borrower},${x.loan.principal}\n`; }); downloadCSV(c, 'Given.csv'); }
+        function exportReceived() { let c = "Date,No,Rcpt,Amt\n"; localHistory.forEach(h => { c += `${h.date},${h.loanNo},${h.rcpt},${h.amt}\n`; }); downloadCSV(c, 'Received.csv'); }
+        function downloadCSV(c, f) { const b = new Blob([c], { type: 'text/csv' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = f; l.click(); }
+
+        // ============================================================
+        // NAVIGATION — swipe + arrows + keyboard
+        // ============================================================
+        function navigateAccount(direction) {
+            if (localDB.length === 0 || currentIdx === null) return;
+            const ledger = document.querySelector('.ledger-sheet');
+            ledger.classList.add(direction === 1 ? 'slide-out-left' : 'slide-out-right');
+            setTimeout(() => {
+                let nextIdx = currentIdx + direction;
+                if (nextIdx >= localDB.length) nextIdx = 0;
+                if (nextIdx < 0) nextIdx = localDB.length - 1;
+                viewLedger(nextIdx);
+                ledger.classList.remove('slide-out-left', 'slide-out-right');
+                window.scrollTo(0, 0);
+            }, NAV_ANIM_DELAY);
+        }
+
+        function shouldIgnoreSwipe(e) {
+            return e.target.closest('.table-responsive') || e.target.closest('input') ||
+                e.target.closest('textarea') || e.target.closest('.penalty-input');
+        }
+
+        let touchstartX = 0, touchstartY = 0;
+        document.addEventListener('touchstart', e => {
+            if (shouldIgnoreSwipe(e)) { touchstartX = 0; return; }
+            touchstartX = e.changedTouches[0].screenX;
+            touchstartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            if (touchstartX === 0) return;
+            const dx = e.changedTouches[0].screenX - touchstartX;
+            const dy = e.changedTouches[0].screenY - touchstartY;
+            if (Math.abs(dy) > Math.abs(dx)) return;
+            if (Math.abs(dx) > SWIPE_THRESHOLD) {
+                if (document.getElementById('viewLedger').classList.contains('d-none')) return;
+                navigateAccount(dx > 0 ? -1 : 1);
+            }
+        }, { passive: true });
+
+        document.addEventListener('keydown', e => {
+            if (document.getElementById('viewLedger').classList.contains('d-none')) return;
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.key === 'ArrowRight') navigateAccount(1);
+            if (e.key === 'ArrowLeft') navigateAccount(-1);
+        });
+
+        // ============================================================
+        // CAMERA — fix: stop stream when modal dismissed without snap
+        // ============================================================
+        function openCamera(t) {
+            currentPhotoTarget = t;
+            const m = new bootstrap.Modal(document.getElementById('cameraModal'));
+            m.show();
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then(s => { document.getElementById('cameraFeed').srcObject = s; })
+                .catch(e => showToast(e.message, 'error'));
+        }
+
+        function stopCameraStream() {
+            const v = document.getElementById('cameraFeed');
+            if (v && v.srcObject) { v.srcObject.getTracks().forEach(t => t.stop()); v.srcObject = null; }
+        }
+
+        // Stop camera when modal closes — even if user presses X without snapping
+        document.getElementById('cameraModal').addEventListener('hidden.bs.modal', stopCameraStream);
+
+        function snapPhoto() {
+            const v = document.getElementById('cameraFeed');
+            const c = document.getElementById('cameraCanvas');
+            c.width = v.videoWidth; c.height = v.videoHeight;
+            c.getContext('2d').drawImage(v, 0, 0);
+            const u = c.toDataURL('image/jpeg', PHOTO_QUALITY);
+            const target = currentPhotoTarget === 'borrower' ? 'Borrower' : 'Guarantor';
+            document.getElementById(`base64${target}`).value = u;
+            const prev = document.getElementById(`imgPreview${target}`);
+            prev.src = u; prev.style.display = 'block';
+            bootstrap.Modal.getInstance(document.getElementById('cameraModal')).hide();
+            // stream stopped by hidden.bs.modal listener above
+        }
+
+        // ============================================================
+        // LOAN FORM — calculate
+        // ============================================================
+        function calculate() {
+            const P = parseFloat(document.getElementById('inPrincipal').value) || 0;
+            const N = parseInt(document.getElementById('inDues').value) || 0;
+            const R = parseFloat(document.getElementById('inPercent').value) || 0;
+            if (N > 0) {
+                const e = Math.round(((P * (R / 100) * N) + P) / N);
+                document.getElementById('outExpected').innerText = e;
+                document.getElementById('outTotalInt').innerText = (e * N) - P;
+            }
+        }
+
+        // ============================================================
+        // SAVE / EDIT LOAN
+        // ============================================================
         function openAddModal() {
             isEditing = false;
             document.getElementById('entryForm').reset();
-
-            // CLEANUP: Force images and previews to be empty
-            document.getElementById('base64Borrower').value = "";
-            document.getElementById('base64Guarantor').value = "";
-
-            const bPrev = document.getElementById('imgPreviewBorrower');
-            bPrev.src = "";
-            bPrev.style.display = "none";
-
-            const gPrev = document.getElementById('imgPreviewGuarantor');
-            gPrev.src = "";
-            gPrev.style.display = "none";
-
+            ['base64Borrower', 'base64Guarantor'].forEach(id => document.getElementById(id).value = '');
+            ['imgPreviewBorrower', 'imgPreviewGuarantor'].forEach(id => { const el = document.getElementById(id); el.src = ''; el.style.display = 'none'; });
             document.getElementById('inDate').valueAsDate = new Date();
             calculate();
             new bootstrap.Modal(document.getElementById('addModal')).show();
         }
-        function openCamera(t) { currentPhotoTarget = t; const m = new bootstrap.Modal(document.getElementById('cameraModal')); m.show(); navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => { document.getElementById('cameraFeed').srcObject = s }).catch(e => alert(e.message)); }
-        function snapPhoto() {
-            const v = document.getElementById('cameraFeed');
-            const c = document.getElementById('cameraCanvas');
-            c.width = v.videoWidth;
-            c.height = v.videoHeight;
-            c.getContext('2d').drawImage(v, 0, 0);
-            const u = c.toDataURL('image/jpeg', 0.3); // Compressed quality
-
-            if (currentPhotoTarget == 'borrower') {
-                document.getElementById('base64Borrower').value = u;
-                const bPrev = document.getElementById('imgPreviewBorrower');
-                bPrev.src = u;
-                bPrev.style.display = "block";
-            } else {
-                document.getElementById('base64Guarantor').value = u;
-                const gPrev = document.getElementById('imgPreviewGuarantor');
-                gPrev.src = u;
-                gPrev.style.display = "block";
-            }
-
-            bootstrap.Modal.getInstance(document.getElementById('cameraModal')).hide();
-            if (v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
-        }
-        function calculate() { const P = parseFloat(document.getElementById('inPrincipal').value) || 0, N = parseInt(document.getElementById('inDues').value) || 0, R = parseFloat(document.getElementById('inPercent').value) || 0; if (N > 0) { const e = Math.round(((P * (R / 100) * N) + P) / N); document.getElementById('outExpected').innerText = e; document.getElementById('outTotalInt').innerText = (e * N) - P; } }
 
         function saveToCloud() {
             const no = document.getElementById('inLoanNo').value.trim();
             const bName = document.getElementById('inBName').value.trim();
-            if (!no || !bName) { alert("Enter Details"); return; }
-            if (!isEditing && localDB.some(l => l.loanNo === no)) { alert("Error: Loan Number " + no + " already exists!"); return; }
+            if (!no || !bName) { showToast('Please enter Loan No and Borrower Name', 'error'); return; }
+            if (!isEditing && localDB.some(l => l.loanNo === no)) { showToast('Loan Number ' + no + ' already exists!', 'error'); return; }
 
             const docData = {
                 loanNo: no, borrower: bName,
@@ -1426,88 +1758,107 @@
                     address: document.getElementById('inGAddress').value,
                     witness: document.getElementById('inWitness').value
                 },
-                vehicle: { name: document.getElementById('inVName').value, model: document.getElementById('inVModel').value, reg: document.getElementById('inVReg').value },
-                loan: { principal: parseFloat(document.getElementById('inPrincipal').value) || 0, percent: document.getElementById('inPercent').value, expected: parseFloat(document.getElementById('outExpected').innerText) || 0, dues: parseInt(document.getElementById('inDues').value) || 0, date: document.getElementById('inDate').value, totalInt: document.getElementById('outTotalInt').innerText, remarks: document.getElementById('inRemarks').value },
+                vehicle: {
+                    name: document.getElementById('inVName').value,
+                    model: document.getElementById('inVModel').value,
+                    reg: document.getElementById('inVReg').value
+                },
+                loan: {
+                    principal: parseFloat(document.getElementById('inPrincipal').value) || 0,
+                    percent: document.getElementById('inPercent').value,
+                    expected: parseFloat(document.getElementById('outExpected').innerText) || 0,
+                    dues: parseInt(document.getElementById('inDues').value) || 0,
+                    date: document.getElementById('inDate').value,
+                    totalInt: document.getElementById('outTotalInt').innerText,
+                    remarks: document.getElementById('inRemarks').value
+                },
                 photos: { borrower: document.getElementById('base64Borrower').value, guarantor: document.getElementById('base64Guarantor').value },
                 penaltyRate: 5,
-                schedule: isEditing ? updateSchedule(localDB[editIdx].schedule, document.getElementById('inDate').value, parseInt(document.getElementById('inDues').value), parseFloat(document.getElementById('outExpected').innerText)) : generateSchedule(document.getElementById('inDate').value, parseInt(document.getElementById('inDues').value), parseFloat(document.getElementById('outExpected').innerText))
+                schedule: isEditing
+                    ? updateSchedule(localDB[editIdx].schedule, document.getElementById('inDate').value, parseInt(document.getElementById('inDues').value), parseFloat(document.getElementById('outExpected').innerText))
+                    : generateSchedule(document.getElementById('inDate').value, parseInt(document.getElementById('inDues').value), parseFloat(document.getElementById('outExpected').innerText))
             };
-            const savePromise = isEditing ? db.collection("loans").doc(currentDocId).update(docData) : db.collection("loans").add(docData);
-            savePromise.then(() => { alert("Saved!"); bootstrap.Modal.getInstance(document.getElementById('addModal')).hide(); }).catch(e => alert("Error: " + e.message));
+
+            const savePromise = isEditing
+                ? db.collection('loans').doc(currentDocId).update(docData)
+                : db.collection('loans').add(docData);
+
+            savePromise
+                .then(() => { showToast('Account saved successfully!'); bootstrap.Modal.getInstance(document.getElementById('addModal')).hide(); })
+                .catch(e => showToast('Save failed: ' + e.message, 'error'));
         }
 
-        function generateSchedule(date, dues, amt) { let arr = []; let d = new Date(date); for (let i = 1; i <= dues; i++) { let nd = new Date(d); nd.setMonth(d.getMonth() + i); arr.push({ sno: i, dueDate: nd.toISOString().split('T')[0], expectedAmt: amt, isPaid: false, paidAmount: 0, paidDate: '', receiptNo: '' }); } return arr; }
+        function generateSchedule(date, dues, amt) {
+            const arr = []; const d = new Date(date);
+            for (let i = 1; i <= dues; i++) {
+                const nd = new Date(d); nd.setMonth(d.getMonth() + i);
+                arr.push({ sno: i, dueDate: nd.toISOString().split('T')[0], expectedAmt: amt, isPaid: false, paidAmount: 0, paidDate: '', receiptNo: '' });
+            }
+            return arr;
+        }
 
         function updateSchedule(oldSched, date, dues, amt) {
-            let n = generateSchedule(date, dues, amt);
+            const n = generateSchedule(date, dues, amt);
             for (let i = 0; i < Math.min(oldSched.length, n.length); i++) {
-                if (oldSched[i].isPaid) {
-                    n[i].isPaid = true;
-                    n[i].paidAmount = oldSched[i].paidAmount;
-                    n[i].paidDate = oldSched[i].paidDate;
-                    n[i].receiptNo = oldSched[i].receiptNo;
-                }
+                if (oldSched[i].isPaid) { n[i].isPaid = true; n[i].paidAmount = oldSched[i].paidAmount; n[i].paidDate = oldSched[i].paidDate; n[i].receiptNo = oldSched[i].receiptNo; }
             }
             return n;
         }
 
-        function printLedger() {
-            const tempTitle = document.title;
-            const ln = document.getElementById('detailLoanNo').innerText || "Ledger";
-            document.title = ln;
-            window.print();
-            document.title = tempTitle;
-        }
+        // ============================================================
+        // VIEW LEDGER
+        // ============================================================
+        function setText(id, t) { const el = document.getElementById(id); if (el) el.innerText = t || ''; }
 
         function viewLedger(idx) {
-            currentIdx = idx; const d = localDB[idx]; currentDocId = d.uid;
-            setText('detailLoanNo', d.loanNo); setText('detailDate', d.loan.date);
-            setText('detailBName', d.borrower); setText('detailBFather', d.borrowerInfo.father);
+            currentIdx = idx;
+            const d = localDB[idx];
+            currentDocId = d.uid;
+
+            setText('detailLoanNo', d.loanNo);
+            setText('detailDate', d.loan.date);
+            setText('detailBName', d.borrower);
+            setText('detailBFather', d.borrowerInfo.father);
             setText('detailBAddress', d.borrowerInfo.address);
-
-            let bPhones = d.borrowerInfo.phone || "";
-            if (d.borrowerInfo.phone2) bPhones += " / " + d.borrowerInfo.phone2;
-            setText('detailBPhone', bPhones);
-
+            setText('detailBPhone', [d.borrowerInfo.phone, d.borrowerInfo.phone2].filter(Boolean).join(' / '));
             setText('detailBId', d.borrowerInfo.idProof);
-            setText('detailGName', d.guarantor.name); setText('detailGFather', d.guarantor.father);
-
-            let gPhones = d.guarantor.phone || "";
-            if (d.guarantor.phone2) gPhones += " / " + d.guarantor.phone2;
-            setText('detailGPhone', gPhones);
-
+            setText('detailGName', d.guarantor.name);
+            setText('detailGFather', d.guarantor.father);
+            setText('detailGPhone', [d.guarantor.phone, d.guarantor.phone2].filter(Boolean).join(' / '));
             setText('detailGAddress', d.guarantor.address);
             setText('detailWitness', d.guarantor.witness);
 
-            document.getElementById('detailBPhoto').src = d.photos.borrower || ""; document.getElementById('detailGPhoto').src = d.photos.guarantor || "";
-            document.getElementById('detailVehicle').innerText = `${d.vehicle.name} ${d.vehicle.model}`; document.getElementById('detailReg').innerText = d.vehicle.reg;
-            document.getElementById('detailPrincipal').innerText = d.loan.principal;
-            document.getElementById('detailTotalAmount').innerText = (d.loan.expected * d.loan.dues).toLocaleString('en-IN');
-            document.getElementById('detailExpected').innerText = d.loan.expected;
-            document.getElementById('detailPercent').innerText = d.loan.percent;
-            document.getElementById('detailTotalInt').innerText = d.loan.totalInt;
+            document.getElementById('detailBPhoto').src = d.photos.borrower || '';
+            document.getElementById('detailGPhoto').src = d.photos.guarantor || '';
+            document.getElementById('detailVehicle').innerText = `${d.vehicle.name} ${d.vehicle.model}`;
+            document.getElementById('detailReg').innerText = d.vehicle.reg;
 
-            let remText = d.loan.remarks || "";
-            if (d.borrowerInfo.prevLoan) remText = "[PREV: " + d.borrowerInfo.prevLoan + "] " + remText;
-            document.getElementById('detailRemarks').innerText = remText;
+            // Consistent currency formatting
+            document.getElementById('detailPrincipal').innerText = fmtRaw(d.loan.principal);
+            document.getElementById('detailTotalAmount').innerText = fmtRaw(d.loan.expected * d.loan.dues);
+            document.getElementById('detailExpected').innerText = fmtRaw(d.loan.expected);
+            document.getElementById('detailPercent').innerText = d.loan.percent;
+            document.getElementById('detailTotalInt').innerText = fmtRaw(d.loan.totalInt);
 
             const paid = d.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
-            document.getElementById('detailRemaining').innerText = ((d.loan.expected * d.loan.dues) - paid).toLocaleString('en-IN');
+            document.getElementById('detailRemaining').innerText = fmtRaw((d.loan.expected * d.loan.dues) - paid);
+
+            let remText = d.loan.remarks || '';
+            if (d.borrowerInfo.prevLoan) remText = '[PREV: ' + d.borrowerInfo.prevLoan + '] ' + remText;
+            document.getElementById('detailRemarks').innerText = remText;
+            document.getElementById('prevLoanDisplay').innerHTML = `<i class="fas fa-history me-1"></i> Prev Loan: ${d.borrowerInfo.prevLoan || 'None'}`;
+
             const storedRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
             document.getElementById('penRate').value = storedRate;
-
-            const prevLoanInfo = d.borrowerInfo.prevLoan || "None";
-            document.getElementById('prevLoanDisplay').innerHTML = `<i class="fas fa-history me-1"></i> Prev Loan: ${prevLoanInfo}`;
 
             renderScheduleTable(d.schedule, storedRate);
             calculatePenaltyTotals();
 
             if (curLang === 'ta') {
                 applyDynamicTranslation(d);
-                const elements = document.querySelectorAll('[data-lang]');
-                elements.forEach(el => {
+                document.querySelectorAll('[data-lang]').forEach(el => {
                     const key = el.getAttribute('data-lang');
-                    if (uiTranslations[curLang][key]) el.innerText = uiTranslations[curLang][key];
+                    if (uiTranslations['ta'][key]) el.innerText = uiTranslations['ta'][key];
                 });
             }
             switchTab('viewLedger');
@@ -1515,413 +1866,265 @@
             if (counter) counter.innerText = `${idx + 1} / ${localDB.length}`;
         }
 
+        // ============================================================
+        // SCHEDULE TABLE — no innerHTML += in loop
+        // ============================================================
+        function renderScheduleTable(schedule, penaltyRate) {
+            const tb = document.getElementById('detailTableBody');
+            const d = localDB[currentIdx];
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            let runningPrinBalance = parseFloat(d.loan.principal) || 0;
+            const totalInterest = parseFloat(d.loan.totalInt) || 0;
+            const numberOfDues = parseInt(d.loan.dues) || 1;
+            const interestFactor = totalInterest / numberOfDues;
+            const rows = [];
+
+            schedule.forEach((s, i) => {
+                let actionBtn = '', intRecv = 0, prinRecv = 0, penaltyDisplay = '-';
+                const due = new Date(s.dueDate); due.setHours(0, 0, 0, 0);
+
+                if (s.isPaid) {
+                    const paidAmt = parseFloat(s.paidAmount) || 0;
+                    const pDate = new Date(s.paidDate); pDate.setHours(0, 0, 0, 0);
+                    penaltyDisplay = pDate > due
+                        ? `<span class="text-muted small">${Math.ceil((pDate - due) / 86400000)}d (₹${Math.ceil((pDate - due) / 86400000) * penaltyRate})</span>`
+                        : `<i class="fas fa-check-circle text-success" title="Paid on time" aria-label="Paid on time"></i>`;
+                    intRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
+                    prinRecv = paidAmt - intRecv;
+                    runningPrinBalance -= prinRecv;
+                    actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})" aria-label="Edit transaction ${s.sno}"><i class="fas fa-pen"></i></button>`;
+                } else {
+                    if (today > due) {
+                        const ld = Math.ceil((today - due) / 86400000);
+                        penaltyDisplay = `<span class="text-danger small fw-bold">${ld}d (₹${ld * penaltyRate})</span>`;
+                    }
+                    actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="openDueModal(${i})" aria-label="Record payment for due ${s.sno}">Pay</button>`;
+                }
+
+                rows.push(`<tr>
+            <td>${s.sno}</td>
+            <td>${s.dueDate}</td>
+            <td class="fw-bold">₹${fmtRaw(s.expectedAmt)}</td>
+            <td>${penaltyDisplay}</td>
+            <td class="fw-bold">${s.paidDate || '-'}</td>
+            <td>${s.receiptNo || '-'}</td>
+            <td class="fw-bold text-success">${s.paidAmount ? fmtRaw(s.paidAmount) : '-'}</td>
+            <td class="text-primary">${s.isPaid ? fmtRaw(prinRecv) : '-'}</td>
+            <td class="text-success">${s.isPaid ? fmtRaw(intRecv) : '-'}</td>
+            <td class="fw-bold">${s.isPaid ? fmtRaw(runningPrinBalance) : '-'}</td>
+            <td class="no-print">${actionBtn}</td>
+        </tr>`);
+            });
+
+            tb.innerHTML = rows.join('');
+        }
+
+        // ============================================================
+        // PENALTY TOTALS
+        // ============================================================
         function calculatePenaltyTotals() {
             const rate = parseFloat(document.getElementById('penRate').value) || 0;
-            let totalDays = 0;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+            const today = new Date(); today.setHours(0, 0, 0, 0);
             const d = localDB[currentIdx];
+            let totalDays = 0;
 
             d.schedule.forEach(s => {
-                const due = new Date(s.dueDate);
-                due.setHours(0, 0, 0, 0);
-
+                const due = new Date(s.dueDate); due.setHours(0, 0, 0, 0);
                 if (!s.isPaid) {
-                    // Days late so far
-                    if (today > due) totalDays += Math.ceil((today - due) / (1000 * 60 * 60 * 24));
+                    if (today > due) totalDays += Math.ceil((today - due) / 86400000);
                 } else {
-                    // Days late when it was paid
-                    const pDate = new Date(s.paidDate);
-                    pDate.setHours(0, 0, 0, 0);
-                    if (pDate > due) totalDays += Math.ceil((pDate - due) / (1000 * 60 * 60 * 24));
+                    const pDate = new Date(s.paidDate); pDate.setHours(0, 0, 0, 0);
+                    if (pDate > due) totalDays += Math.ceil((pDate - due) / 86400000);
                 }
             });
 
             document.getElementById('totalLateDays').innerText = totalDays;
-            document.getElementById('totalPenaltyAmt').innerText = (totalDays * rate).toLocaleString('en-IN');
+            document.getElementById('totalPenaltyAmt').innerText = fmtRaw(totalDays * rate);
             renderScheduleTable(d.schedule, rate);
         }
 
-        function renderScheduleTable(schedule, penaltyRate) {
-            const tb = document.getElementById('detailTableBody');
-            tb.innerHTML = '';
-            const d = localDB[currentIdx];
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            let runningPrincipalBalance = parseFloat(d.loan.principal) || 0;
-            const totalInterest = parseFloat(d.loan.totalInt) || 0;
-            const numberOfDues = parseInt(d.loan.dues) || 1;
-            const interestFactor = totalInterest / numberOfDues;
-
-            schedule.forEach((s, i) => {
-                let actionBtn = '', intRecv = 0, prinRecv = 0, penaltyDisplay = '-';
-                const due = new Date(s.dueDate);
-                due.setHours(0, 0, 0, 0);
-
-                if (s.isPaid) {
-                    const paidAmt = parseFloat(s.paidAmount) || 0;
-                    const pDate = new Date(s.paidDate);
-                    pDate.setHours(0, 0, 0, 0);
-
-                    // Calculate Penalty even if paid (Finalized Penalty)
-                    if (pDate > due) {
-                        const lateDays = Math.ceil((pDate - due) / (1000 * 60 * 60 * 24));
-                        penaltyDisplay = `<span class="text-muted small">${lateDays}d (₹${lateDays * penaltyRate})</span>`;
-                    } else {
-                        penaltyDisplay = `<i class="fas fa-check-circle text-success" title="Paid on time"></i>`;
-                    }
-
-                    intRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
-                    prinRecv = paidAmt - intRecv;
-                    runningPrincipalBalance -= prinRecv;
-
-                    actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})"><i class="fas fa-pen"></i></button>`;
-                } else {
-                    // Live Penalty for unpaid dues
-                    if (today > due) {
-                        const lateDays = Math.ceil((today - due) / (1000 * 60 * 60 * 24));
-                        penaltyDisplay = `<span class="text-danger small fw-bold">${lateDays}d (₹${lateDays * penaltyRate})</span>`;
-                    }
-                    actionBtn = `<button class="btn btn-sm btn-outline-success" onclick="openDueModal(${i})">Pay</button>`;
-                }
-
-                tb.innerHTML += `
-            <tr>
-                <td>${s.sno}</td>
-                <td>${s.dueDate}</td>
-                <td class="fw-bold">₹${s.expectedAmt}</td>
-                <td>${penaltyDisplay}</td>
-                <td class="fw-bold">${s.paidDate || '-'}</td>
-                <td>${s.receiptNo || '-'}</td>
-                <td class="fw-bold text-success">${s.paidAmount || '-'}</td>
-                <td class="text-primary">${s.isPaid ? Math.round(prinRecv) : '-'}</td>
-<td class="text-success">${s.isPaid ? Math.round(intRecv) : '-'}</td>
-<td class="fw-bold">${s.isPaid ? Math.round(runningPrincipalBalance) : '-'}</td>
-                <td class="no-print">${actionBtn}</td>
-            </tr>`;
-            });
-        }
-
+        // ============================================================
+        // EDIT LOAN
+        // ============================================================
         function editLoan() {
-            isEditing = true;
-            editIdx = currentIdx;
+            isEditing = true; editIdx = currentIdx;
             const d = localDB[currentIdx];
-
-            // Basic Info
             document.getElementById('inLoanNo').value = d.loanNo;
             document.getElementById('inBName').value = d.borrower;
-
-            // Borrower Info
-            document.getElementById('inBFather').value = d.borrowerInfo.father || "";
-            document.getElementById('inBPhone').value = d.borrowerInfo.phone || "";
-            document.getElementById('inBPhone2').value = d.borrowerInfo.phone2 || "";
-            document.getElementById('inPrevLoan').value = d.borrowerInfo.prevLoan || "";
-            document.getElementById('inBAddress').value = d.borrowerInfo.address || "";
-            document.getElementById('inBId').value = d.borrowerInfo.idProof || "";
-
-            // Photos - Critical Fix: Load existing or set empty
-            document.getElementById('base64Borrower').value = d.photos.borrower || "";
-            document.getElementById('base64Guarantor').value = d.photos.guarantor || "";
-
-            // Update Photo Previews for Edit mode
+            document.getElementById('inBFather').value = d.borrowerInfo.father || '';
+            document.getElementById('inBPhone').value = d.borrowerInfo.phone || '';
+            document.getElementById('inBPhone2').value = d.borrowerInfo.phone2 || '';
+            document.getElementById('inPrevLoan').value = d.borrowerInfo.prevLoan || '';
+            document.getElementById('inBAddress').value = d.borrowerInfo.address || '';
+            document.getElementById('inBId').value = d.borrowerInfo.idProof || '';
+            document.getElementById('base64Borrower').value = d.photos.borrower || '';
+            document.getElementById('base64Guarantor').value = d.photos.guarantor || '';
             const bPrev = document.getElementById('imgPreviewBorrower');
-            if (d.photos.borrower) {
-                bPrev.src = d.photos.borrower;
-                bPrev.style.display = "block";
-            } else {
-                bPrev.style.display = "none";
-            }
-
+            bPrev.src = d.photos.borrower || ''; bPrev.style.display = d.photos.borrower ? 'block' : 'none';
             const gPrev = document.getElementById('imgPreviewGuarantor');
-            if (d.photos.guarantor) {
-                gPrev.src = d.photos.guarantor;
-                gPrev.style.display = "block";
-            } else {
-                gPrev.style.display = "none";
-            }
-
-            // Guarantor Info
-            document.getElementById('inGName').value = d.guarantor.name || "";
-            document.getElementById('inGFather').value = d.guarantor.father || "";
-            document.getElementById('inGPhone').value = d.guarantor.phone || "";
-            document.getElementById('inGPhone2').value = d.guarantor.phone2 || "";
-            document.getElementById('inGAddress').value = d.guarantor.address || "";
-            document.getElementById('inWitness').value = d.guarantor.witness || "";
-
-            // Vehicle & Loan Info
-            document.getElementById('inVName').value = d.vehicle.name || "";
-            document.getElementById('inVModel').value = d.vehicle.model || "";
-            document.getElementById('inVReg').value = d.vehicle.reg || "";
+            gPrev.src = d.photos.guarantor || ''; gPrev.style.display = d.photos.guarantor ? 'block' : 'none';
+            document.getElementById('inGName').value = d.guarantor.name || '';
+            document.getElementById('inGFather').value = d.guarantor.father || '';
+            document.getElementById('inGPhone').value = d.guarantor.phone || '';
+            document.getElementById('inGPhone2').value = d.guarantor.phone2 || '';
+            document.getElementById('inGAddress').value = d.guarantor.address || '';
+            document.getElementById('inWitness').value = d.guarantor.witness || '';
+            document.getElementById('inVName').value = d.vehicle.name || '';
+            document.getElementById('inVModel').value = d.vehicle.model || '';
+            document.getElementById('inVReg').value = d.vehicle.reg || '';
             document.getElementById('inDate').value = d.loan.date;
             document.getElementById('inPrincipal').value = d.loan.principal;
             document.getElementById('inPercent').value = d.loan.percent;
             document.getElementById('inDues').value = d.loan.dues;
-            document.getElementById('inRemarks').value = d.loan.remarks || "";
-
-            calculate(); // Refresh calculated fields in the modal
+            document.getElementById('inRemarks').value = d.loan.remarks || '';
+            calculate();
             new bootstrap.Modal(document.getElementById('addModal')).show();
         }
 
-        function openDueModal(sIdx) { duePayScheduleIdx = sIdx; const s = localDB[currentIdx].schedule[sIdx]; document.getElementById('duePayDate').valueAsDate = new Date(); document.getElementById('duePayAmt').value = s.expectedAmt; document.getElementById('duePayRcpt').value = ''; new bootstrap.Modal(document.getElementById('duePayModal')).show(); }
+        async function deleteLoan() {
+            const ok = await showConfirm('This loan and all its data will be permanently deleted.', 'Delete Loan?');
+            if (ok) {
+                db.collection('loans').doc(currentDocId).delete()
+                    .then(() => { showToast('Loan deleted'); switchTab('viewDashboard'); })
+                    .catch(e => showToast('Delete failed: ' + e.message, 'error'));
+            }
+        }
+
+        // ============================================================
+        // PAYMENTS
+        // ============================================================
+        function openDueModal(sIdx) {
+            duePayScheduleIdx = sIdx;
+            const s = localDB[currentIdx].schedule[sIdx];
+            document.getElementById('duePayDate').valueAsDate = new Date();
+            document.getElementById('duePayAmt').value = s.expectedAmt;
+            document.getElementById('duePayRcpt').value = '';
+            new bootstrap.Modal(document.getElementById('duePayModal')).show();
+        }
 
         function submitDuePayment() {
-            const date = document.getElementById('duePayDate').value,
-                rcpt = document.getElementById('duePayRcpt').value.trim(), // added .trim()
-                amt = document.getElementById('duePayAmt').value;
-
-            if (!date || !rcpt || !amt) { alert("Please fill all * fields"); return; }
-
-            // --- UPDATED VALIDATION ---
-            // Allow repetition of "-" but block other duplicates
-            if (rcpt !== "-" && rcpt !== "." && localHistory.some(h => h.rcpt === rcpt)) {
-                alert("Error: Receipt Number already exists!");
-                return;
+            const date = document.getElementById('duePayDate').value;
+            const rcpt = document.getElementById('duePayRcpt').value.trim();
+            const amt = document.getElementById('duePayAmt').value;
+            if (!date || !rcpt || !amt) { showToast('Please fill all required fields', 'error'); return; }
+            if (rcpt !== '-' && rcpt !== '.' && localHistory.some(h => h.rcpt === rcpt)) {
+                showToast('Receipt Number already exists!', 'error'); return;
             }
-
             const newSchedule = [...localDB[currentIdx].schedule];
             newSchedule[duePayScheduleIdx].isPaid = true;
             newSchedule[duePayScheduleIdx].paidAmount = amt;
             newSchedule[duePayScheduleIdx].paidDate = date;
             newSchedule[duePayScheduleIdx].receiptNo = rcpt;
-
-            db.collection("loans").doc(currentDocId).update({ schedule: newSchedule });
-            db.collection("transactions").add({ date: date, loanNo: localDB[currentIdx].loanNo, amt: amt, rcpt: rcpt });
+            db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
+            db.collection('transactions').add({ date, loanNo: localDB[currentIdx].loanNo, amt, rcpt });
             bootstrap.Modal.getInstance(document.getElementById('duePayModal')).hide();
-            alert("Payment Saved!");
+            showToast('Payment saved successfully!');
         }
 
         function openEditTxn(schedIndex) {
             const s = localDB[currentIdx].schedule[schedIndex];
             document.getElementById('editSchedIdx').value = schedIndex;
-            document.getElementById('editOldDate').value = s.paidDate; document.getElementById('editOldRcpt').value = s.receiptNo; document.getElementById('editOldAmt').value = s.paidAmount;
-            document.getElementById('editTxnDate').value = s.paidDate; document.getElementById('editTxnRcpt').value = s.receiptNo; document.getElementById('editTxnAmt').value = s.paidAmount;
+            document.getElementById('editOldDate').value = s.paidDate;
+            document.getElementById('editOldRcpt').value = s.receiptNo;
+            document.getElementById('editOldAmt').value = s.paidAmount;
+            document.getElementById('editTxnDate').value = s.paidDate;
+            document.getElementById('editTxnRcpt').value = s.receiptNo;
+            document.getElementById('editTxnAmt').value = s.paidAmount;
             new bootstrap.Modal(document.getElementById('editTxnModal')).show();
         }
 
         function saveTransactionEdit() {
-            const idx = document.getElementById('editSchedIdx').value, nD = document.getElementById('editTxnDate').value, nR = document.getElementById('editTxnRcpt').value, nA = document.getElementById('editTxnAmt').value, oD = document.getElementById('editOldDate').value, oR = document.getElementById('editOldRcpt').value, loanNum = localDB[currentIdx].loanNo;
-            if (!nD || !nR || !nA) return alert("Fill all fields");
+            const idx = document.getElementById('editSchedIdx').value;
+            const nD = document.getElementById('editTxnDate').value;
+            const nR = document.getElementById('editTxnRcpt').value;
+            const nA = document.getElementById('editTxnAmt').value;
+            const oD = document.getElementById('editOldDate').value;
+            const oR = document.getElementById('editOldRcpt').value;
+            const loanNum = localDB[currentIdx].loanNo;
+            if (!nD || !nR || !nA) { showToast('Please fill all fields', 'error'); return; }
             const newSchedule = [...localDB[currentIdx].schedule];
             newSchedule[idx].paidDate = nD; newSchedule[idx].receiptNo = nR; newSchedule[idx].paidAmount = nA;
-            db.collection("loans").doc(currentDocId).update({ schedule: newSchedule });
+            db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
             const t = localHistory.find(t => t.loanNo == loanNum && t.date == oD && t.rcpt == oR);
-            if (t && t.uid) db.collection("transactions").doc(t.uid).update({ date: nD, rcpt: nR, amt: nA });
-            alert("Updated!"); bootstrap.Modal.getInstance(document.getElementById('editTxnModal')).hide();
+            if (t && t.uid) db.collection('transactions').doc(t.uid).update({ date: nD, rcpt: nR, amt: nA });
+            showToast('Transaction updated!');
+            bootstrap.Modal.getInstance(document.getElementById('editTxnModal')).hide();
         }
 
-        function deleteLoan() { if (confirm("Delete permanently?")) db.collection("loans").doc(currentDocId).delete().then(() => switchTab('viewDashboard')); }
-
+        // ============================================================
+        // QUICK PAY
+        // ============================================================
         function fetchDetails() {
-            const no = document.getElementById('qpLoanNo').value; const l = localDB.find(x => x.loanNo == no);
+            const no = document.getElementById('qpLoanNo').value;
+            const l = localDB.find(x => x.loanNo == no);
             if (l) {
                 document.getElementById('qpName').value = l.borrower;
                 const paid = l.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
                 const unpaidIdx = l.schedule.findIndex(s => !s.isPaid);
-                if (unpaidIdx > -1) { let target = 0; for (let i = 0; i <= unpaidIdx; i++) target += parseFloat(l.schedule[i].expectedAmt); document.getElementById('qpAmount').value = target - paid; }
-                else document.getElementById('qpAmount').value = 0;
-            }
-        }
-
-        function processQuickPay() {
-            const no = document.getElementById('qpLoanNo').value,
-                date = document.getElementById('qpDate').value,
-                amount = document.getElementById('qpAmount').value,
-                receipt = document.getElementById('qpRcpt').value.trim(); // added .trim()
-
-            if (!no || !date || !amount || !receipt) return alert("Fill all * fields");
-
-            // --- UPDATED VALIDATION ---
-            // Allow repetition of "-" but block other duplicates
-            if (receipt !== "-" && receipt !== "." && localHistory.some(h => h.rcpt === receipt)) {
-                return alert("Receipt Number exists!");
-            }
-
-            const l = localDB.find(x => x.loanNo == no);
-            if (!l) return alert("Loan Not Found");
-            const idx = l.schedule.findIndex(s => !s.isPaid);
-            if (idx === -1) return alert("Fully Paid");
-
-            const newSched = [...l.schedule];
-            newSched[idx].isPaid = true;
-            newSched[idx].paidAmount = amount;
-            newSched[idx].paidDate = date;
-            newSched[idx].receiptNo = receipt;
-
-            db.collection("loans").doc(l.uid).update({ schedule: newSched });
-            db.collection("transactions").add({ date: date, loanNo: l.loanNo, amt: amount, rcpt: receipt });
-            alert("Saved!");
-
-            document.getElementById('qpLoanNo').value = '';
-            document.getElementById('qpName').value = '';
-            document.getElementById('qpAmount').value = '';
-            document.getElementById('qpRcpt').value = '';
-        }
-
-        function setText(id, t) { if (document.getElementById(id)) document.getElementById(id).innerText = t || ""; }
-
-        async function applyDynamicTranslation(d) {
-            const els = ['detailBName', 'detailBFather', 'detailBAddress', 'detailGName', 'detailGFather', 'detailGAddress', 'detailRemarks', 'detailWitness'];
-            for (const id of els) {
-                const txt = document.getElementById(id).innerText;
-                if (txt && txt.trim() !== "") {
-                    try {
-                        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ta&dt=t&q=${encodeURI(txt)}`);
-                        const json = await res.json();
-                        if (json && json[0] && json[0][0] && json[0][0][0]) document.getElementById(id).innerText = json[0][0][0];
-                    } catch (e) { console.log("Translation failed"); }
+                if (unpaidIdx > -1) {
+                    let target = 0;
+                    for (let i = 0; i <= unpaidIdx; i++) target += parseFloat(l.schedule[i].expectedAmt);
+                    document.getElementById('qpAmount').value = target - paid;
+                } else {
+                    document.getElementById('qpAmount').value = 0;
                 }
             }
         }
 
-        function updateDashboard() {
-            const list = document.getElementById('loansList');
-            if (!list) return;
-            list.innerHTML = '';
-
-            let tG = 0, tC = 0, tI = 0, tPR = 0, tIR = 0, tTotalExp = 0;
-
-            localDB.forEach((loan, i) => {
-                // Calculation Factors
-                const totalInt = parseFloat(loan.loan.totalInt) || 0;
-                const numDues = parseInt(loan.loan.dues) || 1;
-                const interestFactor = totalInt / numDues;
-                const exp = loan.loan.expected * loan.loan.dues;
-                let loanPaid = 0;
-
-                loan.schedule.forEach(s => {
-                    if (s.isPaid) {
-                        const paidAmt = parseFloat(s.paidAmount) || 0;
-                        loanPaid += paidAmt;
-
-                        // Splitting logic for the new boxes
-                        const rowIntRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
-                        const rowPrinRecv = paidAmt - rowIntRecv;
-
-                        tIR += rowIntRecv;
-                        tPR += rowPrinRecv;
-                    }
-                });
-
-                tG += parseFloat(loan.loan.principal) || 0;
-                tC += loanPaid;
-                tI += totalInt;
-                tTotalExp += exp;
-
-                list.innerHTML += `
-    <div class="col-md-6">
-        <div class="loan-card ${loanPaid >= exp ? 'closed' : 'active'}" onclick="viewLedger(${i})">
-            <div class="d-flex justify-content-between">
-                <strong>#${loan.loanNo}</strong>
-                <span>₹${loanPaid.toLocaleString('en-IN')}/${exp.toLocaleString('en-IN')}</span>
-            </div>
-            <div class="text-primary fw-bold">${loan.borrower}</div>
-        </div>
-    </div>`;
-            });
-
-            // Safe updates to prevent script crashes
-            const setT = (id, val) => { if (document.getElementById(id)) document.getElementById(id).innerText = val; };
-
-            setT('dashGiven', tG.toLocaleString('en-IN'));
-            setT('dashCollected', tC.toLocaleString('en-IN'));
-            setT('dashPrinRecv', Math.round(tPR).toLocaleString('en-IN'));
-            setT('dashIntRecv', Math.round(tIR).toLocaleString('en-IN'));
-            setT('dashPending', (tTotalExp - tC).toLocaleString('en-IN'));
-            setT('dashInterest', tI.toLocaleString('en-IN'));
-            setT('totalCount', localDB.length);
-
-            if (currentIdx !== null) {
-                setT('accountCounter', `${currentIdx + 1} / ${localDB.length}`);
+        function processQuickPay() {
+            const no = document.getElementById('qpLoanNo').value;
+            const date = document.getElementById('qpDate').value;
+            const amount = document.getElementById('qpAmount').value;
+            const receipt = document.getElementById('qpRcpt').value.trim();
+            if (!no || !date || !amount || !receipt) { showToast('Please fill all required fields', 'error'); return; }
+            if (receipt !== '-' && receipt !== '.' && localHistory.some(h => h.rcpt === receipt)) {
+                showToast('Receipt Number already exists!', 'error'); return;
             }
+            const l = localDB.find(x => x.loanNo == no);
+            if (!l) { showToast('Loan Not Found', 'error'); return; }
+            const idx = l.schedule.findIndex(s => !s.isPaid);
+            if (idx === -1) { showToast('This loan is fully paid!', 'info'); return; }
+            const newSched = [...l.schedule];
+            newSched[idx].isPaid = true; newSched[idx].paidAmount = amount;
+            newSched[idx].paidDate = date; newSched[idx].receiptNo = receipt;
+            db.collection('loans').doc(l.uid).update({ schedule: newSched });
+            db.collection('transactions').add({ date, loanNo: l.loanNo, amt: amount, rcpt: receipt });
+            showToast('Payment saved!');
+            ['qpLoanNo', 'qpName', 'qpAmount', 'qpRcpt'].forEach(id => document.getElementById(id).value = '');
         }
 
-        function renderGivenList() { const tb = document.getElementById('givenTableBody'); tb.innerHTML = ''; localDB.forEach(x => tb.innerHTML += `<tr><td>${x.loanNo}</td><td>${x.loan.date}</td><td>${x.borrower}</td><td>${x.loan.principal}</td></tr>`); }
-        function renderHistory() { const tb = document.getElementById('qpHistoryBody'); tb.innerHTML = '';[...localHistory].sort((a, b) => new Date(b.date) - new Date(a.date) || b.uid.localeCompare(a.uid)).forEach(h => tb.innerHTML += `<tr><td>${h.date}</td><td>${h.loanNo}</td><td>${h.rcpt}</td><td>${h.amt}</td></tr>`); }
-        function filterLoans() { const q = document.getElementById('searchInput').value.toLowerCase(); document.querySelectorAll('.loan-card').forEach(c => { c.parentElement.style.display = c.innerText.toLowerCase().includes(q) ? 'block' : 'none'; }); }
-        function exportGiven() { let c = "No,Date,Name,Amt\n"; localDB.forEach(x => { c += `${x.loanNo},${x.loan.date},${x.borrower},${x.loan.principal}\n` }); downloadCSV(c, "Given.csv"); }
-        function exportReceived() { let c = "Date,No,Rcpt,Amt\n"; localHistory.forEach(h => { c += `${h.date},${h.loanNo},${h.rcpt},${h.amt}\n` }); downloadCSV(c, "Received.csv"); }
-        function downloadCSV(c, f) { const b = new Blob([c], { type: 'text/csv' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = f; l.click(); }
-
-        // --- ADVANCED NAVIGATION ENGINE ---
-        let touchstartX = 0;
-        let touchstartY = 0; // Added Y tracking to distinguish between vertical scroll and horizontal swipe
-
-        function navigateAccount(direction) {
-            if (localDB.length === 0 || currentIdx === null) return;
-
-            const ledger = document.querySelector('.ledger-sheet');
-
-            // Visual feedback for direction
-            if (direction === 1) ledger.classList.add('slide-out-left');
-            else ledger.classList.add('slide-out-right');
-
-            setTimeout(() => {
-                let nextIdx = currentIdx + direction;
-
-                // Circular Navigation logic
-                if (nextIdx >= localDB.length) nextIdx = 0;
-                if (nextIdx < 0) nextIdx = localDB.length - 1;
-
-                viewLedger(nextIdx);
-
-                // Reset animation classes
-                ledger.classList.remove('slide-out-left', 'slide-out-right');
-                window.scrollTo(0, 0);
-            }, 200);
+        // ============================================================
+        // PRINT
+        // ============================================================
+        function printLedger() {
+            const tempTitle = document.title;
+            document.title = document.getElementById('detailLoanNo').innerText || 'Ledger';
+            window.print();
+            document.title = tempTitle;
         }
 
-        // Logic to identify if we should ignore the swipe
-        function shouldIgnoreSwipe(e) {
-            const isTable = e.target.closest('.table-responsive');
-            const isInput = e.target.closest('input') || e.target.closest('textarea');
-            const isPenaltyInput = e.target.closest('.penalty-input');
-
-            return isTable || isInput || isPenaltyInput;
+        // ============================================================
+        // DYNAMIC TRANSLATION — batched into single request
+        // ============================================================
+        async function applyDynamicTranslation(d) {
+            const els = ['detailBName', 'detailBFather', 'detailBAddress', 'detailGName', 'detailGFather', 'detailGAddress', 'detailRemarks', 'detailWitness'];
+            const texts = els.map(id => document.getElementById(id).innerText.trim());
+            const combined = texts.join('\n');
+            if (!combined.trim()) return;
+            try {
+                const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=ta&dt=t&q=${encodeURIComponent(combined)}`);
+                const json = await res.json();
+                if (json && json[0]) {
+                    const translated = json[0].map(seg => seg[0]).join('').split('\n');
+                    els.forEach((id, i) => { if (translated[i]) document.getElementById(id).innerText = translated[i]; });
+                }
+            } catch (e) { console.log('Translation failed:', e); }
         }
 
-        document.addEventListener('touchstart', e => {
-            if (shouldIgnoreSwipe(e)) {
-                touchstartX = 0;
-                return;
-            }
-            touchstartX = e.changedTouches[0].screenX;
-            touchstartY = e.changedTouches[0].screenY;
-        }, { passive: true });
-
-        document.addEventListener('touchend', e => {
-            if (touchstartX === 0) return;
-
-            const touchendX = e.changedTouches[0].screenX;
-            const touchendY = e.changedTouches[0].screenY;
-
-            const dx = touchendX - touchstartX;
-            const dy = touchendY - touchstartY;
-
-            // Guard 1: Ignore if it's more of a vertical scroll than a horizontal swipe
-            if (Math.abs(dy) > Math.abs(dx)) return;
-
-            // Guard 2: Sensitivity Threshold (100px)
-            if (Math.abs(dx) > 100) {
-                if (document.getElementById('viewLedger').classList.contains('d-none')) return;
-
-                if (dx > 0) navigateAccount(-1); // Swipe Right -> Prev
-                else navigateAccount(1);        // Swipe Left -> Next
-            }
-        }, { passive: true });
-
-        // Laptop Keyboard Support
-        document.addEventListener('keydown', (e) => {
-            if (document.getElementById('viewLedger').classList.contains('d-none')) return;
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-            if (e.key === "ArrowRight") navigateAccount(1);
-            if (e.key === "ArrowLeft") navigateAccount(-1);
-        });
-        function toggleMonthlyProgress() {
-            switchTab('viewProgress');
-            initMonthlyFilter();
-        }
+        // ============================================================
+        // MONTHLY PROGRESS
+        // ============================================================
+        function toggleMonthlyProgress() { switchTab('viewProgress'); initMonthlyFilter(); }
 
         function initMonthlyFilter() {
             const mSel = document.getElementById('progressMonth');
@@ -1931,11 +2134,9 @@
             const tamilMonths = ['ஜன', 'பிப்', 'மார்', 'ஏப்', 'மே', 'ஜூன்', 'ஜூல்', 'ஆக', 'செப்', 'அக்', 'நவ', 'டிச'];
             const savedMonth = mSel.value;
             const savedYear = ySel.value;
-            mSel.innerHTML = '';
-            months.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.text = curLang === 'ta' ? tamilMonths[i] : m; o.style.color = '#2c3e50'; o.style.background = '#fff'; mSel.appendChild(o); });
-            ySel.innerHTML = '';
+            mSel.innerHTML = months.map((m, i) => `<option value="${i}" style="color:#2c3e50;background:#fff;">${curLang === 'ta' ? tamilMonths[i] : m}</option>`).join('');
             const yr = new Date().getFullYear();
-            for (let y = yr; y >= yr - 3; y--) { const o = document.createElement('option'); o.value = y; o.text = y; o.style.color = '#2c3e50'; o.style.background = '#fff'; ySel.appendChild(o); }
+            ySel.innerHTML = Array.from({ length: YEAR_RANGE + 1 }, (_, j) => yr - j).map(y => `<option value="${y}" style="color:#2c3e50;background:#fff;">${y}</option>`).join('');
             mSel.value = savedMonth !== '' ? savedMonth : new Date().getMonth();
             ySel.value = savedYear || yr;
             renderMonthlyProgress();
@@ -1944,18 +2145,17 @@
         function renderMonthlyProgress() {
             const month = parseInt(document.getElementById('progressMonth').value);
             const year = parseInt(document.getElementById('progressYear').value);
-            let mGiven = 0, mReceived = 0, mPrinRecv = 0, mIntRecv = 0, mPaid = 0, mDue = 0;
-            let mPrinReceivable = 0, mIntReceivable = 0;
+            let mGiven = 0, mReceived = 0, mPrinRecv = 0, mIntRecv = 0, mPaid = 0, mDue = 0, mPrinReceivable = 0, mIntReceivable = 0, mLoansAddedCount = 0;
 
             localDB.forEach(loan => {
                 const loanDate = new Date(loan.loan.date);
                 if (loanDate.getFullYear() === year && loanDate.getMonth() === month) {
                     mGiven += parseFloat(loan.loan.principal) || 0;
+                    mLoansAddedCount++;
                 }
                 const totalInt = parseFloat(loan.loan.totalInt) || 0;
                 const numDues = parseInt(loan.loan.dues) || 1;
                 const intFactor = totalInt / numDues;
-
                 loan.schedule.forEach(s => {
                     const due = new Date(s.dueDate);
                     if (due.getFullYear() === year && due.getMonth() === month) {
@@ -1963,11 +2163,8 @@
                         const expAmt = parseFloat(s.expectedAmt) || 0;
                         mIntReceivable += intFactor;
                         mPrinReceivable += (expAmt - intFactor);
-                        if (s.isPaid) {
-                            mPaid++;
-                        }
+                        if (s.isPaid) mPaid++;
                     }
-                    
                     if (s.isPaid && s.paidDate) {
                         const pDate = new Date(s.paidDate);
                         if (pDate.getFullYear() === year && pDate.getMonth() === month) {
@@ -1981,7 +2178,7 @@
                 });
             });
 
-            const fmt = v => '₹' + Math.round(v).toLocaleString('en-IN');
+            document.getElementById('mLoansAdded').innerText = mLoansAddedCount;
             document.getElementById('mGiven').innerText = fmt(mGiven);
             document.getElementById('mReceived').innerText = fmt(mReceived);
             document.getElementById('mPrinRecv').innerText = fmt(mPrinRecv);
@@ -1992,7 +2189,7 @@
             document.getElementById('mProgressBar').style.width = pct + '%';
             document.getElementById('mProgressPct').innerText = pct + '%';
             document.getElementById('mPaidCount').innerText = mPaid;
-            document.getElementById('mDueCount').innerText = (mDue - mPaid);
+            document.getElementById('mDueCount').innerText = mDue - mPaid;
         }
     </script>
 </body>
