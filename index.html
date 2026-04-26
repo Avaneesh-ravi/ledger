@@ -1585,6 +1585,13 @@
         }
 
         function openNotifModal() { new bootstrap.Modal(document.getElementById('notifModal')).show(); }
+
+// When notif modal closes via X button or backdrop — go to dashboard, never exit app
+document.getElementById('notifModal').addEventListener('hidden.bs.modal', () => {
+    const ledgerVisible = !document.getElementById('viewLedger').classList.contains('d-none');
+    if (ledgerVisible) return; // Ledger opened from notif — don't redirect
+    switchTab('viewDashboard', true);
+});
         function openNotifLedger(idx) {
     activeNavList = overdueIndices;
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
