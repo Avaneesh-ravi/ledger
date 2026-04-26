@@ -1586,10 +1586,13 @@
 
         function openNotifModal() { new bootstrap.Modal(document.getElementById('notifModal')).show(); }
         function openNotifLedger(idx) {
-            activeNavList = overdueIndices;
-            bootstrap.Modal.getInstance(document.getElementById('notifModal')).hide();
-            viewLedger(idx);
-        }
+    activeNavList = overdueIndices;
+    const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
+    if (modal) modal.hide();
+    // Push notif state BEFORE viewLedger so back returns here
+    history.pushState({ view: 'viewDashboard', fromNotif: true }, '', '');
+    viewLedger(idx);
+}
         function openDashboardLedger(idx) {
             activeNavList = null;
             viewLedger(idx);
@@ -1637,7 +1640,12 @@ history.replaceState({ view: 'viewDashboard' }, '', '');
 // Android back button / gesture handler
 window.addEventListener('popstate', (e) => {
     const view = (e.state && e.state.view) ? e.state.view : 'viewDashboard';
-    switchTab(view, true);
+    if (e.state && e.state.fromNotif) {
+        switchTab('viewDashboard', true);
+        setTimeout(() => openNotifModal(), 50);
+    } else {
+        switchTab(view, true);
+    }
 });
 
         // ============================================================
