@@ -1320,13 +1320,11 @@
             return p;
         }
         function openCall(e, phone) {
-    if (e) e.stopPropagation();
-    let p = String(phone).replace(/[^0-9+]/g, '');
-    if (!p) { showToast('No phone number', 'error'); return; }
-    const a = document.createElement('a');
-    a.href = `tel:${p}`;
-    a.click();
-}
+            if (e) e.stopPropagation();
+            let p = String(phone).replace(/[^0-9+]/g, '');
+            if (!p) { showToast('No phone number', 'error'); return; }
+            window.open(`tel:${p}`, '_self');
+        }
         function openWhatsApp(e, phone, encodedMsg) {
             if (e) e.stopPropagation();
             const p = cleanPhoneForWa(phone);
@@ -1427,44 +1425,20 @@
                 });
         }
 
-       firebase.auth().onAuthStateChanged(user => {
-    if (user) {
-        document.getElementById('loginOverlay').style.display = 'none';
-        startDatabaseListeners();
-
-        // Restore last view after mobile exit/call return
-        const lastView = sessionStorage.getItem('lastView');
-        const lastIdx = sessionStorage.getItem('lastIdx');
-        const lastNavList = sessionStorage.getItem('lastNavList');
-
-        if (lastView && lastView !== 'viewDashboard') {
-            const restoreInterval = setInterval(() => {
-                if (localDB.length > 0) {
-                    clearInterval(restoreInterval);
-                    if (lastView === 'viewLedger' && lastIdx !== null) {
-                        activeNavList = lastNavList ? JSON.parse(lastNavList) : null;
-                        viewLedger(parseInt(lastIdx));
-                    } else if (lastView === 'viewProgress') {
-                        toggleMonthlyProgress();
-                    } else {
-                        switchTab(lastView);
-                    }
-                }
-            }, 300);
-        }
-    } else {
-        document.getElementById('loginOverlay').style.display = 'flex';
-        document.getElementById('loader').style.display = 'none';
-    }
-});
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                startDatabaseListeners();
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+                document.getElementById('loader').style.display = 'none';
+            }
+        });
 
         async function handleLogout() {
-    const ok = await showConfirm('You will be signed out of Finance Cloud.', 'Logout?');
-    if (ok) {
-        sessionStorage.clear();
-        firebase.auth().signOut().then(() => location.reload());
-    }
-}
+            const ok = await showConfirm('You will be signed out of Finance Cloud.', 'Logout?');
+            if (ok) firebase.auth().signOut().then(() => location.reload());
+        }
 
         // ============================================================
         // STATE
@@ -1494,8 +1468,7 @@
                 renderGivenList();
                 checkNotifications();
                 document.getElementById('loader').style.display = 'none';
-// Only auto-refresh ledger if we're already on it and not in a restore cycle
-if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') viewLedger(currentIdx);
+                if (currentIdx !== null) viewLedger(currentIdx);
             }, err => {
                 console.error('DB Error:', err);
                 showToast('Database Error: Check your Firebase Security Rules!', 'error');
@@ -1642,7 +1615,7 @@ if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') 
         // ============================================================
         // TAB SWITCHING
         // ============================================================
-        function switchTab(id) {
+        function switchTab(id, fromPopState = false) {
     ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
         const el = document.getElementById(v);
         if (el) el.classList.add('d-none');
@@ -1653,18 +1626,19 @@ if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') 
     if (id === 'viewGiven') document.getElementById('navGiven').classList.add('active');
     if (id === 'viewQuickPay') document.getElementById('navPay').classList.add('active');
 
-    // Persist active tab so mobile exit+return restores it
-    sessionStorage.setItem('lastView', id);
-    // Clear ledger-specific state when leaving ledger
-    if (id !== 'viewLedger') {
-        sessionStorage.removeItem('lastIdx');
-        sessionStorage.removeItem('lastNavList');
-    }
-    // Push a history entry so Android back gesture stays inside the app
-    if (history.state?.view !== id) {
+    if (!fromPopState) {
         history.pushState({ view: id }, '', '');
     }
 }
+
+// Seed initial state
+history.replaceState({ view: 'viewDashboard' }, '', '');
+
+// Android back button / gesture handler
+window.addEventListener('popstate', (e) => {
+    const view = (e.state && e.state.view) ? e.state.view : 'viewDashboard';
+    switchTab(view, true);
+});
 
         // ============================================================
         // DASHBOARD UPDATE — no innerHTML += in loop
@@ -2063,11 +2037,6 @@ if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') 
                     if (uiTranslations['ta'][key]) el.innerText = uiTranslations['ta'][key];
                 });
             }
-            // Save current state for call-return restoration
-// Save ledger-specific state before switching tab
-            sessionStorage.setItem('lastIdx', idx);
-            sessionStorage.setItem('lastNavList', activeNavList ? JSON.stringify(activeNavList) : '');
-            history.pushState({ view: 'viewLedger', idx: idx }, '', '');
             switchTab('viewLedger');
             const counter = document.getElementById('accountCounter');
             if (counter) {
@@ -2211,19 +2180,13 @@ if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') 
         }
 
         async function deleteLoan() {
-    const ok = await showConfirm('This loan and all its data will be permanently deleted.', 'Delete Loan?');
-    if (ok) {
-        db.collection('loans').doc(currentDocId).delete()
-            .then(() => {
-                sessionStorage.removeItem('lastView');
-                sessionStorage.removeItem('lastIdx');
-                sessionStorage.removeItem('lastNavList');
-                showToast('Loan deleted');
-                switchTab('viewDashboard');
-            })
-            .catch(e => showToast('Delete failed: ' + e.message, 'error'));
-    }
-}
+            const ok = await showConfirm('This loan and all its data will be permanently deleted.', 'Delete Loan?');
+            if (ok) {
+                db.collection('loans').doc(currentDocId).delete()
+                    .then(() => { showToast('Loan deleted'); switchTab('viewDashboard'); })
+                    .catch(e => showToast('Delete failed: ' + e.message, 'error'));
+            }
+        }
 
         // ============================================================
         // PAYMENTS
@@ -2426,30 +2389,6 @@ if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') 
             document.getElementById('mPaidCount').innerText = mPaid;
             document.getElementById('mDueCount').innerText = mDue - mPaid;
         }
-     window.addEventListener('popstate', (e) => {
-            const state = e.state;
-            if (!state || !state.view) {
-                history.pushState({ view: sessionStorage.getItem('lastView') || 'viewDashboard' }, '', '');
-                return;
-            }
-            if (state.view === 'viewLedger' && state.idx !== undefined) {
-                activeNavList = sessionStorage.getItem('lastNavList')
-                    ? JSON.parse(sessionStorage.getItem('lastNavList')) : null;
-                viewLedger(state.idx);
-            } else if (state.view === 'viewProgress') {
-                toggleMonthlyProgress();
-            } else {
-                switchTab(state.view);
-            }
-        });
-
-        // Seed initial history state so first back press is caught
-        window.addEventListener('load', () => {
-            if (!history.state) {
-                history.replaceState({ view: 'viewDashboard' }, '', '');
-            }
-        });
-        
     </script>
 </body>
 
