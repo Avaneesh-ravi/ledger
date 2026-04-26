@@ -1584,14 +1584,21 @@
             }).join('');
         }
 
-        function openNotifModal() { new bootstrap.Modal(document.getElementById('notifModal')).show(); }
+        function openNotifModal() {
+    history.pushState({ view: 'notifModal' }, '', '');
+    new bootstrap.Modal(document.getElementById('notifModal')).show();
+}
         function openNotifLedger(idx) {
     activeNavList = overdueIndices;
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
     if (modal) modal.hide();
-    viewLedger(idx);
-    // Replace the ledger state with fromNotif flag so back goes to notif modal
-    history.replaceState({ view: 'viewLedger', fromNotif: true }, '', '');
+    // Push ledger state WITH fromNotif flag so Android back returns to notification modal
+    history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
+    // Show ledger without pushing another history entry
+    currentIdx = idx;
+    const d = localDB[idx];
+    currentDocId = d.uid;
+    _renderLedgerView(d, idx);
 }
         function openDashboardLedger(idx) {
             activeNavList = null;
@@ -1634,18 +1641,43 @@
     }
 }
 
+// Helper: show ledger view without touching history (used by openNotifLedger)
+function _renderLedgerView(d, idx) {
+    ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.classList.add('d-none');
+    });
+    document.getElementById('viewLedger').classList.remove('d-none');
+    document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+    // Re-run the ledger population logic (same as viewLedger but without switchTab)
+    viewLedger(idx, true); // pass skipHistory=true
+}
+
 // Seed initial state
 history.replaceState({ view: 'viewDashboard' }, '', '');
 
 // Android back button / gesture handler
 window.addEventListener('popstate', (e) => {
-    const view = (e.state && e.state.view) ? e.state.view : 'viewDashboard';
-    if (e.state && e.state.fromNotif) {
+    const state = e.state;
+    if (!state) {
         switchTab('viewDashboard', true);
-        setTimeout(() => openNotifModal(), 50);
-    } else {
-        switchTab(view, true);
+        return;
     }
+    if (state.view === 'notifModal') {
+        // Back from notification modal state — go to dashboard
+        switchTab('viewDashboard', true);
+        return;
+    }
+    if (state.fromNotif) {
+        // Back from ledger opened via notification — reopen notification modal
+        switchTab('viewDashboard', true);
+        setTimeout(() => {
+            history.pushState({ view: 'notifModal' }, '', '');
+            new bootstrap.Modal(document.getElementById('notifModal')).show();
+        }, 50);
+        return;
+    }
+    switchTab(state.view, true);
 });
 
         // ============================================================
@@ -1950,7 +1982,7 @@ window.addEventListener('popstate', (e) => {
         // ============================================================
         function setText(id, t) { const el = document.getElementById(id); if (el) el.innerText = t || ''; }
 
-        function viewLedger(idx) {
+        function viewLedger(idx, skipHistory = false) {
             currentIdx = idx;
             const d = localDB[idx];
             currentDocId = d.uid;
@@ -2045,7 +2077,7 @@ window.addEventListener('popstate', (e) => {
                     if (uiTranslations['ta'][key]) el.innerText = uiTranslations['ta'][key];
                 });
             }
-            switchTab('viewLedger');
+            switchTab('viewLedger', skipHistory);
             const counter = document.getElementById('accountCounter');
             if (counter) {
                 if (activeNavList) {
