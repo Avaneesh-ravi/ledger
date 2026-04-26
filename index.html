@@ -1585,26 +1585,26 @@
         }
 
         function openNotifModal() {
-    new bootstrap.Modal(document.getElementById('notifModal')).show();
-    history.pushState({ view: 'viewDashboard', modalOpen: 'notif' }, '', '');
+    const modalEl = document.getElementById('notifModal');
+    new bootstrap.Modal(modalEl).show();
 }
 
-// Close notif modal on Android back if it's open
-let _notifClosedByBack = false;
-
-document.getElementById('notifModal').addEventListener('hide.bs.modal', () => {
-    if (!_notifClosedByBack && history.state && history.state.modalOpen === 'notif') {
-        history.back();
+// When notif modal closes for ANY reason (X button, backdrop, back gesture),
+// always navigate to dashboard — never exit the app.
+document.getElementById('notifModal').addEventListener('hidden.bs.modal', () => {
+    const ledgerHidden = document.getElementById('viewLedger').classList.contains('d-none');
+    if (ledgerHidden) {
+        switchTab('viewDashboard', true);
     }
-    _notifClosedByBack = false;
+    // If a ledger was opened via openNotifLedger, don't switch — ledger is already showing
 });
         function openNotifLedger(idx) {
     activeNavList = overdueIndices;
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
     if (modal) modal.hide();
+    // hidden.bs.modal fires but viewLedger won't be d-none after viewLedger() runs,
+    // so the dashboard redirect in hidden.bs.modal won't trigger
     viewLedger(idx);
-    // Replace the ledger state with fromNotif flag so back goes to notif modal
-    history.replaceState({ view: 'viewLedger', fromNotif: true }, '', '');
 }
         function openDashboardLedger(idx) {
             activeNavList = null;
@@ -1653,18 +1653,7 @@ history.replaceState({ view: 'viewDashboard' }, '', '');
 // Android back button / gesture handler
 window.addEventListener('popstate', (e) => {
     const view = (e.state && e.state.view) ? e.state.view : 'viewDashboard';
-    if (e.state && e.state.modalOpen === 'notif') {
-    _notifClosedByBack = true;
-    const m = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
-    if (m) m.hide();
-    return;
-}
-    if (e.state && e.state.fromNotif) {
-        switchTab('viewDashboard', true);
-        setTimeout(() => openNotifModal(), 50);
-    } else {
-        switchTab(view, true);
-    }
+    switchTab(view, true);
 });
 
         // ============================================================
