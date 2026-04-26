@@ -1584,7 +1584,20 @@
             }).join('');
         }
 
-        function openNotifModal() { new bootstrap.Modal(document.getElementById('notifModal')).show(); }
+        function openNotifModal() {
+    new bootstrap.Modal(document.getElementById('notifModal')).show();
+    history.pushState({ view: 'viewDashboard', modalOpen: 'notif' }, '', '');
+}
+
+// Close notif modal on Android back if it's open
+let _notifClosedByBack = false;
+
+document.getElementById('notifModal').addEventListener('hide.bs.modal', () => {
+    if (!_notifClosedByBack && history.state && history.state.modalOpen === 'notif') {
+        history.back();
+    }
+    _notifClosedByBack = false;
+});
         function openNotifLedger(idx) {
     activeNavList = overdueIndices;
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
@@ -1640,6 +1653,12 @@ history.replaceState({ view: 'viewDashboard' }, '', '');
 // Android back button / gesture handler
 window.addEventListener('popstate', (e) => {
     const view = (e.state && e.state.view) ? e.state.view : 'viewDashboard';
+    if (e.state && e.state.modalOpen === 'notif') {
+    _notifClosedByBack = true;
+    const m = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
+    if (m) m.hide();
+    return;
+}
     if (e.state && e.state.fromNotif) {
         switchTab('viewDashboard', true);
         setTimeout(() => openNotifModal(), 50);
