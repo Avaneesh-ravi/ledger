@@ -1320,11 +1320,13 @@
             return p;
         }
         function openCall(e, phone) {
-            if (e) e.stopPropagation();
-            let p = String(phone).replace(/[^0-9+]/g, '');
-            if (!p) { showToast('No phone number', 'error'); return; }
-            window.open(`tel:${p}`, '_self');
-        }
+    if (e) e.stopPropagation();
+    let p = String(phone).replace(/[^0-9+]/g, '');
+    if (!p) { showToast('No phone number', 'error'); return; }
+    const a = document.createElement('a');
+    a.href = `tel:${p}`;
+    a.click();
+}
         function openWhatsApp(e, phone, encodedMsg) {
             if (e) e.stopPropagation();
             const p = cleanPhoneForWa(phone);
@@ -1425,20 +1427,37 @@
                 });
         }
 
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) {
-                document.getElementById('loginOverlay').style.display = 'none';
-                startDatabaseListeners();
-            } else {
-                document.getElementById('loginOverlay').style.display = 'flex';
-                document.getElementById('loader').style.display = 'none';
-            }
-        });
+       firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        startDatabaseListeners();
+
+        // Restore last view after phone call return
+        const lastView = sessionStorage.getItem('lastView');
+        const lastIdx = sessionStorage.getItem('lastIdx');
+        const lastNavList = sessionStorage.getItem('lastNavList');
+        if (lastView === 'viewLedger' && lastIdx !== null) {
+            const restoreInterval = setInterval(() => {
+                if (localDB.length > 0) {
+                    clearInterval(restoreInterval);
+                    activeNavList = lastNavList ? JSON.parse(lastNavList) : null;
+                    viewLedger(parseInt(lastIdx));
+                }
+            }, 300);
+        }
+    } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('loader').style.display = 'none';
+    }
+});
 
         async function handleLogout() {
-            const ok = await showConfirm('You will be signed out of Finance Cloud.', 'Logout?');
-            if (ok) firebase.auth().signOut().then(() => location.reload());
-        }
+    const ok = await showConfirm('You will be signed out of Finance Cloud.', 'Logout?');
+    if (ok) {
+        sessionStorage.clear();
+        firebase.auth().signOut().then(() => location.reload());
+    }
+}
 
         // ============================================================
         // STATE
@@ -1468,7 +1487,7 @@
                 renderGivenList();
                 checkNotifications();
                 document.getElementById('loader').style.display = 'none';
-                if (currentIdx !== null) viewLedger(currentIdx);
+if (currentIdx !== null && !sessionStorage.getItem('lastView')) viewLedger(currentIdx);
             }, err => {
                 console.error('DB Error:', err);
                 showToast('Database Error: Check your Firebase Security Rules!', 'error');
@@ -2024,6 +2043,10 @@
                     if (uiTranslations['ta'][key]) el.innerText = uiTranslations['ta'][key];
                 });
             }
+            // Save current state for call-return restoration
+sessionStorage.setItem('lastView', 'viewLedger');
+sessionStorage.setItem('lastIdx', idx);
+sessionStorage.setItem('lastNavList', activeNavList ? JSON.stringify(activeNavList) : '');
             switchTab('viewLedger');
             const counter = document.getElementById('accountCounter');
             if (counter) {
@@ -2167,13 +2190,19 @@
         }
 
         async function deleteLoan() {
-            const ok = await showConfirm('This loan and all its data will be permanently deleted.', 'Delete Loan?');
-            if (ok) {
-                db.collection('loans').doc(currentDocId).delete()
-                    .then(() => { showToast('Loan deleted'); switchTab('viewDashboard'); })
-                    .catch(e => showToast('Delete failed: ' + e.message, 'error'));
-            }
-        }
+    const ok = await showConfirm('This loan and all its data will be permanently deleted.', 'Delete Loan?');
+    if (ok) {
+        db.collection('loans').doc(currentDocId).delete()
+            .then(() => {
+                sessionStorage.removeItem('lastView');
+                sessionStorage.removeItem('lastIdx');
+                sessionStorage.removeItem('lastNavList');
+                showToast('Loan deleted');
+                switchTab('viewDashboard');
+            })
+            .catch(e => showToast('Delete failed: ' + e.message, 'error'));
+    }
+}
 
         // ============================================================
         // PAYMENTS
@@ -2376,6 +2405,7 @@
             document.getElementById('mPaidCount').innerText = mPaid;
             document.getElementById('mDueCount').innerText = mDue - mPaid;
         }
+        
     </script>
 </body>
 
