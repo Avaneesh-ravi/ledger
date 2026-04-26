@@ -1589,9 +1589,9 @@
     activeNavList = overdueIndices;
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
     if (modal) modal.hide();
-    // Push notif state BEFORE viewLedger so back returns here
-    history.pushState({ view: 'viewDashboard', fromNotif: true }, '', '');
     viewLedger(idx);
+    // Replace the ledger state with fromNotif flag so back goes to notif modal
+    history.replaceState({ view: 'viewLedger', fromNotif: true }, '', '');
 }
         function openDashboardLedger(idx) {
             activeNavList = null;
