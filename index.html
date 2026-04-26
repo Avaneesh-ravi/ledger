@@ -1584,17 +1584,7 @@
             }).join('');
         }
 
-        function openNotifModal() {
-    new bootstrap.Modal(document.getElementById('notifModal')).show();
-    history.pushState({ view: 'viewDashboard', modalOpen: 'notif' }, '', '');
-}
-
-// Close notif modal on Android back if it's open
-document.getElementById('notifModal').addEventListener('hide.bs.modal', () => {
-    if (history.state && history.state.modalOpen === 'notif') {
-        history.back();
-    }
-});
+        function openNotifModal() { new bootstrap.Modal(document.getElementById('notifModal')).show(); }
         function openNotifLedger(idx) {
     activeNavList = overdueIndices;
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
@@ -1650,12 +1640,6 @@ history.replaceState({ view: 'viewDashboard' }, '', '');
 // Android back button / gesture handler
 window.addEventListener('popstate', (e) => {
     const view = (e.state && e.state.view) ? e.state.view : 'viewDashboard';
-    if (e.state && e.state.modalOpen === 'notif') {
-        // Back pressed while notif modal was open — just close the modal
-        const m = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
-        if (m) m.hide();
-        return;
-    }
     if (e.state && e.state.fromNotif) {
         switchTab('viewDashboard', true);
         setTimeout(() => openNotifModal(), 50);
