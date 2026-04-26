@@ -1591,10 +1591,11 @@
         function openNotifLedger(idx) {
     activeNavList = overdueIndices;
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
+    const notifList = document.getElementById('notifList');
+    const scrollTop = notifList ? notifList.scrollTop : 0;
     if (modal) modal.hide();
-    // Push ledger state WITH fromNotif flag so Android back returns to notification modal
+    history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
     history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
-    // Show ledger without pushing another history entry
     currentIdx = idx;
     const d = localDB[idx];
     currentDocId = d.uid;
@@ -1664,13 +1665,18 @@ window.addEventListener('popstate', (e) => {
         return;
     }
     if (state.view === 'notifModal') {
-        // Back to notification modal state — reopen it
-        switchTab('viewDashboard', true);
+    switchTab('viewDashboard', true);
+    setTimeout(() => {
+        new bootstrap.Modal(document.getElementById('notifModal')).show();
         setTimeout(() => {
-            new bootstrap.Modal(document.getElementById('notifModal')).show();
-        }, 50);
-        return;
-    }
+            const notifList = document.getElementById('notifList');
+            if (notifList && state.scrollTop !== undefined) {
+                notifList.scrollTop = state.scrollTop;
+            }
+        }, 300);
+    }, 50);
+    return;
+}
     if (state.fromNotif) {
         // Back from ledger opened via notification — reopen notification modal
         switchTab('viewDashboard', true);
