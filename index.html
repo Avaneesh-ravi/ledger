@@ -1664,8 +1664,11 @@ window.addEventListener('popstate', (e) => {
         return;
     }
     if (state.view === 'notifModal') {
-        // Back from notification modal state — go to dashboard
+        // Back to notification modal state — reopen it
         switchTab('viewDashboard', true);
+        setTimeout(() => {
+            new bootstrap.Modal(document.getElementById('notifModal')).show();
+        }, 50);
         return;
     }
     if (state.fromNotif) {
@@ -1679,7 +1682,6 @@ window.addEventListener('popstate', (e) => {
     }
     switchTab(state.view, true);
 });
-
         // ============================================================
         // DASHBOARD UPDATE — no innerHTML += in loop
         // ============================================================
