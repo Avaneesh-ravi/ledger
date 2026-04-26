@@ -1660,6 +1660,10 @@ if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') 
         sessionStorage.removeItem('lastIdx');
         sessionStorage.removeItem('lastNavList');
     }
+    // Push a history entry so Android back gesture stays inside the app
+    if (history.state?.view !== id) {
+        history.pushState({ view: id }, '', '');
+    }
 }
 
         // ============================================================
@@ -2063,7 +2067,8 @@ if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') 
 // Save ledger-specific state before switching tab
             sessionStorage.setItem('lastIdx', idx);
             sessionStorage.setItem('lastNavList', activeNavList ? JSON.stringify(activeNavList) : '');
-            switchTab('viewLedger'); // switchTab saves lastView = 'viewLedger'
+            history.pushState({ view: 'viewLedger', idx: idx }, '', '');
+            switchTab('viewLedger');
             const counter = document.getElementById('accountCounter');
             if (counter) {
                 if (activeNavList) {
@@ -2421,6 +2426,29 @@ if (currentIdx !== null && sessionStorage.getItem('lastView') === 'viewLedger') 
             document.getElementById('mPaidCount').innerText = mPaid;
             document.getElementById('mDueCount').innerText = mDue - mPaid;
         }
+     window.addEventListener('popstate', (e) => {
+            const state = e.state;
+            if (!state || !state.view) {
+                history.pushState({ view: sessionStorage.getItem('lastView') || 'viewDashboard' }, '', '');
+                return;
+            }
+            if (state.view === 'viewLedger' && state.idx !== undefined) {
+                activeNavList = sessionStorage.getItem('lastNavList')
+                    ? JSON.parse(sessionStorage.getItem('lastNavList')) : null;
+                viewLedger(state.idx);
+            } else if (state.view === 'viewProgress') {
+                toggleMonthlyProgress();
+            } else {
+                switchTab(state.view);
+            }
+        });
+
+        // Seed initial history state so first back press is caught
+        window.addEventListener('load', () => {
+            if (!history.state) {
+                history.replaceState({ view: 'viewDashboard' }, '', '');
+            }
+        });
         
     </script>
 </body>
