@@ -755,6 +755,20 @@
                                     aria-label="Receipt number">
                             </div>
                         </div>
+                        <div class="col-12" id="qpPenaltyRow" style="display:none;">
+                            <div class="p-3 rounded-3" style="background:#fff5f5;border:1.5px dashed #ef9a9a;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-danger small"><i class="fas fa-exclamation-triangle me-1"></i>Penalty Charge</span>
+                                    <span id="qpPenaltyInfo" class="small text-muted"></span>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-danger text-white border-0"><i class="fas fa-indian-rupee-sign"></i></span>
+                                    <input type="number" id="qpPenalty" class="form-control fw-bold text-danger" placeholder="0" min="0" aria-label="Penalty amount">
+                                    <span class="input-group-text bg-light text-muted border" style="font-size:0.75rem;">editable</span>
+                                </div>
+                                <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i>Edit to waive or adjust penalty</div>
+                            </div>
+                        </div>
                         <div class="col-12 mt-3">
                             <button class="btn btn-primary w-100 fw-bold py-2 rounded-pill shadow-sm"
                                 onclick="processQuickPay()">
@@ -778,6 +792,7 @@
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="no">No</th>
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="receipt">Rcpt</th>
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="amt">Amt</th>
+                            <th class="py-3 text-muted fw-bold border-0 text-danger">Penalty</th>
                             </tr>
                         </thead>
                         <tbody id="qpHistoryBody"></tbody>
@@ -858,6 +873,25 @@
                                 <div class="small text-muted fw-bold" data-lang="int_receivable"
                                     style="font-size:0.65rem;">INT. RECEIVABLE</div>
                                 <div class="fw-bold text-danger" id="mIntReceivable">₹0</div>
+                            </div>
+                        </div><div class="col-6">
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa;border:1px solid #e9ecef;">
+                                <div class="small text-muted fw-bold" data-lang="prin_receivable"
+                                    style="font-size:0.65rem;">PRIN. RECEIVABLE</div>
+                                <div class="fw-bold text-info" id="mPrinReceivable">₹0</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-2 rounded text-center" style="background:#f8f9fa;border:1px solid #e9ecef;">
+                                <div class="small text-muted fw-bold" data-lang="int_receivable"
+                                    style="font-size:0.65rem;">INT. RECEIVABLE</div>
+                                <div class="fw-bold text-danger" id="mIntReceivable">₹0</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-2 rounded text-center" style="background:#fff5f5;border:1px solid #ffcdd2;">
+                                <div class="small text-muted fw-bold" style="font-size:0.65rem;">⚡ PENALTY COLLECTED</div>
+                                <div class="fw-bold text-danger" id="mPenaltyCollected">₹0</div>
                             </div>
                         </div>
                     </div>
@@ -988,6 +1022,7 @@
                             <div class="penalty-val">₹<span id="totalPenaltyAmt">0</span></div>
                         </div>
                     </div>
+                    <div id="penaltySummary" style="display:none;"></div>
                 </div>
                 <div class="mt-3 field-lbl" data-lang="remarks">Remarks</div>
                 <div class="field-val" id="detailRemarks"></div>
@@ -1180,37 +1215,64 @@
         </div>
     </div>
 
-    <!-- ===== DUE PAYMENT MODAL ===== -->
-    <div class="modal fade" id="duePayModal" tabindex="-1" aria-labelledby="duePayModalLabel" aria-modal="true"
-        role="dialog">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h6 class="modal-title fw-bold" id="duePayModalLabel" data-lang="record_payment">Record Due Payment
-                    </h6>
-                    <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+   <!-- ===== DUE PAYMENT MODAL ===== -->
+<div class="modal fade" id="duePayModal" tabindex="-1" aria-labelledby="duePayModalLabel" aria-modal="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px;overflow:hidden;">
+            <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1e4620,#2e7d32);">
+                <div>
+                    <h6 class="modal-title fw-bold mb-0" id="duePayModalLabel"><i class="fas fa-hand-holding-usd me-2"></i>Record Payment</h6>
+                    <small class="opacity-75">Fill in payment & penalty details</small>
                 </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-12"><label class="small fw-bold"><span data-lang="payment_date">Payment
-                                    Date</span> <span class="required-star">*</span></label><input type="date"
-                                id="duePayDate" class="form-control" aria-label="Payment date"></div>
-                        <div class="col-12"><label class="small fw-bold"><span data-lang="receipt_no">Receipt
-                                    Number</span> <span class="required-star">*</span></label>
-                            <input type="text" id="duePayRcpt" class="form-control" placeholder="Enter Receipt No"
-                                inputmode="decimal" pattern="[0-9.\-]*"
-                                oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')" aria-label="Receipt number">
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="small fw-bold text-muted mb-1">Payment Date <span class="required-star">*</span></label>
+                        <input type="date" id="duePayDate" class="form-control" aria-label="Payment date">
+                    </div>
+                    <div class="col-6">
+                        <label class="small fw-bold text-muted mb-1">Receipt No <span class="required-star">*</span></label>
+                        <input type="text" id="duePayRcpt" class="form-control" placeholder="e.g. 1628"
+                            inputmode="decimal" pattern="[0-9.\-]*"
+                            oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')" aria-label="Receipt number">
+                    </div>
+                    <div class="col-12">
+                        <label class="small fw-bold text-muted mb-1">Due Amount <span class="required-star">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-success text-white border-0"><i class="fas fa-indian-rupee-sign"></i></span>
+                            <input type="number" id="duePayAmt" class="form-control fw-bold text-success border-start-0" style="border-left:none;" aria-label="Payment amount">
                         </div>
-                        <div class="col-12"><label class="small fw-bold"><span data-lang="amount">Amount</span> <span
-                                    class="required-star">*</span></label><input type="number" id="duePayAmt"
-                                class="form-control fw-bold text-success" aria-label="Payment amount"></div>
+                    </div>
+
+                    <!-- PENALTY ROW — hidden when no delay -->
+                    <div class="col-12" id="duePayPenaltyRow" style="display:none;">
+                        <div class="p-3 rounded-3" style="background:#fff5f5;border:1.5px dashed #ef9a9a;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-danger small"><i class="fas fa-exclamation-triangle me-1"></i>Penalty Charge</span>
+                                <span id="duePayPenaltyInfo" class="small"></span>
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-danger text-white border-0"><i class="fas fa-indian-rupee-sign"></i></span>
+                                <input type="number" id="duePayPenalty" class="form-control fw-bold text-danger border-start-0" placeholder="0" min="0" aria-label="Penalty amount paid">
+                                <span class="input-group-text bg-light text-muted border" style="font-size:0.75rem;">editable</span>
+                            </div>
+                            <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i>Edit to waive or adjust penalty amount</div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0"><button class="btn btn-primary w-100 fw-bold"
-                        onclick="submitDuePayment()" data-lang="confirm_payment">CONFIRM PAYMENT</button></div>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                <button class="btn w-100 fw-bold py-2 text-white rounded-pill shadow-sm"
+                    style="background:linear-gradient(135deg,#1e4620,#2e7d32);"
+                    onclick="submitDuePayment()">
+                    <i class="fas fa-check-circle me-2"></i>CONFIRM PAYMENT
+                </button>
             </div>
         </div>
     </div>
+</div>
 
     <!-- ===== EDIT TRANSACTION MODAL ===== -->
     <div class="modal fade" id="editTxnModal" tabindex="-1" aria-labelledby="editTxnModalLabel" aria-modal="true"
@@ -1238,9 +1300,16 @@
                                 aria-label="Corrected receipt number">
                         </div>
                         <div class="col-12"><label class="small fw-bold" data-lang="amount">Correct Amount</label><input
-                                type="number" id="editTxnAmt" class="form-control fw-bold text-success"
-                                aria-label="Corrected amount"></div>
+                            type="number" id="editTxnAmt" class="form-control fw-bold text-success"
+                            aria-label="Corrected amount"></div>
+                    <div class="col-12 mt-2">
+                        <label class="small fw-bold text-danger">Penalty Paid <span class="text-muted fw-normal small">(₹ collected from client)</span></label>
+                        <div class="input-group input-group-sm mt-1">
+                            <span class="input-group-text bg-danger text-white border-0"><i class="fas fa-indian-rupee-sign"></i></span>
+                            <input type="number" id="editTxnPenalty" class="form-control fw-bold text-danger" placeholder="0" min="0" aria-label="Penalty paid">
+                        </div>
                     </div>
+                </div>
                 </div>
                 <div class="modal-footer border-0"><button class="btn btn-warning w-100 fw-bold"
                         onclick="saveTransactionEdit()" data-lang="update_sync">UPDATE & SYNC</button></div>
@@ -1698,6 +1767,7 @@ window.addEventListener('popstate', (e) => {
             let tG = 0, tC = 0, tI = 0, tPR = 0, tIR = 0, tTotalExp = 0, closedCount = 0;
             const rows = [];
 
+            let tPenalty = 0;
             localDB.forEach((loan, i) => {
                 const totalInt = parseFloat(loan.loan.totalInt) || 0;
                 const numDues = parseInt(loan.loan.dues) || 1;
@@ -1713,6 +1783,7 @@ window.addEventListener('popstate', (e) => {
                         const rowPrinRecv = paidAmt - rowIntRecv;
                         tIR += rowIntRecv;
                         tPR += rowPrinRecv;
+                        tPenalty += parseFloat(s.penaltyPaid) || 0;
                     }
                 });
 
@@ -1743,6 +1814,7 @@ window.addEventListener('popstate', (e) => {
             setT('dashIntRecv', fmtRaw(tIR));
             setT('dashPending', fmtRaw(tTotalExp - tC));
             setT('dashInterest', fmtRaw(tI));
+            setT('dashPenalty', fmtRaw(tPenalty));
             setT('totalCount', localDB.length);
             setT('closedCount', closedCount);
             if (currentIdx !== null) setT('accountCounter', `${currentIdx + 1} / ${localDB.length}`);
@@ -1760,7 +1832,13 @@ window.addEventListener('popstate', (e) => {
         function renderHistory() {
             const tb = document.getElementById('qpHistoryBody');
             const sorted = [...localHistory].sort((a, b) => new Date(b.date) - new Date(a.date) || b.uid.localeCompare(a.uid));
-            tb.innerHTML = sorted.map(h => `<tr><td>${h.date}</td><td>${h.loanNo}</td><td>${h.rcpt}</td><td>${h.amt}</td></tr>`).join('');
+            tb.innerHTML = sorted.map(h => `<tr>
+                <td>${h.date}</td>
+                <td>${h.loanNo}</td>
+                <td>${h.rcpt}</td>
+                <td>${h.amt}</td>
+                <td>${h.penaltyPaid > 0 ? `<span class="badge bg-danger">₹${h.penaltyPaid}</span>` : '<span class="text-muted">-</span>'}</td>
+            </tr>`).join('');
         }
 
         // ============================================================
@@ -1972,7 +2050,7 @@ window.addEventListener('popstate', (e) => {
             const arr = []; const d = new Date(date);
             for (let i = 1; i <= dues; i++) {
                 const nd = new Date(d); nd.setMonth(d.getMonth() + i);
-                arr.push({ sno: i, dueDate: nd.toISOString().split('T')[0], expectedAmt: amt, isPaid: false, paidAmount: 0, paidDate: '', receiptNo: '' });
+                arr.push({ sno: i, dueDate: nd.toISOString().split('T')[0], expectedAmt: amt, isPaid: false, paidAmount: 0, paidDate: '', receiptNo: '', penaltyPaid: 0 });
             }
             return arr;
         }
@@ -2117,9 +2195,23 @@ window.addEventListener('popstate', (e) => {
                 if (s.isPaid) {
                     const paidAmt = parseFloat(s.paidAmount) || 0;
                     const pDate = new Date(s.paidDate); pDate.setHours(0, 0, 0, 0);
-                    penaltyDisplay = pDate > due
-                        ? `<span class="text-muted small">${Math.ceil((pDate - due) / 86400000)}d (₹${Math.ceil((pDate - due) / 86400000) * penaltyRate})</span>`
-                        : `<i class="fas fa-check-circle text-success" title="Paid on time" aria-label="Paid on time"></i>`;
+                    if (pDate > due) {
+    const daysLate = Math.ceil((pDate - due) / 86400000);
+    const totalPenalty = daysLate * penaltyRate;
+    const penPaid = parseFloat(s.penaltyPaid) || 0;
+    const penRemaining = Math.max(0, totalPenalty - penPaid);
+    penaltyDisplay = `<div class="d-flex flex-column align-items-center gap-1">
+        <span class="text-muted small">${daysLate}d</span>
+        ${penPaid > 0
+            ? `<span class="badge bg-success" style="font-size:0.65rem;">₹${penPaid} paid</span>`
+            : ''}
+        ${penRemaining > 0
+            ? `<span class="badge bg-danger" style="font-size:0.65rem;">₹${penRemaining} due</span>`
+            : penPaid > 0 ? `<span class="badge bg-success" style="font-size:0.65rem;"><i class="fas fa-check"></i> cleared</span>` : ''}
+    </div>`;
+} else {
+    penaltyDisplay = `<i class="fas fa-check-circle text-success" title="Paid on time" aria-label="Paid on time"></i>`;
+}
                     intRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
                     prinRecv = paidAmt - intRecv;
                     runningPrinBalance -= prinRecv;
@@ -2174,19 +2266,37 @@ window.addEventListener('popstate', (e) => {
             const d = localDB[currentIdx];
             let totalDays = 0;
 
-            d.schedule.forEach(s => {
-                const due = new Date(s.dueDate); due.setHours(0, 0, 0, 0);
-                if (!s.isPaid) {
-                    if (today > due) totalDays += Math.ceil((today - due) / 86400000);
-                } else {
-                    const pDate = new Date(s.paidDate); pDate.setHours(0, 0, 0, 0);
-                    if (pDate > due) totalDays += Math.ceil((pDate - due) / 86400000);
-                }
-            });
+            let totalPenaltyPaid = 0;
+d.schedule.forEach(s => {
+    const due = new Date(s.dueDate); due.setHours(0, 0, 0, 0);
+    if (!s.isPaid) {
+        if (today > due) totalDays += Math.ceil((today - due) / 86400000);
+    } else {
+        const pDate = new Date(s.paidDate); pDate.setHours(0, 0, 0, 0);
+        if (pDate > due) totalDays += Math.ceil((pDate - due) / 86400000);
+        totalPenaltyPaid += parseFloat(s.penaltyPaid) || 0;
+    }
+});
 
-            document.getElementById('totalLateDays').innerText = totalDays;
-            document.getElementById('totalPenaltyAmt').innerText = fmtRaw(totalDays * rate);
-            renderScheduleTable(d.schedule, rate);
+const grossPenalty = totalDays * rate;
+const netPenalty = Math.max(0, grossPenalty - totalPenaltyPaid);
+document.getElementById('totalLateDays').innerText = totalDays;
+document.getElementById('totalPenaltyAmt').innerText = fmtRaw(netPenalty);
+
+// Show paid vs remaining breakdown if any penalty was paid
+const penSummary = document.getElementById('penaltySummary');
+if (penSummary) {
+    if (totalPenaltyPaid > 0) {
+        penSummary.innerHTML = `
+            <div class="d-flex justify-content-center gap-3 mt-2 pt-2" style="border-top:1px dashed #ffc9c9;">
+                <span class="small"><span class="badge bg-success">₹${fmtRaw(totalPenaltyPaid)} collected</span></span>
+                <span class="small"><span class="badge bg-danger">₹${fmtRaw(netPenalty)} remaining</span></span>
+            </div>`;
+        penSummary.style.display = 'block';
+    } else {
+        penSummary.style.display = 'none';
+    }
+}
         }
 
         // ============================================================
@@ -2240,32 +2350,54 @@ window.addEventListener('popstate', (e) => {
         // PAYMENTS
         // ============================================================
         function openDueModal(sIdx) {
-            duePayScheduleIdx = sIdx;
-            const s = localDB[currentIdx].schedule[sIdx];
-            document.getElementById('duePayDate').valueAsDate = new Date();
-            document.getElementById('duePayAmt').value = s.expectedAmt;
-            document.getElementById('duePayRcpt').value = '';
-            new bootstrap.Modal(document.getElementById('duePayModal')).show();
-        }
+    duePayScheduleIdx = sIdx;
+    const s = localDB[currentIdx].schedule[sIdx];
+    const d = localDB[currentIdx];
+    const penaltyRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const due = new Date(s.dueDate); due.setHours(0,0,0,0);
+    const daysLate = today > due ? Math.ceil((today - due) / 86400000) : 0;
+    const suggestedPenalty = daysLate * penaltyRate;
+
+    document.getElementById('duePayDate').valueAsDate = new Date();
+    document.getElementById('duePayAmt').value = s.expectedAmt;
+    document.getElementById('duePayRcpt').value = '';
+
+    // Show/hide penalty row based on whether late
+    const penRow = document.getElementById('duePayPenaltyRow');
+    const penInfo = document.getElementById('duePayPenaltyInfo');
+    if (daysLate > 0) {
+        penRow.style.display = 'block';
+        penInfo.innerHTML = `<span class="badge bg-danger me-1">${daysLate} days late</span> Suggested: <strong class="text-danger">₹${suggestedPenalty}</strong>`;
+        document.getElementById('duePayPenalty').value = suggestedPenalty;
+    } else {
+        penRow.style.display = 'none';
+        document.getElementById('duePayPenalty').value = 0;
+    }
+
+    new bootstrap.Modal(document.getElementById('duePayModal')).show();
+}
 
         function submitDuePayment() {
-            const date = document.getElementById('duePayDate').value;
-            const rcpt = document.getElementById('duePayRcpt').value.trim();
-            const amt = document.getElementById('duePayAmt').value;
-            if (!date || !rcpt || !amt) { showToast('Please fill all required fields', 'error'); return; }
-            if (rcpt !== '-' && rcpt !== '.' && localHistory.some(h => h.rcpt === rcpt)) {
-                showToast('Receipt Number already exists!', 'error'); return;
-            }
-            const newSchedule = [...localDB[currentIdx].schedule];
-            newSchedule[duePayScheduleIdx].isPaid = true;
-            newSchedule[duePayScheduleIdx].paidAmount = amt;
-            newSchedule[duePayScheduleIdx].paidDate = date;
-            newSchedule[duePayScheduleIdx].receiptNo = rcpt;
-            db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
-            db.collection('transactions').add({ date, loanNo: localDB[currentIdx].loanNo, amt, rcpt });
-            bootstrap.Modal.getInstance(document.getElementById('duePayModal')).hide();
-            showToast('Payment saved successfully!');
-        }
+    const date = document.getElementById('duePayDate').value;
+    const rcpt = document.getElementById('duePayRcpt').value.trim();
+    const amt = document.getElementById('duePayAmt').value;
+    const penaltyPaid = parseFloat(document.getElementById('duePayPenalty').value) || 0;
+    if (!date || !rcpt || !amt) { showToast('Please fill all required fields', 'error'); return; }
+    if (rcpt !== '-' && rcpt !== '.' && localHistory.some(h => h.rcpt === rcpt)) {
+        showToast('Receipt Number already exists!', 'error'); return;
+    }
+    const newSchedule = [...localDB[currentIdx].schedule];
+    newSchedule[duePayScheduleIdx].isPaid = true;
+    newSchedule[duePayScheduleIdx].paidAmount = amt;
+    newSchedule[duePayScheduleIdx].paidDate = date;
+    newSchedule[duePayScheduleIdx].receiptNo = rcpt;
+    newSchedule[duePayScheduleIdx].penaltyPaid = penaltyPaid;
+    db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
+    db.collection('transactions').add({ date, loanNo: localDB[currentIdx].loanNo, amt, rcpt, penaltyPaid });
+    bootstrap.Modal.getInstance(document.getElementById('duePayModal')).hide();
+    showToast('Payment saved successfully!');
+}
 
         function openEditTxn(schedIndex) {
             const s = localDB[currentIdx].schedule[schedIndex];
@@ -2276,6 +2408,7 @@ window.addEventListener('popstate', (e) => {
             document.getElementById('editTxnDate').value = s.paidDate;
             document.getElementById('editTxnRcpt').value = s.receiptNo;
             document.getElementById('editTxnAmt').value = s.paidAmount;
+            document.getElementById('editTxnPenalty').value = parseFloat(s.penaltyPaid) || 0;
             new bootstrap.Modal(document.getElementById('editTxnModal')).show();
         }
 
@@ -2284,15 +2417,17 @@ window.addEventListener('popstate', (e) => {
             const nD = document.getElementById('editTxnDate').value;
             const nR = document.getElementById('editTxnRcpt').value;
             const nA = document.getElementById('editTxnAmt').value;
+            const nP = parseFloat(document.getElementById('editTxnPenalty').value) || 0;
             const oD = document.getElementById('editOldDate').value;
             const oR = document.getElementById('editOldRcpt').value;
             const loanNum = localDB[currentIdx].loanNo;
             if (!nD || !nR || !nA) { showToast('Please fill all fields', 'error'); return; }
             const newSchedule = [...localDB[currentIdx].schedule];
             newSchedule[idx].paidDate = nD; newSchedule[idx].receiptNo = nR; newSchedule[idx].paidAmount = nA;
+            newSchedule[idx].penaltyPaid = nP;
             db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
             const t = localHistory.find(t => t.loanNo == loanNum && t.date == oD && t.rcpt == oR);
-            if (t && t.uid) db.collection('transactions').doc(t.uid).update({ date: nD, rcpt: nR, amt: nA });
+            if (t && t.uid) db.collection('transactions').doc(t.uid).update({ date: nD, rcpt: nR, amt: nA, penaltyPaid: nP });
             showToast('Transaction updated!');
             bootstrap.Modal.getInstance(document.getElementById('editTxnModal')).hide();
         }
@@ -2303,6 +2438,8 @@ window.addEventListener('popstate', (e) => {
         function fetchDetails() {
             const no = document.getElementById('qpLoanNo').value;
             const l = localDB.find(x => x.loanNo == no);
+            const penRow = document.getElementById('qpPenaltyRow');
+            const penInfo = document.getElementById('qpPenaltyInfo');
             if (l) {
                 document.getElementById('qpName').value = l.borrower;
                 const paid = l.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
@@ -2311,17 +2448,39 @@ window.addEventListener('popstate', (e) => {
                     let target = 0;
                     for (let i = 0; i <= unpaidIdx; i++) target += parseFloat(l.schedule[i].expectedAmt);
                     document.getElementById('qpAmount').value = target - paid;
+
+                    // Check if this due is overdue — show penalty field
+                    const unpaidDue = l.schedule[unpaidIdx];
+                    const penaltyRate = l.penaltyRate !== undefined ? l.penaltyRate : 5;
+                    const today = new Date(); today.setHours(0,0,0,0);
+                    const dueDate = new Date(unpaidDue.dueDate); dueDate.setHours(0,0,0,0);
+                    const daysLate = today > dueDate ? Math.ceil((today - dueDate) / 86400000) : 0;
+                    if (daysLate > 0) {
+                        const suggested = daysLate * penaltyRate;
+                        penRow.style.display = 'block';
+                        penInfo.innerHTML = `<span class="badge bg-danger me-1">${daysLate} days late</span> Suggested: <strong class="text-danger">₹${suggested}</strong>`;
+                        document.getElementById('qpPenalty').value = suggested;
+                    } else {
+                        penRow.style.display = 'none';
+                        document.getElementById('qpPenalty').value = 0;
+                    }
                 } else {
                     document.getElementById('qpAmount').value = 0;
+                    penRow.style.display = 'none';
+                    document.getElementById('qpPenalty').value = 0;
                 }
+            } else {
+                penRow.style.display = 'none';
+                document.getElementById('qpPenalty').value = 0;
             }
         }
 
-        function processQuickPay() {
+       function processQuickPay() {
             const no = document.getElementById('qpLoanNo').value;
             const date = document.getElementById('qpDate').value;
             const amount = document.getElementById('qpAmount').value;
             const receipt = document.getElementById('qpRcpt').value.trim();
+            const penaltyPaid = parseFloat(document.getElementById('qpPenalty').value) || 0;
             if (!no || !date || !amount || !receipt) { showToast('Please fill all required fields', 'error'); return; }
             if (receipt !== '-' && receipt !== '.' && localHistory.some(h => h.rcpt === receipt)) {
                 showToast('Receipt Number already exists!', 'error'); return;
@@ -2333,10 +2492,13 @@ window.addEventListener('popstate', (e) => {
             const newSched = [...l.schedule];
             newSched[idx].isPaid = true; newSched[idx].paidAmount = amount;
             newSched[idx].paidDate = date; newSched[idx].receiptNo = receipt;
+            newSched[idx].penaltyPaid = penaltyPaid;
             db.collection('loans').doc(l.uid).update({ schedule: newSched });
-            db.collection('transactions').add({ date, loanNo: l.loanNo, amt: amount, rcpt: receipt });
+            db.collection('transactions').add({ date, loanNo: l.loanNo, amt: amount, rcpt: receipt, penaltyPaid });
             showToast('Payment saved!');
             ['qpLoanNo', 'qpName', 'qpAmount', 'qpRcpt'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('qpPenaltyRow').style.display = 'none';
+            document.getElementById('qpPenalty').value = 0;
         }
 
         // ============================================================
@@ -2391,7 +2553,7 @@ window.addEventListener('popstate', (e) => {
         function renderMonthlyProgress() {
             const month = parseInt(document.getElementById('progressMonth').value);
             const year = parseInt(document.getElementById('progressYear').value);
-            let mGiven = 0, mReceived = 0, mPrinRecv = 0, mIntRecv = 0, mPaid = 0, mDue = 0, mPrinReceivable = 0, mIntReceivable = 0, mLoansAddedCount = 0;
+            let mGiven = 0, mReceived = 0, mPrinRecv = 0, mIntRecv = 0, mPaid = 0, mDue = 0, mPrinReceivable = 0, mIntReceivable = 0, mLoansAddedCount = 0, mPenaltyCollected = 0;
 
             localDB.forEach(loan => {
                 const loanDate = new Date(loan.loan.date);
@@ -2419,6 +2581,7 @@ window.addEventListener('popstate', (e) => {
                             const ir = p >= intFactor ? intFactor : p;
                             mIntRecv += ir;
                             mPrinRecv += (p - ir);
+                            mPenaltyCollected += parseFloat(s.penaltyPaid) || 0;
                         }
                     }
                 });
@@ -2431,6 +2594,7 @@ window.addEventListener('popstate', (e) => {
             document.getElementById('mIntRecv').innerText = fmt(mIntRecv);
             document.getElementById('mPrinReceivable').innerText = fmt(mPrinReceivable);
             document.getElementById('mIntReceivable').innerText = fmt(mIntReceivable);
+            document.getElementById('mPenaltyCollected').innerText = fmt(mPenaltyCollected);
             const pct = mDue > 0 ? Math.round((mPaid / mDue) * 100) : 0;
             document.getElementById('mProgressBar').style.width = pct + '%';
             document.getElementById('mProgressPct').innerText = pct + '%';
