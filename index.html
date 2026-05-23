@@ -1740,11 +1740,16 @@ window.addEventListener('popstate', (e) => {
             const m = new bootstrap.Modal(document.getElementById('notifModal'));
             m.show();
             document.getElementById('notifModal').addEventListener('shown.bs.modal', function handler() {
+                document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
                 const notifList = document.getElementById('notifList');
                 if (notifList && state.notifScrollTop) {
+                    // triple-layered retry to beat modal animation + reflow
                     notifList.scrollTop = state.notifScrollTop;
+                    requestAnimationFrame(() => {
+                        notifList.scrollTop = state.notifScrollTop;
+                        setTimeout(() => { notifList.scrollTop = state.notifScrollTop; }, 100);
+                    });
                 }
-                document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
             });
         }, 50);
         return;
