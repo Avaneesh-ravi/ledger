@@ -1651,7 +1651,7 @@
     const scrollTop = notifList ? notifList.scrollTop : 0;
     if (modal) modal.hide();
     history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
-    history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
+    history.pushState({ view: 'viewLedger', fromNotif: true, notifScrollTop: scrollTop }, '', '');
     currentIdx = idx;
     const d = localDB[idx];
     currentDocId = d.uid;
@@ -1734,11 +1734,18 @@ window.addEventListener('popstate', (e) => {
     return;
 }
     if (state.fromNotif) {
-        // Back from ledger opened via notification — reopen notification modal
         switchTab('viewDashboard', true);
         setTimeout(() => {
-            history.pushState({ view: 'notifModal' }, '', '');
-            new bootstrap.Modal(document.getElementById('notifModal')).show();
+            history.pushState({ view: 'notifModal', scrollTop: state.notifScrollTop || 0 }, '', '');
+            const m = new bootstrap.Modal(document.getElementById('notifModal'));
+            m.show();
+            document.getElementById('notifModal').addEventListener('shown.bs.modal', function handler() {
+                const notifList = document.getElementById('notifList');
+                if (notifList && state.notifScrollTop) {
+                    notifList.scrollTop = state.notifScrollTop;
+                }
+                document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
+            });
         }, 50);
         return;
     }
