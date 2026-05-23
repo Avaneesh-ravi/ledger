@@ -1648,10 +1648,10 @@
     activeNavList = overdueIndices;
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
     const notifList = document.getElementById('notifList');
-    const scrollTop = notifList ? notifList.scrollTop : 0;
+    _savedNotifScroll = notifList ? notifList.scrollTop : 0;  // save to global
     if (modal) modal.hide();
-    history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
-    history.pushState({ view: 'viewLedger', fromNotif: true, notifScrollTop: scrollTop }, '', '');
+    history.replaceState({ view: 'notifModal' }, '', '');
+    history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
     currentIdx = idx;
     const d = localDB[idx];
     currentDocId = d.uid;
@@ -1713,6 +1713,9 @@ function _renderLedgerView(d, idx) {
 // Seed initial state
 history.replaceState({ view: 'viewDashboard' }, '', '');
 
+// Global variable to reliably store notif scroll position
+let _savedNotifScroll = 0;
+
 // Android back button / gesture handler
 window.addEventListener('popstate', (e) => {
     const state = e.state;
@@ -1721,33 +1724,37 @@ window.addEventListener('popstate', (e) => {
         return;
     }
     if (state.view === 'notifModal') {
-    switchTab('viewDashboard', true);
-    setTimeout(() => {
-        new bootstrap.Modal(document.getElementById('notifModal')).show();
+        switchTab('viewDashboard', true);
         setTimeout(() => {
-            const notifList = document.getElementById('notifList');
-            if (notifList && state.scrollTop !== undefined) {
-                notifList.scrollTop = state.scrollTop;
-            }
-        }, 300);
-    }, 50);
-    return;
-}
+            new bootstrap.Modal(document.getElementById('notifModal')).show();
+            document.getElementById('notifModal').addEventListener('shown.bs.modal', function handler() {
+                document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
+                const notifList = document.getElementById('notifList');
+                if (notifList && _savedNotifScroll > 0) {
+                    notifList.scrollTop = _savedNotifScroll;
+                    requestAnimationFrame(() => {
+                        notifList.scrollTop = _savedNotifScroll;
+                        setTimeout(() => { notifList.scrollTop = _savedNotifScroll; }, 150);
+                    });
+                }
+            });
+        }, 50);
+        return;
+    }
     if (state.fromNotif) {
         switchTab('viewDashboard', true);
         setTimeout(() => {
-            history.pushState({ view: 'notifModal', scrollTop: state.notifScrollTop || 0 }, '', '');
+            history.pushState({ view: 'notifModal' }, '', '');
             const m = new bootstrap.Modal(document.getElementById('notifModal'));
             m.show();
             document.getElementById('notifModal').addEventListener('shown.bs.modal', function handler() {
                 document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
                 const notifList = document.getElementById('notifList');
-                if (notifList && state.notifScrollTop) {
-                    // triple-layered retry to beat modal animation + reflow
-                    notifList.scrollTop = state.notifScrollTop;
+                if (notifList && _savedNotifScroll > 0) {
+                    notifList.scrollTop = _savedNotifScroll;
                     requestAnimationFrame(() => {
-                        notifList.scrollTop = state.notifScrollTop;
-                        setTimeout(() => { notifList.scrollTop = state.notifScrollTop; }, 100);
+                        notifList.scrollTop = _savedNotifScroll;
+                        setTimeout(() => { notifList.scrollTop = _savedNotifScroll; }, 150);
                     });
                 }
             });
