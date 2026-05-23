@@ -1064,7 +1064,7 @@
                         Payments</h6>
                     <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0">
+                <div class="modal-body p-0" id="notifModalBody" style="max-height:70vh;overflow-y:auto;">
                     <div id="notifList" class="list-group list-group-flush"></div>
                     <div id="noNotifs" class="text-center p-4 text-muted">
                         <i class="fas fa-check-circle fa-2x text-success mb-2"></i><br>No Overdue Payments
@@ -1640,23 +1640,29 @@
             }).join('');
         }
 
+        // Global variable to store notif scroll — reliable across modal open/close
+        let _savedNotifScroll = 0;
+
         function openNotifModal() {
-    history.pushState({ view: 'notifModal' }, '', '');
-    new bootstrap.Modal(document.getElementById('notifModal')).show();
-}
+            _savedNotifScroll = 0;
+            history.pushState({ view: 'notifModal' }, '', '');
+            new bootstrap.Modal(document.getElementById('notifModal')).show();
+        }
+
         function openNotifLedger(idx) {
-    activeNavList = overdueIndices;
-    const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
-    const notifList = document.getElementById('notifList');
-    _savedNotifScroll = notifList ? notifList.scrollTop : 0;  // save to global
-    if (modal) modal.hide();
-    history.replaceState({ view: 'notifModal' }, '', '');
-    history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
-    currentIdx = idx;
-    const d = localDB[idx];
-    currentDocId = d.uid;
-    _renderLedgerView(d, idx);
-}
+            activeNavList = overdueIndices;
+            const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
+            // Read from the modal-body which now has max-height and scrolls
+            const modalBody = document.getElementById('notifModalBody');
+            _savedNotifScroll = modalBody ? modalBody.scrollTop : 0;
+            if (modal) modal.hide();
+            history.replaceState({ view: 'notifModal' }, '', '');
+            history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
+            currentIdx = idx;
+            const d = localDB[idx];
+            currentDocId = d.uid;
+            _renderLedgerView(d, idx);
+        }
         function openDashboardLedger(idx) {
             activeNavList = null;
             viewLedger(idx);
@@ -1713,8 +1719,18 @@ function _renderLedgerView(d, idx) {
 // Seed initial state
 history.replaceState({ view: 'viewDashboard' }, '', '');
 
-// Global variable to reliably store notif scroll position
-let _savedNotifScroll = 0;
+// Restore notif modal scroll — reads from modal-body with fixed height
+function _restoreNotifScroll() {
+    const modalBody = document.getElementById('notifModalBody');
+    if (!modalBody || _savedNotifScroll <= 0) return;
+    // 4 attempts to beat Bootstrap's internal reflow
+    modalBody.scrollTop = _savedNotifScroll;
+    requestAnimationFrame(() => {
+        modalBody.scrollTop = _savedNotifScroll;
+        setTimeout(() => { modalBody.scrollTop = _savedNotifScroll; }, 80);
+        setTimeout(() => { modalBody.scrollTop = _savedNotifScroll; }, 220);
+    });
+}
 
 // Android back button / gesture handler
 window.addEventListener('popstate', (e) => {
@@ -1726,17 +1742,11 @@ window.addEventListener('popstate', (e) => {
     if (state.view === 'notifModal') {
         switchTab('viewDashboard', true);
         setTimeout(() => {
-            new bootstrap.Modal(document.getElementById('notifModal')).show();
+            const m = new bootstrap.Modal(document.getElementById('notifModal'));
+            m.show();
             document.getElementById('notifModal').addEventListener('shown.bs.modal', function handler() {
                 document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
-                const notifList = document.getElementById('notifList');
-                if (notifList && _savedNotifScroll > 0) {
-                    notifList.scrollTop = _savedNotifScroll;
-                    requestAnimationFrame(() => {
-                        notifList.scrollTop = _savedNotifScroll;
-                        setTimeout(() => { notifList.scrollTop = _savedNotifScroll; }, 150);
-                    });
-                }
+                _restoreNotifScroll();
             });
         }, 50);
         return;
@@ -1749,14 +1759,7 @@ window.addEventListener('popstate', (e) => {
             m.show();
             document.getElementById('notifModal').addEventListener('shown.bs.modal', function handler() {
                 document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
-                const notifList = document.getElementById('notifList');
-                if (notifList && _savedNotifScroll > 0) {
-                    notifList.scrollTop = _savedNotifScroll;
-                    requestAnimationFrame(() => {
-                        notifList.scrollTop = _savedNotifScroll;
-                        setTimeout(() => { notifList.scrollTop = _savedNotifScroll; }, 150);
-                    });
-                }
+                _restoreNotifScroll();
             });
         }, 50);
         return;
