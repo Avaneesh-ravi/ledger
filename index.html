@@ -1064,7 +1064,7 @@
                         Payments</h6>
                     <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0" id="notifModalBody" style="max-height:70vh;overflow-y:auto;">
+                <div class="modal-body p-0">
                     <div id="notifList" class="list-group list-group-flush"></div>
                     <div id="noNotifs" class="text-center p-4 text-muted">
                         <i class="fas fa-check-circle fa-2x text-success mb-2"></i><br>No Overdue Payments
@@ -1640,29 +1640,38 @@
             }).join('');
         }
 
-        // Global variable to store notif scroll — reliable across modal open/close
-        let _savedNotifScroll = 0;
-
         function openNotifModal() {
-            _savedNotifScroll = 0;
-            history.pushState({ view: 'notifModal' }, '', '');
-            new bootstrap.Modal(document.getElementById('notifModal')).show();
-        }
-
+    history.pushState({ view: 'notifModal' }, '', '');
+    new bootstrap.Modal(document.getElementById('notifModal')).show();
+}
         function openNotifLedger(idx) {
-            activeNavList = overdueIndices;
-            const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
-            // Read from the modal-body which now has max-height and scrolls
-            const modalBody = document.getElementById('notifModalBody');
-            _savedNotifScroll = modalBody ? modalBody.scrollTop : 0;
-            if (modal) modal.hide();
-            history.replaceState({ view: 'notifModal' }, '', '');
+    activeNavList = overdueIndices;
+    const modalEl = document.getElementById('notifModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    const notifList = document.getElementById('notifList');
+    const scrollTop = notifList ? notifList.scrollTop : 0;
+
+    // Stamp the scroll offset BEFORE hide() — modal.hide() triggers
+    // hidden.bs.modal which clears the DOM before popstate can read it
+    history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
+
+    if (modal) {
+        // Wait for hide animation to fully complete before pushing ledger state
+        modalEl.addEventListener('hidden.bs.modal', function onHidden() {
+            modalEl.removeEventListener('hidden.bs.modal', onHidden);
             history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
             currentIdx = idx;
-            const d = localDB[idx];
-            currentDocId = d.uid;
-            _renderLedgerView(d, idx);
-        }
+            currentDocId = localDB[idx].uid;
+            _renderLedgerView(localDB[idx], idx);
+        }, { once: true });
+        modal.hide();
+    } else {
+        history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
+        currentIdx = idx;
+        currentDocId = localDB[idx].uid;
+        _renderLedgerView(localDB[idx], idx);
+    }
+}
         function openDashboardLedger(idx) {
             activeNavList = null;
             viewLedger(idx);
@@ -1719,51 +1728,44 @@ function _renderLedgerView(d, idx) {
 // Seed initial state
 history.replaceState({ view: 'viewDashboard' }, '', '');
 
-// Restore notif modal scroll — reads from modal-body with fixed height
-function _restoreNotifScroll() {
-    const modalBody = document.getElementById('notifModalBody');
-    if (!modalBody || _savedNotifScroll <= 0) return;
-    // 4 attempts to beat Bootstrap's internal reflow
-    modalBody.scrollTop = _savedNotifScroll;
-    requestAnimationFrame(() => {
-        modalBody.scrollTop = _savedNotifScroll;
-        setTimeout(() => { modalBody.scrollTop = _savedNotifScroll; }, 80);
-        setTimeout(() => { modalBody.scrollTop = _savedNotifScroll; }, 220);
-    });
-}
-
 // Android back button / gesture handler
 window.addEventListener('popstate', (e) => {
     const state = e.state;
-    if (!state) {
+    if (!state) { switchTab('viewDashboard', true); return; }
+
+    if (state.view === 'notifModal' || state.fromNotif) {
         switchTab('viewDashboard', true);
+        const modalEl = document.getElementById('notifModal');
+
+        // Destroy any lingering Bootstrap instance so show() starts fresh
+        const existing = bootstrap.Modal.getInstance(modalEl);
+        if (existing) existing.dispose();
+
+        const freshModal = new bootstrap.Modal(modalEl);
+
+        // shown.bs.modal fires AFTER the 300ms CSS transition ends —
+        // this is the only safe moment to set scrollTop
+        modalEl.addEventListener('shown.bs.modal', function onShown() {
+            modalEl.removeEventListener('shown.bs.modal', onShown);
+            const notifList = document.getElementById('notifList');
+            const target = state.scrollTop ?? (state.fromNotif ? (history.state && history.state.scrollTop) : 0);
+            if (notifList && target !== undefined) {
+                notifList.scrollTop = target;
+            }
+        }, { once: true });
+
+        // If navigating back from ledger, recover the scrollTop that was
+        // stored in the notifModal history entry one step behind
+        if (state.fromNotif) {
+            // The notifModal state sits one entry back; read it via
+            // a temporary popstate capture instead of a second history.go()
+            history.pushState({ view: 'notifModal', scrollTop: state.scrollTop ?? 0 }, '', '');
+        }
+
+        freshModal.show();
         return;
     }
-    if (state.view === 'notifModal') {
-        switchTab('viewDashboard', true);
-        setTimeout(() => {
-            const m = new bootstrap.Modal(document.getElementById('notifModal'));
-            m.show();
-            document.getElementById('notifModal').addEventListener('shown.bs.modal', function handler() {
-                document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
-                _restoreNotifScroll();
-            });
-        }, 50);
-        return;
-    }
-    if (state.fromNotif) {
-        switchTab('viewDashboard', true);
-        setTimeout(() => {
-            history.pushState({ view: 'notifModal' }, '', '');
-            const m = new bootstrap.Modal(document.getElementById('notifModal'));
-            m.show();
-            document.getElementById('notifModal').addEventListener('shown.bs.modal', function handler() {
-                document.getElementById('notifModal').removeEventListener('shown.bs.modal', handler);
-                _restoreNotifScroll();
-            });
-        }, 50);
-        return;
-    }
+
     switchTab(state.view, true);
 });
         // ============================================================
