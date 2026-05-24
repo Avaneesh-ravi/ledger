@@ -1641,21 +1641,21 @@
         }
 
         function openNotifModal() {
-    history.pushState({ view: 'notifModal' }, '', '');
+    history.pushState({ view: 'notifModal', scrollTop: 0 }, '', '');
     new bootstrap.Modal(document.getElementById('notifModal')).show();
 }
         function openNotifLedger(idx) {
     activeNavList = overdueIndices;
     const notifList = document.getElementById('notifList');
 
-    // ✅ Capture scrollTop BEFORE hide() collapses the modal DOM
+    // Read scrollTop BEFORE hide() collapses the DOM
     const scrollTop = notifList ? notifList.scrollTop : 0;
 
     const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
     if (modal) modal.hide();
 
-    // ✅ Burn the scroll position into the notifModal history state
-    //    so the back-button handler can recover it precisely
+    // Save scrollTop in the notifModal history entry (replaceState)
+    // AND carry it forward in the ledger entry so popstate can read it
     history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
     history.pushState({ view: 'viewLedger', fromNotif: true, scrollTop: scrollTop }, '', '');
 
@@ -1721,6 +1721,10 @@ function _renderLedgerView(d, idx) {
 history.replaceState({ view: 'viewDashboard' }, '', '');
 
 // Android back button / gesture handler
+// Holds the scroll value that must survive the checkNotifications()
+// innerHTML rebuild. Set before modal.show(), consumed after rebuild.
+let _pendingNotifScroll = null;
+
 window.addEventListener('popstate', (e) => {
     const state = e.state;
     if (!state) {
@@ -1728,46 +1732,53 @@ window.addEventListener('popstate', (e) => {
         return;
     }
 
+    // ── Direct back-navigation onto the notifModal history entry ──
+    // This fires when user presses back FROM the modal itself
     if (state.view === 'notifModal') {
         switchTab('viewDashboard', true);
+        _pendingNotifScroll = state.scrollTop || 0;
         setTimeout(() => {
             const modalEl = document.getElementById('notifModal');
-            const instance = new bootstrap.Modal(modalEl);
-
-            // ✅ Wait for Bootstrap's own "fully shown" event before touching scrollTop.
-            //    The 'shown.bs.modal' event fires after the CSS transition completes,
-            //    guaranteeing the list is painted and scrollable.
-            modalEl.addEventListener('shown.bs.modal', function restoreScroll() {
-                modalEl.removeEventListener('shown.bs.modal', restoreScroll);
-                const notifList = document.getElementById('notifList');
-                if (notifList && state.scrollTop !== undefined) {
-                    notifList.scrollTop = state.scrollTop;
-                }
+            modalEl.addEventListener('shown.bs.modal', function onShown() {
+                modalEl.removeEventListener('shown.bs.modal', onShown);
+                // checkNotifications() rebuilds innerHTML inside onSnapshot.
+                // We wait one more frame after shown so the rebuild has settled.
+                setTimeout(() => {
+                    const notifList = document.getElementById('notifList');
+                    if (notifList && _pendingNotifScroll !== null) {
+                        notifList.scrollTop = _pendingNotifScroll;
+                        _pendingNotifScroll = null;
+                    }
+                }, 80);
             });
-
-            instance.show();
+            new bootstrap.Modal(modalEl).show();
         }, 50);
         return;
     }
 
+    // ── Back from ledger that was opened via notification ──────────
+    // CRITICAL FIX: Do NOT call history.pushState here.
+    // Calling pushState inside popstate creates a new forward entry
+    // which breaks the back-button stack permanently.
+    // Instead just show the modal — the browser already moved back
+    // to the notifModal entry which carries the correct scrollTop.
     if (state.fromNotif) {
         switchTab('viewDashboard', true);
+        // state.scrollTop is carried from openNotifLedger's pushState
+        _pendingNotifScroll = state.scrollTop || 0;
         setTimeout(() => {
             const modalEl = document.getElementById('notifModal');
-            const instance = new bootstrap.Modal(modalEl);
-
-            // ✅ scrollTop is now carried in the ledger's own history state too,
-            //    so we can restore it even from the fromNotif branch
-            modalEl.addEventListener('shown.bs.modal', function restoreScroll() {
-                modalEl.removeEventListener('shown.bs.modal', restoreScroll);
-                const notifList = document.getElementById('notifList');
-                if (notifList && state.scrollTop !== undefined) {
-                    notifList.scrollTop = state.scrollTop;
-                }
+            modalEl.addEventListener('shown.bs.modal', function onShown() {
+                modalEl.removeEventListener('shown.bs.modal', onShown);
+                setTimeout(() => {
+                    const notifList = document.getElementById('notifList');
+                    if (notifList && _pendingNotifScroll !== null) {
+                        notifList.scrollTop = _pendingNotifScroll;
+                        _pendingNotifScroll = null;
+                    }
+                }, 80);
             });
-
-            instance.show();
-            history.pushState({ view: 'notifModal', scrollTop: state.scrollTop }, '', '');
+            new bootstrap.Modal(modalEl).show();
         }, 50);
         return;
     }
