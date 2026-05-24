@@ -543,6 +543,170 @@
             font-size: 0.9rem;
             margin-bottom: 20px;
         }
+
+
+        /* ===== SAMSUNG S22 / MODERN MOBILE ACCESSIBILITY OVERHAUL ===== */
+/* Targets 360–420px viewport width — S22 is 360px CSS width         */
+@media screen and (max-width: 430px) {
+
+    /* ── LOAN NUMBER & BORROWER NAME: primary identity fields ── */
+    #detailLoanNo {
+        font-size: 1.55rem !important;
+        font-weight: 900 !important;
+        letter-spacing: -0.5px;
+        color: #1b5e20 !important;
+    }
+
+    #detailBName {
+        font-size: 1.2rem !important;
+        font-weight: 800 !important;
+        color: #212121 !important;
+        line-height: 1.3;
+    }
+
+    /* ── FINANCIAL SUMMARY GRID: balance / expected / remaining ── */
+    .fin-val {
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
+    }
+
+    #detailRemaining {
+        font-size: 1.35rem !important;
+        font-weight: 900 !important;
+        color: #b71c1c !important;
+    }
+
+    #detailExpected,
+    #detailTotalAmount,
+    #detailPrincipal {
+        font-size: 1.05rem !important;
+        font-weight: 800 !important;
+        color: #1b5e20 !important;
+    }
+
+    .field-lbl {
+        font-size: 0.68rem !important;
+        letter-spacing: 0.6px;
+        color: #555 !important;
+    }
+
+    .field-val {
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        color: #111 !important;
+    }
+
+    /* ── STAT CARD DASHBOARD FIGURES ── */
+    .stat-val {
+        font-size: 1.4rem !important;
+        font-weight: 800 !important;
+    }
+
+    .stat-label {
+        font-size: 0.72rem !important;
+        letter-spacing: 0.8px;
+    }
+
+    /* ── LOAN CARDS: enlarged touch targets + readable text ── */
+    .loan-card {
+        padding: 18px 16px !important;
+        margin-bottom: 12px !important;
+        border-left-width: 7px !important;
+    }
+
+    .loan-card strong {
+        font-size: 1.05rem !important;
+        color: #1b5e20 !important;
+    }
+
+    .loan-card .text-primary {
+        font-size: 1rem !important;
+        font-weight: 700 !important;
+        color: #212121 !important;
+    }
+
+    .loan-card span {
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* ── NOTIFICATION ITEMS: bigger tap zone + stronger red ── */
+    .notif-item {
+        padding: 16px 14px !important;
+        margin-bottom: 10px !important;
+        border-left-width: 6px !important;
+    }
+
+    .notif-item h6 {
+        font-size: 1.0rem !important;
+        color: #b71c1c !important;
+    }
+
+    .notif-item .badge.bg-danger {
+        font-size: 0.75rem !important;
+        padding: 5px 10px !important;
+        background-color: #b71c1c !important;
+    }
+
+    /* ── TABLE IN LEDGER: prevent overflow, readable row heights ── */
+    #detailTableBody td,
+    #detailTableBody th {
+        padding: 10px 5px !important;
+        font-size: 0.78rem !important;
+        line-height: 1.4;
+    }
+
+    /* Pay button in table */
+    #detailTableBody .btn-outline-success {
+        min-height: 38px !important;
+        font-size: 0.82rem !important;
+        font-weight: 700 !important;
+        padding: 6px 10px !important;
+    }
+
+    /* ── PENALTY CARD ── */
+    .penalty-val {
+        font-size: 1.3rem !important;
+        color: #b71c1c !important;
+    }
+
+    /* ── BOTTOM NAV LABELS ── */
+    .nav-item small {
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+    }
+
+    /* ── SECTION HEADERS ── */
+    .fw-bold.small,
+    h5.fw-bold,
+    h6.fw-bold {
+        font-size: 1rem !important;
+    }
+
+    /* ── ACTION BUTTONS (Edit/Delete/Print row) ── */
+    .btn-warning.btn-sm,
+    .btn-danger.btn-sm,
+    .btn-dark.btn-sm {
+        min-height: 40px !important;
+        min-width: 40px !important;
+        padding: 8px 12px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* ── COLLECTION FORM INPUTS ── */
+    #viewQuickPay .form-control,
+    #viewQuickPay .input-group-text {
+        font-size: 1rem !important;
+        min-height: 46px !important;
+    }
+
+    /* ── DUE PAY / EDIT TXN MODAL INPUTS ── */
+    #duePayModal .form-control,
+    #editTxnModal .form-control {
+        font-size: 1rem !important;
+        min-height: 46px !important;
+    }
+}
     </style>
 </head>
 
@@ -1510,22 +1674,39 @@
         let editIdx = null;
         let duePayScheduleIdx = null;
         let overdueIndices = [];
-        let activeNavList = null;
+let activeNavList = null;
+let savedNotifScrollTop = 0;          // ← ADD: survives async data race
+let deferredNotifScroll = false;      // ← ADD: flag for post-snapshot restore
 
         // ============================================================
         // DATABASE LISTENERS
         // ============================================================
         function startDatabaseListeners() {
-            db.collection('loans').onSnapshot(snap => {
-                localDB = [];
-                snap.forEach(d => { const data = d.data(); data.uid = d.id; localDB.push(data); });
-                localDB.sort((a, b) => b.loanNo.localeCompare(a.loanNo, undefined, { numeric: true, sensitivity: 'base' }));
-                updateDashboard();
-                renderGivenList();
-                checkNotifications();
-                document.getElementById('loader').style.display = 'none';
-                if (currentIdx !== null) viewLedger(currentIdx);
-            }, err => {
+    db.collection('loans').onSnapshot(snap => {
+        localDB = [];
+        snap.forEach(d => { const data = d.data(); data.uid = d.id; localDB.push(data); });
+        localDB.sort((a, b) => b.loanNo.localeCompare(a.loanNo, undefined, { numeric: true, sensitivity: 'base' }));
+        updateDashboard();
+        renderGivenList();
+        checkNotifications();
+        document.getElementById('loader').style.display = 'none';
+        if (currentIdx !== null) viewLedger(currentIdx);
+
+        // ← ADD: deferred scroll restore — fires after data is ready
+        if (deferredNotifScroll) {
+            deferredNotifScroll = false;
+            const modalEl = document.getElementById('notifModal');
+            const existing = bootstrap.Modal.getInstance(modalEl);
+            if (existing) existing.dispose();
+            const freshModal = new bootstrap.Modal(modalEl);
+            modalEl.addEventListener('shown.bs.modal', function onShown() {
+                modalEl.removeEventListener('shown.bs.modal', onShown);
+                const notifList = document.getElementById('notifList');
+                if (notifList) notifList.scrollTop = savedNotifScrollTop;
+            }, { once: true });
+            freshModal.show();
+        }
+    }, err => {
                 console.error('DB Error:', err);
                 showToast('Database Error: Check your Firebase Security Rules!', 'error');
                 document.getElementById('loader').style.display = 'none';
@@ -1651,8 +1832,7 @@
     const notifList = document.getElementById('notifList');
     const scrollTop = notifList ? notifList.scrollTop : 0;
 
-    // Stamp the scroll offset BEFORE hide() — modal.hide() triggers
-    // hidden.bs.modal which clears the DOM before popstate can read it
+    savedNotifScrollTop = scrollTop;  // ← ADD: global backup, survives reload
     history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
 
     if (modal) {
@@ -1735,31 +1915,31 @@ window.addEventListener('popstate', (e) => {
 
     if (state.view === 'notifModal' || state.fromNotif) {
         switchTab('viewDashboard', true);
-        const modalEl = document.getElementById('notifModal');
 
-        // Destroy any lingering Bootstrap instance so show() starts fresh
+        // ← CHANGE: if data hasn't loaded yet (page refresh race), defer
+        // the modal open until startDatabaseListeners() snapshot fires
+        if (localDB.length === 0) {
+            savedNotifScrollTop = state.scrollTop ?? savedNotifScrollTop;
+            deferredNotifScroll = true;
+            return;
+        }
+
+        const modalEl = document.getElementById('notifModal');
         const existing = bootstrap.Modal.getInstance(modalEl);
         if (existing) existing.dispose();
 
         const freshModal = new bootstrap.Modal(modalEl);
 
-        // shown.bs.modal fires AFTER the 300ms CSS transition ends —
-        // this is the only safe moment to set scrollTop
         modalEl.addEventListener('shown.bs.modal', function onShown() {
             modalEl.removeEventListener('shown.bs.modal', onShown);
             const notifList = document.getElementById('notifList');
-            const target = state.scrollTop ?? (state.fromNotif ? (history.state && history.state.scrollTop) : 0);
-            if (notifList && target !== undefined) {
-                notifList.scrollTop = target;
-            }
+            // ← CHANGE: prefer history state, fall back to global variable
+            const target = state.scrollTop ?? savedNotifScrollTop ?? 0;
+            if (notifList) notifList.scrollTop = target;
         }, { once: true });
 
-        // If navigating back from ledger, recover the scrollTop that was
-        // stored in the notifModal history entry one step behind
         if (state.fromNotif) {
-            // The notifModal state sits one entry back; read it via
-            // a temporary popstate capture instead of a second history.go()
-            history.pushState({ view: 'notifModal', scrollTop: state.scrollTop ?? 0 }, '', '');
+            history.pushState({ view: 'notifModal', scrollTop: state.scrollTop ?? savedNotifScrollTop ?? 0 }, '', '');
         }
 
         freshModal.show();
