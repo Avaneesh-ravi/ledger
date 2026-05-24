@@ -1646,12 +1646,19 @@
 }
         function openNotifLedger(idx) {
     activeNavList = overdueIndices;
-    const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
     const notifList = document.getElementById('notifList');
+
+    // ✅ Capture scrollTop BEFORE hide() collapses the modal DOM
     const scrollTop = notifList ? notifList.scrollTop : 0;
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById('notifModal'));
     if (modal) modal.hide();
+
+    // ✅ Burn the scroll position into the notifModal history state
+    //    so the back-button handler can recover it precisely
     history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
-    history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
+    history.pushState({ view: 'viewLedger', fromNotif: true, scrollTop: scrollTop }, '', '');
+
     currentIdx = idx;
     const d = localDB[idx];
     currentDocId = d.uid;
@@ -1720,36 +1727,51 @@ window.addEventListener('popstate', (e) => {
         switchTab('viewDashboard', true);
         return;
     }
+
     if (state.view === 'notifModal') {
         switchTab('viewDashboard', true);
-        const notifModalEl = document.getElementById('notifModal');
-        const savedScroll = state.scrollTop;
-        notifModalEl.addEventListener('shown.bs.modal', function restoreScroll() {
-            notifModalEl.removeEventListener('shown.bs.modal', restoreScroll);
-            const notifList = document.getElementById('notifList');
-            if (notifList && savedScroll !== undefined) {
-                notifList.scrollTop = savedScroll;
-            }
-        });
-        new bootstrap.Modal(notifModalEl).show();
+        setTimeout(() => {
+            const modalEl = document.getElementById('notifModal');
+            const instance = new bootstrap.Modal(modalEl);
+
+            // ✅ Wait for Bootstrap's own "fully shown" event before touching scrollTop.
+            //    The 'shown.bs.modal' event fires after the CSS transition completes,
+            //    guaranteeing the list is painted and scrollable.
+            modalEl.addEventListener('shown.bs.modal', function restoreScroll() {
+                modalEl.removeEventListener('shown.bs.modal', restoreScroll);
+                const notifList = document.getElementById('notifList');
+                if (notifList && state.scrollTop !== undefined) {
+                    notifList.scrollTop = state.scrollTop;
+                }
+            });
+
+            instance.show();
+        }, 50);
         return;
     }
+
     if (state.fromNotif) {
-        // Back from ledger opened via notification — reopen notification modal
         switchTab('viewDashboard', true);
-        const notifModalEl = document.getElementById('notifModal');
-        const savedScroll = state.scrollTop;
-        notifModalEl.addEventListener('shown.bs.modal', function restoreScroll() {
-            notifModalEl.removeEventListener('shown.bs.modal', restoreScroll);
-            const notifList = document.getElementById('notifList');
-            if (notifList && savedScroll !== undefined) {
-                notifList.scrollTop = savedScroll;
-            }
-        });
-        history.pushState({ view: 'notifModal' }, '', '');
-        new bootstrap.Modal(notifModalEl).show();
+        setTimeout(() => {
+            const modalEl = document.getElementById('notifModal');
+            const instance = new bootstrap.Modal(modalEl);
+
+            // ✅ scrollTop is now carried in the ledger's own history state too,
+            //    so we can restore it even from the fromNotif branch
+            modalEl.addEventListener('shown.bs.modal', function restoreScroll() {
+                modalEl.removeEventListener('shown.bs.modal', restoreScroll);
+                const notifList = document.getElementById('notifList');
+                if (notifList && state.scrollTop !== undefined) {
+                    notifList.scrollTop = state.scrollTop;
+                }
+            });
+
+            instance.show();
+            history.pushState({ view: 'notifModal', scrollTop: state.scrollTop }, '', '');
+        }, 50);
         return;
     }
+
     switchTab(state.view, true);
 });
         // ============================================================
