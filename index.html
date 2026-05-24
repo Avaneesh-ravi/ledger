@@ -1500,10 +1500,9 @@
         // STATE
         // ============================================================
         let localDB = [];
-let localHistory = [];
-let filterMode = 'all'; // 'all' or 'closed'
-let savedNotifScroll = 0;
-let currentIdx = null;
+        let localHistory = [];
+        let filterMode = 'all'; // 'all' or 'closed'
+        let currentIdx = null;
         let currentDocId = null;
         let currentPhotoTarget = null;
         let curLang = 'en';
@@ -1639,11 +1638,9 @@ let currentIdx = null;
             </div>
         </div>`;
             }).join('');
-            if (savedNotifScroll > 0) { requestAnimationFrame(() => { notifList.scrollTop = savedNotifScroll; }); }
         }
 
         function openNotifModal() {
-    savedNotifScroll = 0;
     history.pushState({ view: 'notifModal' }, '', '');
     new bootstrap.Modal(document.getElementById('notifModal')).show();
 }
@@ -1653,7 +1650,7 @@ let currentIdx = null;
     const notifList = document.getElementById('notifList');
     const scrollTop = notifList ? notifList.scrollTop : 0;
     if (modal) modal.hide();
-    savedNotifScroll = scrollTop; history.replaceState({ view: 'notifModal' }, '', '');
+    history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
     history.pushState({ view: 'viewLedger', fromNotif: true }, '', '');
     currentIdx = idx;
     const d = localDB[idx];
@@ -1724,22 +1721,35 @@ window.addEventListener('popstate', (e) => {
         return;
     }
     if (state.view === 'notifModal') {
-    switchTab('viewDashboard', true);
-    setTimeout(() => {
-        new bootstrap.Modal(document.getElementById('notifModal')).show();
-    }, 50);
-    return;
-}
+        switchTab('viewDashboard', true);
+        const notifModalEl = document.getElementById('notifModal');
+        const savedScroll = state.scrollTop;
+        notifModalEl.addEventListener('shown.bs.modal', function restoreScroll() {
+            notifModalEl.removeEventListener('shown.bs.modal', restoreScroll);
+            const notifList = document.getElementById('notifList');
+            if (notifList && savedScroll !== undefined) {
+                notifList.scrollTop = savedScroll;
+            }
+        });
+        new bootstrap.Modal(notifModalEl).show();
+        return;
+    }
     if (state.fromNotif) {
-    // Back from ledger opened via notification — reopen notification modal
-    // scroll is restored by checkNotifications() via savedNotifScroll
-    switchTab('viewDashboard', true);
-    setTimeout(() => {
+        // Back from ledger opened via notification — reopen notification modal
+        switchTab('viewDashboard', true);
+        const notifModalEl = document.getElementById('notifModal');
+        const savedScroll = state.scrollTop;
+        notifModalEl.addEventListener('shown.bs.modal', function restoreScroll() {
+            notifModalEl.removeEventListener('shown.bs.modal', restoreScroll);
+            const notifList = document.getElementById('notifList');
+            if (notifList && savedScroll !== undefined) {
+                notifList.scrollTop = savedScroll;
+            }
+        });
         history.pushState({ view: 'notifModal' }, '', '');
-        new bootstrap.Modal(document.getElementById('notifModal')).show();
-    }, 50);
-    return;
-}
+        new bootstrap.Modal(notifModalEl).show();
+        return;
+    }
     switchTab(state.view, true);
 });
         // ============================================================
