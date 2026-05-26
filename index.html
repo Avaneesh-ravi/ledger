@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -226,7 +227,13 @@
             border-right: none;
         }
 
-        .fin-cell:nth-last-child(-n+3) {
+        .fin-cell:nth-last-child(-n+4) {
+            border-bottom: none;
+        }
+
+        .fin-cell-full {
+            grid-column: 1 / -1;
+            border-right: none;
             border-bottom: none;
         }
 
@@ -490,17 +497,14 @@
                 border-right: none;
             }
 
-            .fin-cell:nth-last-child(-n+2) {
+            .fin-cell:nth-last-child(-n+3) {
                 border-bottom: none;
             }
 
-            /* 9 cells in 2-col = last row has 1 cell — remove bottom border on that too */
-            .fin-cell:nth-last-child(1) {
+            .fin-cell-full {
+                grid-column: 1 / -1;
+                border-right: none;
                 border-bottom: none;
-            }
-
-            .fin-cell:nth-last-child(3) {
-                border-bottom: 1px solid #000;
             }
         }
 
@@ -1043,6 +1047,7 @@
                     <div class="fin-cell bg-info bg-opacity-10"><span class="field-lbl" data-lang="total_prin_paid">Prin. Paid</span><span class="fin-val text-primary">₹<span id="detailTotalPrinPaid"></span></span></div>
                     <div class="fin-cell bg-success bg-opacity-10"><span class="field-lbl" data-lang="total_int_paid">Int. Paid</span><span class="fin-val text-success">₹<span id="detailTotalIntPaid"></span></span></div>
                     <div class="fin-cell" style="background:#f3e5f5;"><span class="field-lbl" data-lang="total_paid">Total Paid</span><span class="fin-val" style="color:#7b1fa2;">₹<span id="detailTotalPaid"></span></span></div>
+                    <div class="fin-cell fin-cell-full" style="background:#fff8e1;"><span class="field-lbl" data-lang="prin_payable">Prin. Payable</span><span class="fin-val" style="color:#e65100;">₹<span id="detailPrinPayable"></span></span></div>
                 </div>
                 <div class="penalty-card no-print">
                     <div class="penalty-header">
@@ -1613,6 +1618,7 @@
                 monthly_progress: 'Monthly Progress', collection_progress: 'Collection Progress', progress: 'Progress',
                 prin_receivable: 'Prin. Receivable', int_receivable: 'Int. Receivable', loans_added: 'Loans Added',
                 total_prin_paid: 'Prin. Paid', total_int_paid: 'Int. Paid', total_paid: 'Total Paid',
+                prin_payable: 'Prin. Payable',
             },
             ta: {
                 given: 'கொடுக்கப்பட்டது', received: 'பெறப்பட்டது', balance: 'நிலுவை', interest: 'வட்டி மொத்தம்', accounts: 'கணக்குகள்', closed_accounts: 'முடிக்கப்பட்டவை',
@@ -1630,6 +1636,7 @@
                 monthly_progress: 'மாதாந்திர முன்னேற்றம்', collection_progress: 'வசூல் முன்னேற்றம்', progress: 'முன்னேற்றம்',
                 prin_receivable: 'வர வேண்டிய அசல்', int_receivable: 'வர வேண்டிய வட்டி', loans_added: 'வழங்கப்பட்ட கடன்கள்',
                 total_prin_paid: 'செலுத்திய அசல்', total_int_paid: 'செலுத்திய வட்டி', total_paid: 'மொத்த செலுத்தியது',
+                prin_payable: 'வர வேண்டிய அசல்',
             }
         };
 
@@ -2216,7 +2223,7 @@ window.addEventListener('popstate', (e) => {
 
             document.getElementById('detailRemaining').innerText = fmtRaw(balance);
 
-            // ---- PAID BREAKDOWN: Total Principal Paid, Total Interest Paid, Total Paid ----
+            // ---- PAID BREAKDOWN: Total Principal Paid, Total Interest Paid, Total Paid, Prin. Payable ----
             const totalInterestForLoan = parseFloat(d.loan.totalInt) || 0;
             const numberOfDuesForLoan = parseInt(d.loan.dues) || 1;
             const interestFactorForLoan = totalInterestForLoan / numberOfDuesForLoan;
@@ -2231,9 +2238,12 @@ window.addEventListener('popstate', (e) => {
                     sumTotalPaid += p;
                 }
             });
+            // Prin. Payable = Principal − Principal already paid (simple & accurate)
+            const sumPrinPayable = Math.max(0, (parseFloat(d.loan.principal) || 0) - sumPrinPaid);
             document.getElementById('detailTotalPrinPaid').innerText = fmtRaw(sumPrinPaid);
             document.getElementById('detailTotalIntPaid').innerText = fmtRaw(sumIntPaid);
             document.getElementById('detailTotalPaid').innerText = fmtRaw(sumTotalPaid);
+            document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
             // ---- END PAID BREAKDOWN ----
 
             let remText = d.loan.remarks || '';
