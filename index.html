@@ -1031,24 +1031,18 @@
                         id="detailReg"></span>
                 </div>
                 <div class="fin-summary">
-                    <div class="fin-cell"><span class="field-lbl" data-lang="principal">Principal</span><span
-                            class="fin-val">₹<span id="detailPrincipal"></span></span></div>
-                    <div class="fin-cell"><span class="field-lbl" data-lang="total_amt">Total Amt</span><span
-                            class="fin-val text-primary">₹<span id="detailTotalAmount"></span></span></div>
-                    <div class="fin-cell"><span class="field-lbl" data-lang="due_amt">Due Amt</span><span
-                            class="fin-val text-success">₹<span id="detailExpected"></span></span></div>
-                    <div class="fin-cell"><span class="field-lbl" data-lang="rate">Rate</span><span
-                            class="fin-val"><span id="detailPercent"></span>%</span></div>
-                    <div class="fin-cell"><span class="field-lbl" data-lang="total_int">Total Int</span><span
-                            class="fin-val text-danger">₹<span id="detailTotalInt"></span></span></div>
-                    <div class="fin-cell bg-warning bg-opacity-10"><span class="field-lbl"
-                            data-lang="balance">Balance</span><span class="fin-val text-danger fs-5">₹<span
-                                id="detailRemaining"></span></span></div>
-                    <div class="fin-cell bg-info bg-opacity-10"><span class="field-lbl" data-lang="total_prin_paid">Prin. Paid</span><span class="fin-val text-primary">₹<span id="detailTotalPrinPaid"></span></span></div>
-                    <div class="fin-cell bg-success bg-opacity-10"><span class="field-lbl" data-lang="total_int_paid">Int. Paid</span><span class="fin-val text-success">₹<span id="detailTotalIntPaid"></span></span></div>
-                    <div class="fin-cell" style="background:#f3e5f5;"><span class="field-lbl" data-lang="total_paid">Total Paid</span><span class="fin-val" style="color:#7b1fa2;">₹<span id="detailTotalPaid"></span></span></div>
-                    <div class="fin-cell fin-cell-full" style="background:#fff8e1;"><span class="field-lbl" data-lang="prin_payable">Prin. Payable</span><span class="fin-val" style="color:#e65100;">₹<span id="detailPrinPayable"></span></span></div>
-                </div>
+    <div class="fin-cell"><span class="field-lbl" data-lang="principal">Principal</span><span class="fin-val">₹<span id="detailPrincipal"></span></span></div>
+    <div class="fin-cell"><span class="field-lbl" data-lang="total_amt">Total Amt</span><span class="fin-val text-primary">₹<span id="detailTotalAmount"></span></span></div>
+    <div class="fin-cell"><span class="field-lbl" data-lang="due_amt">Due Amt</span><span class="fin-val text-success">₹<span id="detailExpected"></span></span></div>
+    <div class="fin-cell"><span class="field-lbl" data-lang="rate">Rate</span><span class="fin-val"><span id="detailPercent"></span>%</span></div>
+    <div class="fin-cell"><span class="field-lbl" data-lang="total_int">Total Int</span><span class="fin-val text-danger">₹<span id="detailTotalInt"></span></span></div>
+    <div class="fin-cell bg-warning bg-opacity-10"><span class="field-lbl" data-lang="balance">Balance</span><span class="fin-val text-danger fs-5">₹<span id="detailRemaining"></span></span></div>
+    <div class="fin-cell bg-info bg-opacity-10"><span class="field-lbl" data-lang="total_prin_paid">Prin. Paid</span><span class="fin-val text-primary">₹<span id="detailTotalPrinPaid"></span></span></div>
+    <div class="fin-cell bg-success bg-opacity-10"><span class="field-lbl" data-lang="total_int_paid">Int. Paid</span><span class="fin-val text-success">₹<span id="detailTotalIntPaid"></span></span></div>
+    <div class="fin-cell" style="background:#fff8e1;"><span class="field-lbl" data-lang="total_paid">Total Paid</span><span class="fin-val" style="color:#7b1fa2;">₹<span id="detailTotalPaid"></span></span></div>
+    <div class="fin-cell" style="background:#fff5f5;"><span class="field-lbl" data-lang="int_payable">Int. Payable</span><span class="fin-val text-danger">₹<span id="detailIntPayable"></span></span></div>
+    <div class="fin-cell fin-cell-full" style="background:#f3e5f5;"><span class="field-lbl" data-lang="prin_payable">Prin. Payable</span><span class="fin-val" style="color:#e65100;">₹<span id="detailPrinPayable"></span></span></div>
+</div>
                 <div class="penalty-card no-print">
                     <div class="penalty-header">
                         <span data-lang="penalty_calc">PENALTY CALCULATOR</span>
@@ -1618,7 +1612,8 @@
                 monthly_progress: 'Monthly Progress', collection_progress: 'Collection Progress', progress: 'Progress',
                 prin_receivable: 'Prin. Receivable', int_receivable: 'Int. Receivable', loans_added: 'Loans Added',
                 total_prin_paid: 'Prin. Paid', total_int_paid: 'Int. Paid', total_paid: 'Total Paid',
-                prin_payable: 'Prin. Payable',
+int_payable: 'Int. Payable',
+prin_payable: 'Prin. Payable',
             },
             ta: {
                 given: 'கொடுக்கப்பட்டது', received: 'பெறப்பட்டது', balance: 'நிலுவை', interest: 'வட்டி மொத்தம்', accounts: 'கணக்குகள்', closed_accounts: 'முடிக்கப்பட்டவை',
@@ -1636,7 +1631,8 @@
                 monthly_progress: 'மாதாந்திர முன்னேற்றம்', collection_progress: 'வசூல் முன்னேற்றம்', progress: 'முன்னேற்றம்',
                 prin_receivable: 'வர வேண்டிய அசல்', int_receivable: 'வர வேண்டிய வட்டி', loans_added: 'வழங்கப்பட்ட கடன்கள்',
                 total_prin_paid: 'செலுத்திய அசல்', total_int_paid: 'செலுத்திய வட்டி', total_paid: 'மொத்த செலுத்தியது',
-                prin_payable: 'வர வேண்டிய அசல்',
+int_payable: 'வர வேண்டிய வட்டி',
+prin_payable: 'வர வேண்டிய அசல்',
             }
         };
 
@@ -2240,10 +2236,12 @@ window.addEventListener('popstate', (e) => {
             });
             // Prin. Payable = Principal − Principal already paid (simple & accurate)
             const sumPrinPayable = Math.max(0, (parseFloat(d.loan.principal) || 0) - sumPrinPaid);
-            document.getElementById('detailTotalPrinPaid').innerText = fmtRaw(sumPrinPaid);
-            document.getElementById('detailTotalIntPaid').innerText = fmtRaw(sumIntPaid);
-            document.getElementById('detailTotalPaid').innerText = fmtRaw(sumTotalPaid);
-            document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
+const sumIntPayable = Math.max(0, (parseFloat(d.loan.totalInt) || 0) - sumIntPaid);
+document.getElementById('detailTotalPrinPaid').innerText = fmtRaw(sumPrinPaid);
+document.getElementById('detailTotalIntPaid').innerText = fmtRaw(sumIntPaid);
+document.getElementById('detailIntPayable').innerText = fmtRaw(sumIntPayable);
+document.getElementById('detailTotalPaid').innerText = fmtRaw(sumTotalPaid);
+document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
             // ---- END PAID BREAKDOWN ----
 
             let remText = d.loan.remarks || '';
