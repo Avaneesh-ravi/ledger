@@ -210,26 +210,26 @@
 
         /* ===== FINANCIAL SUMMARY GRID ===== */
         .fin-summary {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            border: 1px solid #000;
-            margin-top: 20px;
-        }
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    border: 1px solid #000;
+    margin-top: 20px;
+}
 
-        .fin-cell {
-            padding: 8px;
-            border-right: 1px solid #000;
-            border-bottom: 1px solid #000;
-            text-align: center;
-        }
+.fin-cell {
+    padding: 8px;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    text-align: center;
+}
 
-        .fin-cell:nth-child(3n) {
-            border-right: none;
-        }
+.fin-cell:nth-child(2n) {
+    border-right: none;
+}
 
-        .fin-cell:nth-last-child(-n+4) {
-            border-bottom: none;
-        }
+.fin-cell:nth-last-child(-n+2):not(.fin-cell-full) {
+    border-bottom: none;
+}
 
         .fin-cell-full {
             grid-column: 1 / -1;
@@ -472,41 +472,19 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            .photo-box {
-                width: 65px;
-                height: 80px;
-            }
+    .photo-box {
+        width: 65px;
+        height: 80px;
+    }
 
-            .field-val {
-                font-size: 0.8rem;
-            }
+    .field-val {
+        font-size: 0.8rem;
+    }
 
-            .field-lbl {
-                font-size: 0.6rem;
-            }
-
-            .fin-summary {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .fin-cell:nth-child(3n) {
-                border-right: 1px solid #000;
-            }
-
-            .fin-cell:nth-child(2n) {
-                border-right: none;
-            }
-
-            .fin-cell:nth-last-child(-n+3) {
-                border-bottom: none;
-            }
-
-            .fin-cell-full {
-                grid-column: 1 / -1;
-                border-right: none;
-                border-bottom: none;
-            }
-        }
+    .field-lbl {
+        font-size: 0.6rem;
+    }
+}
 
         /* ===== CUSTOM TOAST (replaces alert()) ===== */
         #toastContainer {
@@ -1036,12 +1014,12 @@
     <div class="fin-cell"><span class="field-lbl" data-lang="due_amt">Due Amt</span><span class="fin-val text-success">₹<span id="detailExpected"></span></span></div>
     <div class="fin-cell"><span class="field-lbl" data-lang="rate">Rate</span><span class="fin-val"><span id="detailPercent"></span>%</span></div>
     <div class="fin-cell"><span class="field-lbl" data-lang="total_int">Total Int</span><span class="fin-val text-danger">₹<span id="detailTotalInt"></span></span></div>
-    <div class="fin-cell bg-warning bg-opacity-10"><span class="field-lbl" data-lang="balance">Balance</span><span class="fin-val text-danger fs-5">₹<span id="detailRemaining"></span></span></div>
+    <div class="fin-cell bg-warning bg-opacity-10"><span class="field-lbl" data-lang="total_paid">Total Paid</span><span class="fin-val" style="color:#7b1fa2;">₹<span id="detailTotalPaid"></span></span></div>
     <div class="fin-cell bg-info bg-opacity-10"><span class="field-lbl" data-lang="total_prin_paid">Prin. Paid</span><span class="fin-val text-primary">₹<span id="detailTotalPrinPaid"></span></span></div>
     <div class="fin-cell bg-success bg-opacity-10"><span class="field-lbl" data-lang="total_int_paid">Int. Paid</span><span class="fin-val text-success">₹<span id="detailTotalIntPaid"></span></span></div>
-    <div class="fin-cell" style="background:#fff8e1;"><span class="field-lbl" data-lang="total_paid">Total Paid</span><span class="fin-val" style="color:#7b1fa2;">₹<span id="detailTotalPaid"></span></span></div>
+    <div class="fin-cell" style="background:#fff8e1;"><span class="field-lbl" data-lang="prin_payable">Prin. Payable</span><span class="fin-val" style="color:#e65100;">₹<span id="detailPrinPayable"></span></span></div>
     <div class="fin-cell" style="background:#fff5f5;"><span class="field-lbl" data-lang="int_payable">Int. Payable</span><span class="fin-val text-danger">₹<span id="detailIntPayable"></span></span></div>
-    <div class="fin-cell fin-cell-full" style="background:#f3e5f5;"><span class="field-lbl" data-lang="prin_payable">Prin. Payable</span><span class="fin-val" style="color:#e65100;">₹<span id="detailPrinPayable"></span></span></div>
+    <div class="fin-cell fin-cell-full" style="background:#fff3e0; border-bottom:none;"><span class="field-lbl" data-lang="balance">Balance</span><span class="fin-val text-danger fs-5">₹<span id="detailRemaining"></span></span></div>
 </div>
                 <div class="penalty-card no-print">
                     <div class="penalty-header">
