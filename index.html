@@ -209,26 +209,26 @@
 
         /* ===== FINANCIAL SUMMARY GRID ===== */
         .fin-summary {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    border: 1px solid #000;
-    margin-top: 20px;
-}
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            border: 1px solid #000;
+            margin-top: 20px;
+        }
 
-.fin-cell {
-    padding: 8px;
-    border-right: 1px solid #000;
-    border-bottom: 1px solid #000;
-    text-align: center;
-}
+        .fin-cell {
+            padding: 8px;
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            text-align: center;
+        }
 
-.fin-cell:nth-child(2n) {
-    border-right: none;
-}
+        .fin-cell:nth-child(2n) {
+            border-right: none;
+        }
 
-.fin-cell:nth-last-child(-n+2):not(.fin-cell-full) {
-    border-bottom: 1px solid #000;
-}
+        .fin-cell:nth-last-child(-n+2):not(.fin-cell-full) {
+            border-bottom: 1px solid #000;
+        }
 
         .fin-cell-full {
             grid-column: 1 / -1;
@@ -471,19 +471,19 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-    .photo-box {
-        width: 65px;
-        height: 80px;
-    }
+            .photo-box {
+                width: 65px;
+                height: 80px;
+            }
 
-    .field-val {
-        font-size: 0.8rem;
-    }
+            .field-val {
+                font-size: 0.8rem;
+            }
 
-    .field-lbl {
-        font-size: 0.6rem;
-    }
-}
+            .field-lbl {
+                font-size: 0.6rem;
+            }
+        }
 
         /* ===== CUSTOM TOAST (replaces alert()) ===== */
         #toastContainer {
@@ -790,15 +790,20 @@
                         <div class="col-12" id="qpPenaltyRow" style="display:none;">
                             <div class="p-3 rounded-3" style="background:#fff5f5;border:1.5px dashed #ef9a9a;">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-danger small"><i class="fas fa-exclamation-triangle me-1"></i>Penalty Charge</span>
+                                    <span class="fw-bold text-danger small"><i
+                                            class="fas fa-exclamation-triangle me-1"></i>Penalty Charge</span>
                                     <span id="qpPenaltyInfo" class="small text-muted"></span>
                                 </div>
                                 <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-danger text-white border-0"><i class="fas fa-indian-rupee-sign"></i></span>
-                                    <input type="number" id="qpPenalty" class="form-control fw-bold text-danger" placeholder="0" min="0" aria-label="Penalty amount">
-                                    <span class="input-group-text bg-light text-muted border" style="font-size:0.75rem;">editable</span>
+                                    <span class="input-group-text bg-danger text-white border-0"><i
+                                            class="fas fa-indian-rupee-sign"></i></span>
+                                    <input type="number" id="qpPenalty" class="form-control fw-bold text-danger"
+                                        placeholder="0" min="0" aria-label="Penalty amount">
+                                    <span class="input-group-text bg-light text-muted border"
+                                        style="font-size:0.75rem;">editable</span>
                                 </div>
-                                <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i>Edit to waive or adjust penalty</div>
+                                <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i>Edit to waive
+                                    or adjust penalty</div>
                             </div>
                         </div>
                         <div class="col-12 mt-3">
@@ -824,7 +829,7 @@
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="no">No</th>
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="receipt">Rcpt</th>
                                 <th class="py-3 text-muted fw-bold border-0" data-lang="amt">Amt</th>
-                            <th class="py-3 text-muted fw-bold border-0 text-danger">Penalty</th>
+                                <th class="py-3 text-muted fw-bold border-0 text-danger">Penalty</th>
                             </tr>
                         </thead>
                         <tbody id="qpHistoryBody"></tbody>
@@ -909,7 +914,8 @@
                         </div>
                         <div class="col-12">
                             <div class="p-2 rounded text-center" style="background:#fff5f5;border:1px solid #ffcdd2;">
-                                <div class="small text-muted fw-bold" style="font-size:0.65rem;">⚡ PENALTY COLLECTED</div>
+                                <div class="small text-muted fw-bold" style="font-size:0.65rem;">⚡ PENALTY COLLECTED
+                                </div>
                                 <div class="fw-bold text-danger" id="mPenaltyCollected">₹0</div>
                             </div>
                         </div>
@@ -934,6 +940,34 @@
                     </div>
                 </div>
             </div>
+            <!-- DETAILED PAYMENTS TABLE -->
+            <div class="card border-0 shadow-sm mt-3" style="border-radius:12px;overflow:hidden;">
+                <div class="p-3 text-white d-flex justify-content-between align-items-center"
+                    style="background:linear-gradient(135deg,#1e4620,#2e7d32);">
+                    <h6 class="m-0 fw-bold"><i class="fas fa-table me-2"></i>Payment Details</h6>
+                    <button class="btn btn-sm btn-light fw-bold" onclick="exportProgressTable()">
+                        <i class="fas fa-file-excel me-1 text-success"></i>Excel
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 text-center align-middle" style="font-size:0.8rem;"
+                        id="progressDetailTable">
+                        <thead style="background-color:#f1f3f5;">
+                            <tr>
+                                <th class="py-2 text-muted fw-bold border-0">Date</th>
+                                <th class="py-2 text-muted fw-bold border-0">No</th>
+                                <th class="py-2 text-muted fw-bold border-0">Rcpt</th>
+                                <th class="py-2 text-muted fw-bold border-0">Amt</th>
+                                <th class="py-2 text-muted fw-bold border-0 text-danger">Penalty</th>
+                                <th class="py-2 text-muted fw-bold border-0 text-primary">Prin.Recv</th>
+                                <th class="py-2 text-muted fw-bold border-0 text-success">Int.Recv</th>
+                            </tr>
+                        </thead>
+                        <tbody id="progressDetailBody"></tbody>
+                        <tfoot id="progressDetailFoot" style="background:#f8f9fa;font-weight:700;"></tfoot>
+                    </table>
+                </div>
+            </div>
         </div>
 
         <!-- LEDGER VIEW -->
@@ -952,6 +986,9 @@
                             class="fas fa-edit"></i></button>
                     <button class="btn btn-danger shadow-sm btn-sm me-2" onclick="deleteLoan()"
                         aria-label="Delete loan"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-success shadow-sm btn-sm me-2" onclick="manualCloseLoanToggle()"
+                        aria-label="Toggle loan close" id="manualCloseBtn"><i class="fas fa-lock"
+                            id="manualCloseBtnIcon"></i></button>
                     <button class="btn btn-dark shadow-sm btn-sm" onclick="printLedger()" aria-label="Print ledger"><i
                             class="fas fa-print"></i></button>
                 </div>
@@ -962,7 +999,8 @@
                         <h4 class="fw-bold text-success m-0"><span data-lang="loan_no">LOAN NO</span>: #<span
                                 id="detailLoanNo"></span></h4>
                         <span class="badge rounded-pill bg-dark opacity-75" id="accountCounter">0 / 0</span>
-                        <div class="text-end"><span class="badge bg-light text-dark border" id="detailDate"></span>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark border mb-1" id="detailDate"></span>
                         </div>
                     </div>
                     <div id="prevLoanDisplay" class="small fw-bold text-danger mt-1"></div>
@@ -1008,19 +1046,37 @@
                         id="detailReg"></span>
                 </div>
                 <div class="fin-summary">
-    <div class="fin-cell"><span class="field-lbl" data-lang="principal">Principal</span><span class="fin-val">₹<span id="detailPrincipal"></span></span></div>
-    <div class="fin-cell"><span class="field-lbl" data-lang="total_amt">Total Amt</span><span class="fin-val text-primary">₹<span id="detailTotalAmount"></span></span></div>
-    <div class="fin-cell"><span class="field-lbl" data-lang="due_amt">Due Amt</span><span class="fin-val text-success">₹<span id="detailExpected"></span></span></div>
-    <div class="fin-cell"><span class="field-lbl" data-lang="rate">Rate</span><span class="fin-val"><span id="detailPercent"></span>%</span></div>
-    <div class="fin-cell"><span class="field-lbl" data-lang="total_int">Total Int</span><span class="fin-val text-danger">₹<span id="detailTotalInt"></span></span></div>
-    <div class="fin-cell bg-warning bg-opacity-10"><span class="field-lbl" data-lang="total_paid">Total Paid</span><span class="fin-val" style="color:#7b1fa2;">₹<span id="detailTotalPaid"></span></span></div>
-    <div class="fin-cell bg-info bg-opacity-10"><span class="field-lbl" data-lang="total_prin_paid">Prin. Paid</span><span class="fin-val text-primary">₹<span id="detailTotalPrinPaid"></span></span></div>
-    <div class="fin-cell bg-success bg-opacity-10"><span class="field-lbl" data-lang="total_int_paid">Int. Paid</span><span class="fin-val text-success">₹<span id="detailTotalIntPaid"></span></span></div>
-    <div class="fin-cell" style="background:#fff8e1;"><span class="field-lbl" data-lang="prin_payable">Prin. Payable</span><span class="fin-val" style="color:#e65100;">₹<span id="detailPrinPayable"></span></span></div>
-    <div class="fin-cell" style="background:#fff5f5;"><span class="field-lbl" data-lang="int_payable">Int. Payable</span><span class="fin-val text-danger">₹<span id="detailIntPayable"></span></span></div>
-    <div class="fin-cell fin-cell-full" style="background:#fff3e0; border-bottom:none; border-top:none;">
-        <span class="field-lbl" data-lang="balance">Balance</span><span class="fin-val text-danger fs-5">₹<span id="detailRemaining"></span></span></div>
-</div>
+                    <div class="fin-cell"><span class="field-lbl" data-lang="principal">Principal</span><span
+                            class="fin-val">₹<span id="detailPrincipal"></span></span></div>
+                    <div class="fin-cell"><span class="field-lbl" data-lang="total_amt">Total Amt</span><span
+                            class="fin-val text-primary">₹<span id="detailTotalAmount"></span></span></div>
+                    <div class="fin-cell"><span class="field-lbl" data-lang="due_amt">Due Amt</span><span
+                            class="fin-val text-success">₹<span id="detailExpected"></span></span></div>
+                    <div class="fin-cell"><span class="field-lbl" data-lang="rate">Rate</span><span
+                            class="fin-val"><span id="detailPercent"></span>%</span></div>
+                    <div class="fin-cell"><span class="field-lbl" data-lang="total_int">Total Int</span><span
+                            class="fin-val text-danger">₹<span id="detailTotalInt"></span></span></div>
+                    <div class="fin-cell bg-warning bg-opacity-10"><span class="field-lbl" data-lang="total_paid">Total
+                            Paid</span><span class="fin-val" style="color:#7b1fa2;">₹<span
+                                id="detailTotalPaid"></span></span></div>
+                    <div class="fin-cell bg-info bg-opacity-10"><span class="field-lbl"
+                            data-lang="total_prin_paid">Prin. Paid</span><span class="fin-val text-primary">₹<span
+                                id="detailTotalPrinPaid"></span></span></div>
+                    <div class="fin-cell bg-success bg-opacity-10"><span class="field-lbl"
+                            data-lang="total_int_paid">Int. Paid</span><span class="fin-val text-success">₹<span
+                                id="detailTotalIntPaid"></span></span></div>
+                    <div class="fin-cell" style="background:#fff8e1;"><span class="field-lbl"
+                            data-lang="prin_payable">Prin. Payable</span><span class="fin-val"
+                            style="color:#e65100;">₹<span id="detailPrinPayable"></span></span></div>
+                    <div class="fin-cell" style="background:#fff5f5;"><span class="field-lbl"
+                            data-lang="int_payable">Int. Payable</span><span class="fin-val text-danger">₹<span
+                                id="detailIntPayable"></span></span></div>
+                    <div class="fin-cell fin-cell-full"
+                        style="background:#fff3e0; border-bottom:none; border-top:none;">
+                        <span class="field-lbl" data-lang="balance">Balance</span><span
+                            class="fin-val text-danger fs-5">₹<span id="detailRemaining"></span></span>
+                    </div>
+                </div>
                 <div class="penalty-card no-print">
                     <div class="penalty-header">
                         <span data-lang="penalty_calc">PENALTY CALCULATOR</span>
@@ -1234,64 +1290,78 @@
         </div>
     </div>
 
-   <!-- ===== DUE PAYMENT MODAL ===== -->
-<div class="modal fade" id="duePayModal" tabindex="-1" aria-labelledby="duePayModalLabel" aria-modal="true" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:16px;overflow:hidden;">
-            <div class="modal-header text-white border-0" style="background:linear-gradient(135deg,#1e4620,#2e7d32);">
-                <div>
-                    <h6 class="modal-title fw-bold mb-0" id="duePayModalLabel"><i class="fas fa-hand-holding-usd me-2"></i>Record Payment</h6>
-                    <small class="opacity-75">Fill in payment & penalty details</small>
+    <!-- ===== DUE PAYMENT MODAL ===== -->
+    <div class="modal fade" id="duePayModal" tabindex="-1" aria-labelledby="duePayModalLabel" aria-modal="true"
+        role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:16px;overflow:hidden;">
+                <div class="modal-header text-white border-0"
+                    style="background:linear-gradient(135deg,#1e4620,#2e7d32);">
+                    <div>
+                        <h6 class="modal-title fw-bold mb-0" id="duePayModalLabel"><i
+                                class="fas fa-hand-holding-usd me-2"></i>Record Payment</h6>
+                        <small class="opacity-75">Fill in payment & penalty details</small>
+                    </div>
+                    <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="small fw-bold text-muted mb-1">Payment Date <span class="required-star">*</span></label>
-                        <input type="date" id="duePayDate" class="form-control" aria-label="Payment date">
-                    </div>
-                    <div class="col-6">
-                        <label class="small fw-bold text-muted mb-1">Receipt No <span class="required-star">*</span></label>
-                        <input type="text" id="duePayRcpt" class="form-control" placeholder="e.g. 1628"
-                            inputmode="decimal" pattern="[0-9.\-]*"
-                            oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')" aria-label="Receipt number">
-                    </div>
-                    <div class="col-12">
-                        <label class="small fw-bold text-muted mb-1">Due Amount <span class="required-star">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-success text-white border-0"><i class="fas fa-indian-rupee-sign"></i></span>
-                            <input type="number" id="duePayAmt" class="form-control fw-bold text-success border-start-0" style="border-left:none;" aria-label="Payment amount">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted mb-1">Payment Date <span
+                                    class="required-star">*</span></label>
+                            <input type="date" id="duePayDate" class="form-control" aria-label="Payment date">
                         </div>
-                    </div>
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted mb-1">Receipt No <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="duePayRcpt" class="form-control" placeholder="e.g. 1628"
+                                inputmode="decimal" pattern="[0-9.\-]*"
+                                oninput="this.value=this.value.replace(/[^0-9.\-]/g,'')" aria-label="Receipt number">
+                        </div>
+                        <div class="col-12">
+                            <label class="small fw-bold text-muted mb-1">Due Amount <span
+                                    class="required-star">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white border-0"><i
+                                        class="fas fa-indian-rupee-sign"></i></span>
+                                <input type="number" id="duePayAmt"
+                                    class="form-control fw-bold text-success border-start-0" style="border-left:none;"
+                                    aria-label="Payment amount">
+                            </div>
+                        </div>
 
-                    <!-- PENALTY ROW — hidden when no delay -->
-                    <div class="col-12" id="duePayPenaltyRow" style="display:none;">
-                        <div class="p-3 rounded-3" style="background:#fff5f5;border:1.5px dashed #ef9a9a;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="fw-bold text-danger small"><i class="fas fa-exclamation-triangle me-1"></i>Penalty Charge</span>
-                                <span id="duePayPenaltyInfo" class="small"></span>
+                        <!-- PENALTY ROW — hidden when no delay -->
+                        <div class="col-12" id="duePayPenaltyRow" style="display:none;">
+                            <div class="p-3 rounded-3" style="background:#fff5f5;border:1.5px dashed #ef9a9a;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-danger small"><i
+                                            class="fas fa-exclamation-triangle me-1"></i>Penalty Charge</span>
+                                    <span id="duePayPenaltyInfo" class="small"></span>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-danger text-white border-0"><i
+                                            class="fas fa-indian-rupee-sign"></i></span>
+                                    <input type="number" id="duePayPenalty"
+                                        class="form-control fw-bold text-danger border-start-0" placeholder="0" min="0"
+                                        aria-label="Penalty amount paid">
+                                    <span class="input-group-text bg-light text-muted border"
+                                        style="font-size:0.75rem;">editable</span>
+                                </div>
+                                <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i>Edit to waive
+                                    or adjust penalty amount</div>
                             </div>
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text bg-danger text-white border-0"><i class="fas fa-indian-rupee-sign"></i></span>
-                                <input type="number" id="duePayPenalty" class="form-control fw-bold text-danger border-start-0" placeholder="0" min="0" aria-label="Penalty amount paid">
-                                <span class="input-group-text bg-light text-muted border" style="font-size:0.75rem;">editable</span>
-                            </div>
-                            <div class="mt-2 small text-muted"><i class="fas fa-info-circle me-1"></i>Edit to waive or adjust penalty amount</div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer border-0 px-4 pb-4 pt-0">
-                <button class="btn w-100 fw-bold py-2 text-white rounded-pill shadow-sm"
-                    style="background:linear-gradient(135deg,#1e4620,#2e7d32);"
-                    onclick="submitDuePayment()">
-                    <i class="fas fa-check-circle me-2"></i>CONFIRM PAYMENT
-                </button>
+                <div class="modal-footer border-0 px-4 pb-4 pt-0">
+                    <button class="btn w-100 fw-bold py-2 text-white rounded-pill shadow-sm"
+                        style="background:linear-gradient(135deg,#1e4620,#2e7d32);" onclick="submitDuePayment()">
+                        <i class="fas fa-check-circle me-2"></i>CONFIRM PAYMENT
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- ===== EDIT TRANSACTION MODAL ===== -->
     <div class="modal fade" id="editTxnModal" tabindex="-1" aria-labelledby="editTxnModalLabel" aria-modal="true"
@@ -1319,16 +1389,19 @@
                                 aria-label="Corrected receipt number">
                         </div>
                         <div class="col-12"><label class="small fw-bold" data-lang="amount">Correct Amount</label><input
-                            type="number" id="editTxnAmt" class="form-control fw-bold text-success"
-                            aria-label="Corrected amount"></div>
-                    <div class="col-12 mt-2">
-                        <label class="small fw-bold text-danger">Penalty Paid <span class="text-muted fw-normal small">(₹ collected from client)</span></label>
-                        <div class="input-group input-group-sm mt-1">
-                            <span class="input-group-text bg-danger text-white border-0"><i class="fas fa-indian-rupee-sign"></i></span>
-                            <input type="number" id="editTxnPenalty" class="form-control fw-bold text-danger" placeholder="0" min="0" aria-label="Penalty paid">
+                                type="number" id="editTxnAmt" class="form-control fw-bold text-success"
+                                aria-label="Corrected amount"></div>
+                        <div class="col-12 mt-2">
+                            <label class="small fw-bold text-danger">Penalty Paid <span
+                                    class="text-muted fw-normal small">(₹ collected from client)</span></label>
+                            <div class="input-group input-group-sm mt-1">
+                                <span class="input-group-text bg-danger text-white border-0"><i
+                                        class="fas fa-indian-rupee-sign"></i></span>
+                                <input type="number" id="editTxnPenalty" class="form-control fw-bold text-danger"
+                                    placeholder="0" min="0" aria-label="Penalty paid">
+                            </div>
                         </div>
                     </div>
-                </div>
                 </div>
                 <div class="modal-footer border-0"><button class="btn btn-warning w-100 fw-bold"
                         onclick="saveTransactionEdit()" data-lang="update_sync">UPDATE & SYNC</button></div>
@@ -1388,6 +1461,13 @@
         // ============================================================
         const fmt = v => '₹' + Math.round(v).toLocaleString('en-IN');
         const fmtRaw = v => Math.round(v).toLocaleString('en-IN');
+
+        function formatDateDMY(dateStr) {
+            if (!dateStr || dateStr === '-') return dateStr || '-';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            return dateStr;
+        }
 
         // ============================================================
         // DEBOUNCE HELPER
@@ -1451,7 +1531,7 @@
                         const penalty = daysLate * penaltyRate;
                         totalDaysLate += daysLate;
                         totalPenalty += penalty;
-                        delayedList.push(`• தேதி: ${s.dueDate} | தொகை: ₹${expected} | தாமதம்: ${daysLate} நாட்கள் | அபராதம்: ₹${penalty}`);
+                        delayedList.push(`• தேதி: ${formatDateDMY(s.dueDate)} | தொகை: ₹${expected} | தாமதம்: ${daysLate} நாட்கள் | அபராதம்: ₹${penalty}`);
                     }
                 }
             });
@@ -1590,8 +1670,8 @@
                 monthly_progress: 'Monthly Progress', collection_progress: 'Collection Progress', progress: 'Progress',
                 prin_receivable: 'Prin. Receivable', int_receivable: 'Int. Receivable', loans_added: 'Loans Added',
                 total_prin_paid: 'Prin. Paid', total_int_paid: 'Int. Paid', total_paid: 'Total Paid',
-int_payable: 'Int. Payable',
-prin_payable: 'Prin. Payable',
+                int_payable: 'Int. Payable',
+                prin_payable: 'Prin. Payable',
             },
             ta: {
                 given: 'கொடுக்கப்பட்டது', received: 'பெறப்பட்டது', balance: 'நிலுவை', interest: 'வட்டி மொத்தம்', accounts: 'கணக்குகள்', closed_accounts: 'முடிக்கப்பட்டவை',
@@ -1609,8 +1689,8 @@ prin_payable: 'Prin. Payable',
                 monthly_progress: 'மாதாந்திர முன்னேற்றம்', collection_progress: 'வசூல் முன்னேற்றம்', progress: 'முன்னேற்றம்',
                 prin_receivable: 'வர வேண்டிய அசல்', int_receivable: 'வர வேண்டிய வட்டி', loans_added: 'வழங்கப்பட்ட கடன்கள்',
                 total_prin_paid: 'செலுத்திய அசல்', total_int_paid: 'செலுத்திய வட்டி', total_paid: 'மொத்த செலுத்தியது',
-int_payable: 'வர வேண்டிய வட்டி',
-prin_payable: 'வர வேண்டிய அசல்',
+                int_payable: 'வர வேண்டிய வட்டி',
+                prin_payable: 'வர வேண்டிய அசல்',
             }
         };
 
@@ -1627,7 +1707,7 @@ prin_payable: 'வர வேண்டிய அசல்',
             localDB.forEach((loan, idx) => {
                 const totalExp = loan.loan.expected * loan.loan.dues;
                 const totalPaid = loan.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
-                if (totalPaid >= totalExp) return;
+                if (loan.manuallyClosed || totalPaid >= totalExp) return;
                 loan.schedule.forEach(s => {
                     if (!s.isPaid) {
                         const due = new Date(s.dueDate);
@@ -1669,7 +1749,7 @@ prin_payable: 'வர வேண்டிய அசல்',
                 <small class="badge bg-danger">${item.days} Days Late</small>
             </div>
             <div class="d-flex justify-content-between align-items-center mt-2">
-                <small class="text-muted">Due Date: ${item.date}</small>
+                <small class="text-muted">Due Date: ${formatDateDMY(item.date)}</small>
                 <div>
                    ${buttonsHtml}
                 </div>
@@ -1679,28 +1759,24 @@ prin_payable: 'வர வேண்டிய அசல்',
         }
 
         function openNotifModal() {
-    history.pushState({ view: 'notifModal', scrollTop: 0 }, '', '');
-    new bootstrap.Modal(document.getElementById('notifModal')).show();
-}
+            history.pushState({ view: 'notifModal', scrollTop: 0 }, '', '');
+            new bootstrap.Modal(document.getElementById('notifModal')).show();
+        }
         function openNotifLedger(idx) {
-    activeNavList = overdueIndices;
+            activeNavList = overdueIndices;
 
-    // ✅ Read scrollTop from the MODAL WRAPPER — this is what Bootstrap scrolls
-    // notifList.scrollTop is always 0; #notifModal has overflow:auto
-    const modalEl = document.getElementById('notifModal');
-    const scrollTop = modalEl ? modalEl.scrollTop : 0;
+            // ✅ Read scrollTop from the MODAL WRAPPER — this is what Bootstrap scrolls
+            // notifList.scrollTop is always 0; #notifModal has overflow:auto
+            const modalEl = document.getElementById('notifModal');
+            const scrollTop = modalEl ? modalEl.scrollTop : 0;
 
-    const modal = bootstrap.Modal.getInstance(modalEl);
-    if (modal) modal.hide();
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
 
-    history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
-    history.pushState({ view: 'viewLedger', fromNotif: true, scrollTop: scrollTop }, '', '');
-
-    currentIdx = idx;
-    const d = localDB[idx];
-    currentDocId = d.uid;
-    _renderLedgerView(d, idx);
-}
+            history.replaceState({ view: 'notifModal', scrollTop: scrollTop }, '', '');
+            history.pushState({ view: 'viewLedger', fromNotif: true, scrollTop: scrollTop }, '', '');
+            viewLedger(idx);
+        }
         function openDashboardLedger(idx) {
             activeNavList = null;
             viewLedger(idx);
@@ -1727,88 +1803,88 @@ prin_payable: 'வர வேண்டிய அசல்',
         // TAB SWITCHING
         // ============================================================
         function switchTab(id, fromPopState = false) {
-    ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
-        const el = document.getElementById(v);
-        if (el) el.classList.add('d-none');
-    });
-    document.getElementById(id).classList.remove('d-none');
-    document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-    if (id === 'viewDashboard') document.getElementById('navDash').classList.add('active');
-    if (id === 'viewGiven') document.getElementById('navGiven').classList.add('active');
-    if (id === 'viewQuickPay') document.getElementById('navPay').classList.add('active');
+            ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('d-none');
+            });
+            document.getElementById(id).classList.remove('d-none');
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            if (id === 'viewDashboard') document.getElementById('navDash').classList.add('active');
+            if (id === 'viewGiven') document.getElementById('navGiven').classList.add('active');
+            if (id === 'viewQuickPay') document.getElementById('navPay').classList.add('active');
 
-    if (!fromPopState) {
-        history.pushState({ view: id }, '', '');
-    }
-}
+            if (!fromPopState) {
+                history.pushState({ view: id }, '', '');
+            }
+        }
 
-// Helper: show ledger view without touching history (used by openNotifLedger)
-function _renderLedgerView(d, idx) {
-    ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
-        const el = document.getElementById(v);
-        if (el) el.classList.add('d-none');
-    });
-    document.getElementById('viewLedger').classList.remove('d-none');
-    document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-    // Re-run the ledger population logic (same as viewLedger but without switchTab)
-    viewLedger(idx, true); // pass skipHistory=true
-}
-// Seed initial state
-history.replaceState({ view: 'viewDashboard' }, '', '');
+        // Helper: show ledger view without touching history (used by openNotifLedger)
+        function _renderLedgerView(d, idx) {
+            ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
+                const el = document.getElementById(v);
+                if (el) el.classList.add('d-none');
+            });
+            document.getElementById('viewLedger').classList.remove('d-none');
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            // Re-run the ledger population logic (same as viewLedger but without switchTab)
+            viewLedger(idx, true); // pass skipHistory=true
+        }
+        // Seed initial state
+        history.replaceState({ view: 'viewDashboard' }, '', '');
 
-window.addEventListener('popstate', (e) => {
-    const state = e.state;
-    if (!state) {
-        switchTab('viewDashboard', true);
-        return;
-    }
+        window.addEventListener('popstate', (e) => {
+            const state = e.state;
+            if (!state) {
+                switchTab('viewDashboard', true);
+                return;
+            }
 
-    function reopenNotifModal(scrollTop) {
-        ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
-            const el = document.getElementById(v);
-            if (el) el.classList.add('d-none');
-        });
-        document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-        document.getElementById('navDash').classList.add('active');
-        document.getElementById('viewDashboard').classList.remove('d-none');
-
-        const modalEl = document.getElementById('notifModal');
-
-        function doShow() {
-            modalEl.addEventListener('shown.bs.modal', function onShown() {
-                modalEl.removeEventListener('shown.bs.modal', onShown);
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        modalEl.scrollTop = scrollTop || 0;
-                    });
+            function reopenNotifModal(scrollTop) {
+                ['viewDashboard', 'viewQuickPay', 'viewLedger', 'viewGiven', 'viewProgress'].forEach(v => {
+                    const el = document.getElementById(v);
+                    if (el) el.classList.add('d-none');
                 });
-            }, { once: true });
+                document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+                document.getElementById('navDash').classList.add('active');
+                document.getElementById('viewDashboard').classList.remove('d-none');
 
-            bootstrap.Modal.getOrCreateInstance(modalEl).show();
-        }
+                const modalEl = document.getElementById('notifModal');
 
-        if (modalEl.classList.contains('hiding') || modalEl.classList.contains('show')) {
-            modalEl.addEventListener('hidden.bs.modal', function onHidden() {
-                modalEl.removeEventListener('hidden.bs.modal', onHidden);
-                doShow();
-            }, { once: true });
-        } else {
-            doShow();
-        }
-    }
+                function doShow() {
+                    modalEl.addEventListener('shown.bs.modal', function onShown() {
+                        modalEl.removeEventListener('shown.bs.modal', onShown);
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                modalEl.scrollTop = scrollTop || 0;
+                            });
+                        });
+                    }, { once: true });
 
-    if (state.view === 'notifModal') {
-        reopenNotifModal(state.scrollTop || 0);
-        return;
-    }
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                }
 
-    if (state.fromNotif) {
-        reopenNotifModal(state.scrollTop || 0);
-        return;
-    }
+                if (modalEl.classList.contains('hiding') || modalEl.classList.contains('show')) {
+                    modalEl.addEventListener('hidden.bs.modal', function onHidden() {
+                        modalEl.removeEventListener('hidden.bs.modal', onHidden);
+                        doShow();
+                    }, { once: true });
+                } else {
+                    doShow();
+                }
+            }
 
-    switchTab(state.view, true);
-});
+            if (state.view === 'notifModal') {
+                reopenNotifModal(state.scrollTop || 0);
+                return;
+            }
+
+            if (state.fromNotif) {
+                reopenNotifModal(state.scrollTop || 0);
+                return;
+            }
+
+            switchTab(state.view, true);
+        });
         // ============================================================
         // DASHBOARD UPDATE — no innerHTML += in loop
         // ============================================================
@@ -1827,15 +1903,23 @@ window.addEventListener('popstate', (e) => {
                 const exp = loan.loan.expected * loan.loan.dues;
                 let loanPaid = 0;
 
+                let runningBal = parseFloat(loan.loan.principal) || 0;
                 loan.schedule.forEach(s => {
                     if (s.isPaid) {
                         const paidAmt = parseFloat(s.paidAmount) || 0;
                         loanPaid += paidAmt;
-                        const rowIntRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
-                        const rowPrinRecv = paidAmt - rowIntRecv;
-                        tIR += rowIntRecv;
-                        tPR += rowPrinRecv;
-                        tPenalty += parseFloat(s.penaltyPaid) || 0;
+                        if (!s.manuallyClosed) {
+                            let rowIntRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
+                            let rowPrinRecv = paidAmt - rowIntRecv;
+                            if (runningBal - rowPrinRecv < 0) {
+                                rowPrinRecv = runningBal;
+                                rowIntRecv = paidAmt - rowPrinRecv;
+                            }
+                            runningBal = Math.max(0, runningBal - rowPrinRecv);
+                            tIR += rowIntRecv;
+                            tPR += rowPrinRecv;
+                            tPenalty += parseFloat(s.penaltyPaid) || 0;
+                        }
                     }
                 });
 
@@ -1843,11 +1927,12 @@ window.addEventListener('popstate', (e) => {
                 tC += loanPaid;
                 tI += totalInt;
                 tTotalExp += exp;
-                if (loanPaid >= exp) closedCount++;
+                const isClosed = loan.manuallyClosed || loanPaid >= exp;
+                if (isClosed) closedCount++;
 
                 rows.push(`
             <div class="col-md-6">
-                <div class="loan-card ${loanPaid >= exp ? 'closed' : 'active'}" onclick="openDashboardLedger(${i})" role="button" aria-label="View loan ${loan.loanNo}">
+                <div class="loan-card ${isClosed ? 'closed' : 'active'}" onclick="openDashboardLedger(${i})" role="button" aria-label="View loan ${loan.loanNo}">
                     <div class="d-flex justify-content-between">
                         <strong>#${loan.loanNo}</strong>
                         <span>₹${fmtRaw(loanPaid)}/${fmtRaw(exp)}</span>
@@ -1878,18 +1963,34 @@ window.addEventListener('popstate', (e) => {
         // ============================================================
         function renderGivenList() {
             const tb = document.getElementById('givenTableBody');
-            tb.innerHTML = localDB.map(x => `<tr><td>${x.loanNo}</td><td>${x.loan.date}</td><td>${x.borrower}</td><td>${x.loan.principal}</td></tr>`).join('');
+            tb.innerHTML = localDB.map((x, idx) => `<tr onclick="openDashboardLedger(${idx})" role="button" style="cursor:pointer"><td>${x.loanNo}</td><td>${formatDateDMY(x.loan.date)}</td><td>${x.borrower}</td><td>${x.loan.principal}</td></tr>`).join('');
         }
 
         function renderHistory() {
             const tb = document.getElementById('qpHistoryBody');
-            const sorted = [...localHistory].sort((a, b) => new Date(b.date) - new Date(a.date) || b.uid.localeCompare(a.uid));
-            tb.innerHTML = sorted.map(h => `<tr>
-                <td>${h.date}</td>
+            const history = [];
+            localDB.forEach((loan, idx) => {
+                loan.schedule.forEach(s => {
+                    if (s.isPaid && !s.manuallyClosed && s.paidDate && parseFloat(s.paidAmount) > 0) {
+                        history.push({
+                            idx: idx,
+                            date: s.paidDate,
+                            loanNo: loan.loanNo,
+                            rcpt: s.receiptNo || '-',
+                            amt: s.paidAmount,
+                            penaltyPaid: s.penaltyPaid || 0,
+                            uid: s.uid || (loan.loanNo + s.sno)
+                        });
+                    }
+                });
+            });
+            const sorted = history.sort((a, b) => new Date(b.date) - new Date(a.date) || b.loanNo.localeCompare(a.loanNo));
+            tb.innerHTML = sorted.map(h => `<tr onclick="openDashboardLedger(${h.idx})" role="button" style="cursor:pointer">
+                <td>${formatDateDMY(h.date)}</td>
                 <td>${h.loanNo}</td>
                 <td>${h.rcpt}</td>
-                <td>${h.amt}</td>
-                <td>${h.penaltyPaid > 0 ? `<span class="badge bg-danger">₹${h.penaltyPaid}</span>` : '<span class="text-muted">-</span>'}</td>
+                <td class="fw-bold text-success">₹${fmtRaw(h.amt)}</td>
+                <td>${h.penaltyPaid > 0 ? `<span class="badge bg-danger">₹${fmtRaw(h.penaltyPaid)}</span>` : '<span class="text-muted">-</span>'}</td>
             </tr>`).join('');
         }
 
@@ -1930,7 +2031,17 @@ window.addEventListener('popstate', (e) => {
         // EXPORT
         // ============================================================
         function exportGiven() { let c = "No,Date,Name,Amt\n"; localDB.forEach(x => { c += `${x.loanNo},${x.loan.date},${x.borrower},${x.loan.principal}\n`; }); downloadCSV(c, 'Given.csv'); }
-        function exportReceived() { let c = "Date,No,Rcpt,Amt\n"; localHistory.forEach(h => { c += `${h.date},${h.loanNo},${h.rcpt},${h.amt}\n`; }); downloadCSV(c, 'Received.csv'); }
+        function exportReceived() {
+            let c = "Date,No,Rcpt,Amt,Penalty\n";
+            localDB.forEach(loan => {
+                loan.schedule.forEach(s => {
+                    if (s.isPaid && !s.manuallyClosed && s.paidAmount && parseFloat(s.paidAmount) > 0) {
+                        c += `${formatDateDMY(s.paidDate)},${loan.loanNo},${s.receiptNo || '-'},${s.paidAmount},${s.penaltyPaid || 0}\n`;
+                    }
+                });
+            });
+            downloadCSV(c, 'Received.csv');
+        }
         function downloadCSV(c, f) { const b = new Blob([c], { type: 'text/csv' }); const l = document.createElement('a'); l.href = URL.createObjectURL(b); l.download = f; l.click(); }
 
         // ============================================================
@@ -2126,7 +2237,7 @@ window.addEventListener('popstate', (e) => {
             currentDocId = d.uid;
 
             setText('detailLoanNo', d.loanNo);
-            setText('detailDate', d.loan.date);
+            setText('detailDate', formatDateDMY(d.loan.date));
             setText('detailBName', d.borrower);
             setText('detailBFather', d.borrowerInfo.father);
             setText('detailBAddress', d.borrowerInfo.address);
@@ -2214,12 +2325,24 @@ window.addEventListener('popstate', (e) => {
             });
             // Prin. Payable = Principal − Principal already paid (simple & accurate)
             const sumPrinPayable = Math.max(0, (parseFloat(d.loan.principal) || 0) - sumPrinPaid);
-const sumIntPayable = Math.max(0, (parseFloat(d.loan.totalInt) || 0) - sumIntPaid);
-document.getElementById('detailTotalPrinPaid').innerText = fmtRaw(sumPrinPaid);
-document.getElementById('detailTotalIntPaid').innerText = fmtRaw(sumIntPaid);
-document.getElementById('detailIntPayable').innerText = fmtRaw(sumIntPayable);
-document.getElementById('detailTotalPaid').innerText = fmtRaw(sumTotalPaid);
-document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
+            let recalcIntPaid = 0;
+            let tempPrinBal = parseFloat(d.loan.principal) || 0;
+            d.schedule.forEach(s => {
+                if (s.isPaid) {
+                    const p = parseFloat(s.paidAmount) || 0;
+                    let ir = p >= interestFactorForLoan ? interestFactorForLoan : p;
+                    let pr = p - ir;
+                    if (tempPrinBal - pr < 0) { pr = tempPrinBal; ir = p - pr; }
+                    tempPrinBal = Math.max(0, tempPrinBal - pr);
+                    recalcIntPaid += ir;
+                }
+            });
+            const sumIntPayable = Math.max(0, (parseFloat(d.loan.totalInt) || 0) - recalcIntPaid);
+            document.getElementById('detailTotalPrinPaid').innerText = fmtRaw(sumPrinPaid);
+            document.getElementById('detailTotalIntPaid').innerText = fmtRaw(recalcIntPaid);
+            document.getElementById('detailIntPayable').innerText = fmtRaw(sumIntPayable);
+            document.getElementById('detailTotalPaid').innerText = fmtRaw(sumTotalPaid);
+            document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
             // ---- END PAID BREAKDOWN ----
 
             let remText = d.loan.remarks || '';
@@ -2235,8 +2358,26 @@ document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
 
             // ---- CLOSED LOAN: watermark + red heading ----
             const exp = d.loan.expected * d.loan.dues;
-            const isClosed = paid >= exp;
+            const isClosed = d.manuallyClosed || paid >= exp;
             const sheet = document.querySelector('.ledger-sheet');
+
+            const mcBtn = document.getElementById('manualCloseBtn');
+            const mcIcon = document.getElementById('manualCloseBtnIcon');
+            if (mcBtn) {
+                mcBtn.style.display = '';
+                if (d.manuallyClosed) {
+                    mcBtn.className = 'btn btn-warning shadow-sm btn-sm me-2';
+                    if (mcIcon) mcIcon.className = 'fas fa-lock-open';
+                    mcBtn.title = 'Click to Reopen Loan';
+                } else if (paid >= exp) {
+                    mcBtn.style.display = 'none';
+                } else {
+                    mcBtn.className = 'btn btn-success shadow-sm btn-sm me-2';
+                    if (mcIcon) mcIcon.className = 'fas fa-lock';
+                    mcBtn.title = 'Click to Manually Close Loan';
+                }
+            }
+
             const loanNoHeading = document.querySelector('#viewLedger h4.fw-bold');
             if (isClosed) {
                 sheet.classList.add('loan-closed');
@@ -2287,25 +2428,29 @@ document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
                     const paidAmt = parseFloat(s.paidAmount) || 0;
                     const pDate = new Date(s.paidDate); pDate.setHours(0, 0, 0, 0);
                     if (pDate > due) {
-    const daysLate = Math.ceil((pDate - due) / 86400000);
-    const totalPenalty = daysLate * penaltyRate;
-    const penPaid = parseFloat(s.penaltyPaid) || 0;
-    const penRemaining = Math.max(0, totalPenalty - penPaid);
-    penaltyDisplay = `<div class="d-flex flex-column align-items-center gap-1">
+                        const daysLate = Math.ceil((pDate - due) / 86400000);
+                        const totalPenalty = daysLate * penaltyRate;
+                        const penPaid = parseFloat(s.penaltyPaid) || 0;
+                        const penRemaining = Math.max(0, totalPenalty - penPaid);
+                        penaltyDisplay = `<div class="d-flex flex-column align-items-center gap-1">
         <span class="text-muted small">${daysLate}d</span>
         ${penPaid > 0
-            ? `<span class="badge bg-success" style="font-size:0.65rem;">₹${penPaid} paid</span>`
-            : ''}
+                                ? `<span class="badge bg-success" style="font-size:0.65rem;">₹${penPaid} paid</span>`
+                                : ''}
         ${penRemaining > 0
-            ? `<span class="badge bg-danger" style="font-size:0.65rem;">₹${penRemaining} due</span>`
-            : penPaid > 0 ? `<span class="badge bg-success" style="font-size:0.65rem;"><i class="fas fa-check"></i> cleared</span>` : ''}
+                                ? `<span class="badge bg-danger" style="font-size:0.65rem;">₹${penRemaining} due</span>`
+                                : penPaid > 0 ? `<span class="badge bg-success" style="font-size:0.65rem;"><i class="fas fa-check"></i> cleared</span>` : ''}
     </div>`;
-} else {
-    penaltyDisplay = `<i class="fas fa-check-circle text-success" title="Paid on time" aria-label="Paid on time"></i>`;
-}
+                    } else {
+                        penaltyDisplay = `<i class="fas fa-check-circle text-success" title="Paid on time" aria-label="Paid on time"></i>`;
+                    }
                     intRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
                     prinRecv = paidAmt - intRecv;
-                    runningPrinBalance -= prinRecv;
+                    if (runningPrinBalance - prinRecv < 0) {
+                        prinRecv = runningPrinBalance;
+                        intRecv = paidAmt - prinRecv;
+                    }
+                    runningPrinBalance = Math.max(0, runningPrinBalance - prinRecv);
                     actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})" aria-label="Edit transaction ${s.sno}"><i class="fas fa-pen"></i></button>`;
                 } else {
                     let reminderIcons = '';
@@ -2332,10 +2477,10 @@ document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
 
                 rows.push(`<tr>
             <td>${s.sno}</td>
-            <td>${s.dueDate}</td>
+            <td>${formatDateDMY(s.dueDate)}</td>
             <td class="fw-bold">₹${fmtRaw(s.expectedAmt)}</td>
             <td>${penaltyDisplay}</td>
-            <td class="fw-bold">${s.paidDate || '-'}</td>
+            <td class="fw-bold">${s.paidDate ? formatDateDMY(s.paidDate) : '-'}</td>
             <td>${s.receiptNo || '-'}</td>
             <td class="fw-bold text-success">${s.paidAmount ? fmtRaw(s.paidAmount) : '-'}</td>
             <td class="text-primary">${s.isPaid ? fmtRaw(prinRecv) : '-'}</td>
@@ -2358,36 +2503,36 @@ document.getElementById('detailPrinPayable').innerText = fmtRaw(sumPrinPayable);
             let totalDays = 0;
 
             let totalPenaltyPaid = 0;
-d.schedule.forEach(s => {
-    const due = new Date(s.dueDate); due.setHours(0, 0, 0, 0);
-    if (!s.isPaid) {
-        if (today > due) totalDays += Math.ceil((today - due) / 86400000);
-    } else {
-        const pDate = new Date(s.paidDate); pDate.setHours(0, 0, 0, 0);
-        if (pDate > due) totalDays += Math.ceil((pDate - due) / 86400000);
-        totalPenaltyPaid += parseFloat(s.penaltyPaid) || 0;
-    }
-});
+            d.schedule.forEach(s => {
+                const due = new Date(s.dueDate); due.setHours(0, 0, 0, 0);
+                if (!s.isPaid) {
+                    if (today > due) totalDays += Math.ceil((today - due) / 86400000);
+                } else {
+                    const pDate = new Date(s.paidDate); pDate.setHours(0, 0, 0, 0);
+                    if (pDate > due) totalDays += Math.ceil((pDate - due) / 86400000);
+                    totalPenaltyPaid += parseFloat(s.penaltyPaid) || 0;
+                }
+            });
 
-const grossPenalty = totalDays * rate;
-const netPenalty = Math.max(0, grossPenalty - totalPenaltyPaid);
-document.getElementById('totalLateDays').innerText = totalDays;
-document.getElementById('totalPenaltyAmt').innerText = fmtRaw(netPenalty);
+            const grossPenalty = totalDays * rate;
+            const netPenalty = Math.max(0, grossPenalty - totalPenaltyPaid);
+            document.getElementById('totalLateDays').innerText = totalDays;
+            document.getElementById('totalPenaltyAmt').innerText = fmtRaw(netPenalty);
 
-// Show paid vs remaining breakdown if any penalty was paid
-const penSummary = document.getElementById('penaltySummary');
-if (penSummary) {
-    if (totalPenaltyPaid > 0) {
-        penSummary.innerHTML = `
+            // Show paid vs remaining breakdown if any penalty was paid
+            const penSummary = document.getElementById('penaltySummary');
+            if (penSummary) {
+                if (totalPenaltyPaid > 0) {
+                    penSummary.innerHTML = `
             <div class="d-flex justify-content-center gap-3 mt-2 pt-2" style="border-top:1px dashed #ffc9c9;">
                 <span class="small"><span class="badge bg-success">₹${fmtRaw(totalPenaltyPaid)} collected</span></span>
                 <span class="small"><span class="badge bg-danger">₹${fmtRaw(netPenalty)} remaining</span></span>
             </div>`;
-        penSummary.style.display = 'block';
-    } else {
-        penSummary.style.display = 'none';
-    }
-}
+                    penSummary.style.display = 'block';
+                } else {
+                    penSummary.style.display = 'none';
+                }
+            }
         }
 
         // ============================================================
@@ -2438,57 +2583,99 @@ if (penSummary) {
         }
 
         // ============================================================
+        // MANUAL CLOSE LOAN
+        // ============================================================
+        async function manualCloseLoanToggle() {
+            const d = localDB[currentIdx];
+
+            if (d.manuallyClosed) {
+                const ok = await showConfirm('This will reopen the loan and restore all waived dues as unpaid. Proceed?', 'Reopen Loan?');
+                if (!ok) return;
+                const reopenedSchedule = d.schedule.map(s => {
+                    if (s.manuallyClosed) {
+                        return { ...s, isPaid: false, paidAmount: 0, paidDate: '', receiptNo: '', penaltyPaid: 0, manuallyClosed: false };
+                    }
+                    return s;
+                });
+                db.collection('loans').doc(currentDocId).update({ schedule: reopenedSchedule, manuallyClosed: false, manualCloseDate: '' })
+                    .then(() => { showToast('Loan reopened successfully!'); viewLedger(currentIdx, true); })
+                    .catch(e => { showToast('Reopen failed: ' + e.message, 'error'); });
+                return;
+            }
+
+            const totalPaid = d.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+            const totalExp = d.loan.expected * d.loan.dues;
+            if (totalPaid >= totalExp) {
+                showToast('This loan is fully paid — no manual close needed.', 'info'); return;
+            }
+
+            const ok = await showConfirm('This will waive all remaining dues and close the loan early. Proceed?', 'Manual Close Loan?');
+            if (!ok) return;
+
+            const newSchedule = d.schedule.map(s => {
+                if (!s.isPaid) {
+                    return { ...s, isPaid: true, paidAmount: 0, paidDate: new Date().toISOString().split('T')[0], receiptNo: 'CLOSED', penaltyPaid: 0, manuallyClosed: true };
+                }
+                return s;
+            });
+
+            db.collection('loans').doc(currentDocId).update({ schedule: newSchedule, manuallyClosed: true, manualCloseDate: new Date().toISOString().split('T')[0] })
+                .then(() => { showToast('Loan manually closed successfully!'); viewLedger(currentIdx, true); })
+                .catch(e => { showToast('Close failed: ' + e.message, 'error'); });
+        }
+
+        // ============================================================
         // PAYMENTS
         // ============================================================
         function openDueModal(sIdx) {
-    duePayScheduleIdx = sIdx;
-    const s = localDB[currentIdx].schedule[sIdx];
-    const d = localDB[currentIdx];
-    const penaltyRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
-    const today = new Date(); today.setHours(0,0,0,0);
-    const due = new Date(s.dueDate); due.setHours(0,0,0,0);
-    const daysLate = today > due ? Math.ceil((today - due) / 86400000) : 0;
-    const suggestedPenalty = daysLate * penaltyRate;
+            duePayScheduleIdx = sIdx;
+            const s = localDB[currentIdx].schedule[sIdx];
+            const d = localDB[currentIdx];
+            const penaltyRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const due = new Date(s.dueDate); due.setHours(0, 0, 0, 0);
+            const daysLate = today > due ? Math.ceil((today - due) / 86400000) : 0;
+            const suggestedPenalty = daysLate * penaltyRate;
 
-    document.getElementById('duePayDate').valueAsDate = new Date();
-    document.getElementById('duePayAmt').value = s.expectedAmt;
-    document.getElementById('duePayRcpt').value = '';
+            document.getElementById('duePayDate').valueAsDate = new Date();
+            document.getElementById('duePayAmt').value = s.expectedAmt;
+            document.getElementById('duePayRcpt').value = '';
 
-    // Show/hide penalty row based on whether late
-    const penRow = document.getElementById('duePayPenaltyRow');
-    const penInfo = document.getElementById('duePayPenaltyInfo');
-    if (daysLate > 0) {
-        penRow.style.display = 'block';
-        penInfo.innerHTML = `<span class="badge bg-danger me-1">${daysLate} days late</span> Suggested: <strong class="text-danger">₹${suggestedPenalty}</strong>`;
-        document.getElementById('duePayPenalty').value = suggestedPenalty;
-    } else {
-        penRow.style.display = 'none';
-        document.getElementById('duePayPenalty').value = 0;
-    }
+            // Show/hide penalty row based on whether late
+            const penRow = document.getElementById('duePayPenaltyRow');
+            const penInfo = document.getElementById('duePayPenaltyInfo');
+            if (daysLate > 0) {
+                penRow.style.display = 'block';
+                penInfo.innerHTML = `<span class="badge bg-danger me-1">${daysLate} days late</span> Suggested: <strong class="text-danger">₹${suggestedPenalty}</strong>`;
+                document.getElementById('duePayPenalty').value = suggestedPenalty;
+            } else {
+                penRow.style.display = 'none';
+                document.getElementById('duePayPenalty').value = 0;
+            }
 
-    new bootstrap.Modal(document.getElementById('duePayModal')).show();
-}
+            new bootstrap.Modal(document.getElementById('duePayModal')).show();
+        }
 
         function submitDuePayment() {
-    const date = document.getElementById('duePayDate').value;
-    const rcpt = document.getElementById('duePayRcpt').value.trim();
-    const amt = document.getElementById('duePayAmt').value;
-    const penaltyPaid = parseFloat(document.getElementById('duePayPenalty').value) || 0;
-    if (!date || !rcpt || !amt) { showToast('Please fill all required fields', 'error'); return; }
-    if (rcpt !== '-' && rcpt !== '.' && localHistory.some(h => h.rcpt === rcpt)) {
-        showToast('Receipt Number already exists!', 'error'); return;
-    }
-    const newSchedule = [...localDB[currentIdx].schedule];
-    newSchedule[duePayScheduleIdx].isPaid = true;
-    newSchedule[duePayScheduleIdx].paidAmount = amt;
-    newSchedule[duePayScheduleIdx].paidDate = date;
-    newSchedule[duePayScheduleIdx].receiptNo = rcpt;
-    newSchedule[duePayScheduleIdx].penaltyPaid = penaltyPaid;
-    db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
-    db.collection('transactions').add({ date, loanNo: localDB[currentIdx].loanNo, amt, rcpt, penaltyPaid });
-    bootstrap.Modal.getInstance(document.getElementById('duePayModal')).hide();
-    showToast('Payment saved successfully!');
-}
+            const date = document.getElementById('duePayDate').value;
+            const rcpt = document.getElementById('duePayRcpt').value.trim();
+            const amt = document.getElementById('duePayAmt').value;
+            const penaltyPaid = parseFloat(document.getElementById('duePayPenalty').value) || 0;
+            if (!date || !rcpt || !amt) { showToast('Please fill all required fields', 'error'); return; }
+            if (rcpt !== '-' && rcpt !== '.' && localHistory.some(h => h.rcpt === rcpt)) {
+                showToast('Receipt Number already exists!', 'error'); return;
+            }
+            const newSchedule = [...localDB[currentIdx].schedule];
+            newSchedule[duePayScheduleIdx].isPaid = true;
+            newSchedule[duePayScheduleIdx].paidAmount = amt;
+            newSchedule[duePayScheduleIdx].paidDate = date;
+            newSchedule[duePayScheduleIdx].receiptNo = rcpt;
+            newSchedule[duePayScheduleIdx].penaltyPaid = penaltyPaid;
+            db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
+            db.collection('transactions').add({ date, loanNo: localDB[currentIdx].loanNo, amt, rcpt, penaltyPaid });
+            bootstrap.Modal.getInstance(document.getElementById('duePayModal')).hide();
+            showToast('Payment saved successfully!');
+        }
 
         function openEditTxn(schedIndex) {
             const s = localDB[currentIdx].schedule[schedIndex];
@@ -2517,7 +2704,7 @@ if (penSummary) {
             newSchedule[idx].paidDate = nD; newSchedule[idx].receiptNo = nR; newSchedule[idx].paidAmount = nA;
             newSchedule[idx].penaltyPaid = nP;
             db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
-            const t = localHistory.find(t => t.loanNo == loanNum && t.date == oD && t.rcpt == oR);
+            const t = localHistory.find(t => t.loanNo == loanNum && t.rcpt == oR);
             if (t && t.uid) db.collection('transactions').doc(t.uid).update({ date: nD, rcpt: nR, amt: nA, penaltyPaid: nP });
             showToast('Transaction updated!');
             bootstrap.Modal.getInstance(document.getElementById('editTxnModal')).hide();
@@ -2543,8 +2730,8 @@ if (penSummary) {
                     // Check if this due is overdue — show penalty field
                     const unpaidDue = l.schedule[unpaidIdx];
                     const penaltyRate = l.penaltyRate !== undefined ? l.penaltyRate : 5;
-                    const today = new Date(); today.setHours(0,0,0,0);
-                    const dueDate = new Date(unpaidDue.dueDate); dueDate.setHours(0,0,0,0);
+                    const today = new Date(); today.setHours(0, 0, 0, 0);
+                    const dueDate = new Date(unpaidDue.dueDate); dueDate.setHours(0, 0, 0, 0);
                     const daysLate = today > dueDate ? Math.ceil((today - dueDate) / 86400000) : 0;
                     if (daysLate > 0) {
                         const suggested = daysLate * penaltyRate;
@@ -2566,7 +2753,7 @@ if (penSummary) {
             }
         }
 
-       function processQuickPay() {
+        function processQuickPay() {
             const no = document.getElementById('qpLoanNo').value;
             const date = document.getElementById('qpDate').value;
             const amount = document.getElementById('qpAmount').value;
@@ -2625,6 +2812,95 @@ if (penSummary) {
         // ============================================================
         function toggleMonthlyProgress() { switchTab('viewProgress'); initMonthlyFilter(); }
 
+        function renderProgressDetailTable(monthVal, year) {
+            const isAll = monthVal === 'all';
+            const month = isAll ? -1 : parseInt(monthVal);
+            const tb = document.getElementById('progressDetailBody');
+            const tf = document.getElementById('progressDetailFoot');
+            if (!tb || !tf) return;
+            const rows = [];
+            let totAmt = 0, totPenalty = 0, totPrin = 0, totInt = 0;
+            localDB.forEach((loan, idx) => {
+                const totalInt = parseFloat(loan.loan.totalInt) || 0;
+                const numDues = parseInt(loan.loan.dues) || 1;
+                const intFactor = totalInt / numDues;
+                let loanPrinBal = parseFloat(loan.loan.principal) || 0;
+                const schedWithCalc = loan.schedule.map(s => {
+                    if (s.isPaid && !s.manuallyClosed) {
+                        const p = parseFloat(s.paidAmount) || 0;
+                        let ir = p >= intFactor ? intFactor : p;
+                        let pr = p - ir;
+                        if (loanPrinBal - pr < 0) { pr = loanPrinBal; ir = p - pr; }
+                        loanPrinBal = Math.max(0, loanPrinBal - pr);
+                        return { ...s, calcPrin: pr, calcInt: ir };
+                    }
+                    return { ...s, calcPrin: 0, calcInt: 0 };
+                });
+                schedWithCalc.forEach(s => {
+                    if (s.isPaid && !s.manuallyClosed && s.paidDate && parseFloat(s.paidAmount) > 0) {
+                        const pDate = new Date(s.paidDate);
+                        if (pDate.getFullYear() === year && (isAll || pDate.getMonth() === month)) {
+                            const p = parseFloat(s.paidAmount) || 0;
+                            const pen = parseFloat(s.penaltyPaid) || 0;
+                            totAmt += p; totPenalty += pen; totPrin += s.calcPrin; totInt += s.calcInt;
+                            rows.push(`<tr onclick="openDashboardLedger(${idx})" role="button" style="cursor:pointer">
+                                <td>${formatDateDMY(s.paidDate)}</td>
+                                <td>${loan.loanNo}</td>
+                                <td>${s.receiptNo || '-'}</td>
+                                <td class="fw-bold">₹${fmtRaw(p)}</td>
+                                <td>${pen > 0 ? `<span class="badge bg-danger">₹${fmtRaw(pen)}</span>` : '<span class="text-muted">-</span>'}</td>
+                                <td class="text-primary">₹${fmtRaw(s.calcPrin)}</td>
+                                <td class="text-success">₹${fmtRaw(s.calcInt)}</td>
+                            </tr>`);
+                        }
+                    }
+                });
+            });
+            tb.innerHTML = rows.join('') || `<tr><td colspan="7" class="text-muted py-3">No payments this month</td></tr>`;
+            tf.innerHTML = `<tr style="border-top:2px solid #dee2e6;">
+                <td colspan="3" class="text-end fw-bold">TOTAL</td>
+                <td class="fw-bold" style="color:#7b1fa2;">₹${fmtRaw(totAmt)}</td>
+                <td class="fw-bold text-danger">₹${fmtRaw(totPenalty)}</td>
+                <td class="fw-bold text-primary">₹${fmtRaw(totPrin)}</td>
+                <td class="fw-bold text-success">₹${fmtRaw(totInt)}</td>
+            </tr>`;
+        }
+
+        function exportProgressTable() {
+            const monthVal = document.getElementById('progressMonth').value;
+            const isAll = monthVal === 'all';
+            const month = isAll ? -1 : parseInt(monthVal);
+            const year = parseInt(document.getElementById('progressYear').value);
+            const monthName = isAll ? 'All' : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month];
+            let c = "Date,No,Rcpt,Amt,Penalty,Prin.Recv,Int.Recv\n";
+            localDB.forEach(loan => {
+                const totalInt = parseFloat(loan.loan.totalInt) || 0;
+                const numDues = parseInt(loan.loan.dues) || 1;
+                const intFactor = totalInt / numDues;
+                let loanPrinBal = parseFloat(loan.loan.principal) || 0;
+                const schedWithCalc = loan.schedule.map(s => {
+                    if (s.isPaid && !s.manuallyClosed) {
+                        const p = parseFloat(s.paidAmount) || 0;
+                        let ir = p >= intFactor ? intFactor : p;
+                        let pr = p - ir;
+                        if (loanPrinBal - pr < 0) { pr = loanPrinBal; ir = p - pr; }
+                        loanPrinBal = Math.max(0, loanPrinBal - pr);
+                        return { ...s, calcPrin: pr, calcInt: ir };
+                    }
+                    return { ...s, calcPrin: 0, calcInt: 0 };
+                });
+                schedWithCalc.forEach(s => {
+                    if (s.isPaid && !s.manuallyClosed && s.paidDate && parseFloat(s.paidAmount) > 0) {
+                        const pDate = new Date(s.paidDate);
+                        if (pDate.getFullYear() === year && (isAll || pDate.getMonth() === month)) {
+                            c += `${formatDateDMY(s.paidDate)},${loan.loanNo},${s.receiptNo || '-'},${s.paidAmount},${s.penaltyPaid || 0},${Math.round(s.calcPrin)},${Math.round(s.calcInt)}\n`;
+                        }
+                    }
+                });
+            });
+            downloadCSV(c, `Payments_${monthName}_${year}.csv`);
+        }
+
         function initMonthlyFilter() {
             const mSel = document.getElementById('progressMonth');
             const ySel = document.getElementById('progressYear');
@@ -2633,7 +2909,7 @@ if (penSummary) {
             const tamilMonths = ['ஜன', 'பிப்', 'மார்', 'ஏப்', 'மே', 'ஜூன்', 'ஜூல்', 'ஆக', 'செப்', 'அக்', 'நவ', 'டிச'];
             const savedMonth = mSel.value;
             const savedYear = ySel.value;
-            mSel.innerHTML = months.map((m, i) => `<option value="${i}" style="color:#2c3e50;background:#fff;">${curLang === 'ta' ? tamilMonths[i] : m}</option>`).join('');
+            mSel.innerHTML = '<option value="all" style="color:#2c3e50;background:#fff;">All</option>' + months.map((m, i) => `<option value="${i}" style="color:#2c3e50;background:#fff;">${curLang === 'ta' ? tamilMonths[i] : m}</option>`).join('');
             const yr = new Date().getFullYear();
             ySel.innerHTML = Array.from({ length: YEAR_RANGE + 1 }, (_, j) => yr - j).map(y => `<option value="${y}" style="color:#2c3e50;background:#fff;">${y}</option>`).join('');
             mSel.value = savedMonth !== '' ? savedMonth : new Date().getMonth();
@@ -2642,36 +2918,42 @@ if (penSummary) {
         }
 
         function renderMonthlyProgress() {
-            const month = parseInt(document.getElementById('progressMonth').value);
+            const monthVal = document.getElementById('progressMonth').value;
+            const isAll = monthVal === 'all';
+            const month = isAll ? -1 : parseInt(monthVal);
             const year = parseInt(document.getElementById('progressYear').value);
             let mGiven = 0, mReceived = 0, mPrinRecv = 0, mIntRecv = 0, mPaid = 0, mDue = 0, mPrinReceivable = 0, mIntReceivable = 0, mLoansAddedCount = 0, mPenaltyCollected = 0;
 
             localDB.forEach(loan => {
                 const loanDate = new Date(loan.loan.date);
-                if (loanDate.getFullYear() === year && loanDate.getMonth() === month) {
+                if (loanDate.getFullYear() === year && (isAll || loanDate.getMonth() === month)) {
                     mGiven += parseFloat(loan.loan.principal) || 0;
                     mLoansAddedCount++;
                 }
                 const totalInt = parseFloat(loan.loan.totalInt) || 0;
                 const numDues = parseInt(loan.loan.dues) || 1;
                 const intFactor = totalInt / numDues;
+                let loanPrinBal = parseFloat(loan.loan.principal) || 0;
                 loan.schedule.forEach(s => {
                     const due = new Date(s.dueDate);
-                    if (due.getFullYear() === year && due.getMonth() === month) {
+                    if (due.getFullYear() === year && (isAll || due.getMonth() === month)) {
                         mDue++;
                         const expAmt = parseFloat(s.expectedAmt) || 0;
                         mIntReceivable += intFactor;
                         mPrinReceivable += (expAmt - intFactor);
-                        if (s.isPaid) mPaid++;
+                        if (s.isPaid && !s.manuallyClosed) mPaid++;
                     }
-                    if (s.isPaid && s.paidDate) {
+                    if (s.isPaid && !s.manuallyClosed && s.paidDate) {
+                        const p = parseFloat(s.paidAmount) || 0;
+                        let ir = p >= intFactor ? intFactor : p;
+                        let pr = p - ir;
+                        if (loanPrinBal - pr < 0) { pr = loanPrinBal; ir = p - pr; }
+                        loanPrinBal = Math.max(0, loanPrinBal - pr);
                         const pDate = new Date(s.paidDate);
-                        if (pDate.getFullYear() === year && pDate.getMonth() === month) {
-                            const p = parseFloat(s.paidAmount) || 0;
+                        if (pDate.getFullYear() === year && (isAll || pDate.getMonth() === month)) {
                             mReceived += p;
-                            const ir = p >= intFactor ? intFactor : p;
                             mIntRecv += ir;
-                            mPrinRecv += (p - ir);
+                            mPrinRecv += pr;
                             mPenaltyCollected += parseFloat(s.penaltyPaid) || 0;
                         }
                     }
@@ -2691,6 +2973,7 @@ if (penSummary) {
             document.getElementById('mProgressPct').innerText = pct + '%';
             document.getElementById('mPaidCount').innerText = mPaid;
             document.getElementById('mDueCount').innerText = mDue - mPaid;
+            renderProgressDetailTable(monthVal, year);
         }
     </script>
 </body>
