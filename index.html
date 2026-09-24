@@ -1403,8 +1403,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0"><button class="btn btn-warning w-100 fw-bold"
-                        onclick="saveTransactionEdit()" data-lang="update_sync">UPDATE & SYNC</button></div>
+                <div class="modal-footer border-0 d-flex gap-2">
+                    <button class="btn btn-outline-danger fw-bold flex-fill" onclick="deleteTransactionFromModal()"><i class="fas fa-trash me-1"></i> DELETE</button>
+                    <button class="btn btn-warning fw-bold flex-fill" onclick="saveTransactionEdit()" data-lang="update_sync">UPDATE & SYNC</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1707,7 +1709,7 @@
             localDB.forEach((loan, idx) => {
                 const totalExp = loan.loan.expected * loan.loan.dues;
                 const totalPaid = loan.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
-                if (loan.manuallyClosed || totalPaid >= totalExp) return;
+                if (!loan.unlocked && (loan.manuallyClosed || totalPaid >= totalExp)) return;
                 loan.schedule.forEach(s => {
                     if (!s.isPaid) {
                         const due = new Date(s.dueDate);
@@ -1927,7 +1929,7 @@
                 tC += loanPaid;
                 tI += totalInt;
                 tTotalExp += exp;
-                const isClosed = loan.manuallyClosed || loanPaid >= exp;
+                const isClosed = !loan.unlocked && (loan.manuallyClosed || loanPaid >= exp);
                 if (isClosed) closedCount++;
 
                 rows.push(`
@@ -1978,6 +1980,7 @@
                             loanNo: loan.loanNo,
                             rcpt: s.receiptNo || '-',
                             amt: s.paidAmount,
+                            expectedAmt: s.expectedAmt || loan.loan.expected,
                             penaltyPaid: s.penaltyPaid || 0,
                             uid: s.uid || (loan.loanNo + s.sno)
                         });
@@ -1985,13 +1988,16 @@
                 });
             });
             const sorted = history.sort((a, b) => new Date(b.date) - new Date(a.date) || b.loanNo.localeCompare(a.loanNo));
-            tb.innerHTML = sorted.map(h => `<tr onclick="openDashboardLedger(${h.idx})" role="button" style="cursor:pointer">
+            tb.innerHTML = sorted.map(h => {
+                const isUnderpaid = (parseFloat(h.amt) || 0) < (parseFloat(h.expectedAmt) || 0);
+                return `<tr onclick="openDashboardLedger(${h.idx})" role="button" style="cursor:pointer" class="${isUnderpaid ? 'table-warning' : ''}">
                 <td>${formatDateDMY(h.date)}</td>
                 <td>${h.loanNo}</td>
                 <td>${h.rcpt}</td>
                 <td class="fw-bold text-success">₹${fmtRaw(h.amt)}</td>
                 <td>${h.penaltyPaid > 0 ? `<span class="badge bg-danger">₹${fmtRaw(h.penaltyPaid)}</span>` : '<span class="text-muted">-</span>'}</td>
-            </tr>`).join('');
+            </tr>`;
+            }).join('');
         }
 
         // ============================================================
@@ -2358,19 +2364,17 @@
 
             // ---- CLOSED LOAN: watermark + red heading ----
             const exp = d.loan.expected * d.loan.dues;
-            const isClosed = d.manuallyClosed || paid >= exp;
+            const isClosed = !d.unlocked && (d.manuallyClosed || paid >= exp);
             const sheet = document.querySelector('.ledger-sheet');
 
             const mcBtn = document.getElementById('manualCloseBtn');
             const mcIcon = document.getElementById('manualCloseBtnIcon');
             if (mcBtn) {
                 mcBtn.style.display = '';
-                if (d.manuallyClosed) {
+                if (isClosed) {
                     mcBtn.className = 'btn btn-warning shadow-sm btn-sm me-2';
                     if (mcIcon) mcIcon.className = 'fas fa-lock-open';
-                    mcBtn.title = 'Click to Reopen Loan';
-                } else if (paid >= exp) {
-                    mcBtn.style.display = 'none';
+                    mcBtn.title = 'Click to Unlock Loan';
                 } else {
                     mcBtn.className = 'btn btn-success shadow-sm btn-sm me-2';
                     if (mcIcon) mcIcon.className = 'fas fa-lock';
@@ -2432,18 +2436,18 @@
                         const totalPenalty = daysLate * penaltyRate;
                         const penPaid = parseFloat(s.penaltyPaid) || 0;
                         const penRemaining = Math.max(0, totalPenalty - penPaid);
+
                         penaltyDisplay = `<div class="d-flex flex-column align-items-center gap-1">
         <span class="text-muted small">${daysLate}d</span>
-        ${penPaid > 0
-                                ? `<span class="badge bg-success" style="font-size:0.65rem;">₹${penPaid} paid</span>`
-                                : ''}
+        ${penPaid > 0 ? `<span class="badge bg-success" style="font-size:0.65rem;">₹${penPaid} paid</span>` : ''}
         ${penRemaining > 0
-                                ? `<span class="badge bg-danger" style="font-size:0.65rem;">₹${penRemaining} due</span>`
-                                : penPaid > 0 ? `<span class="badge bg-success" style="font-size:0.65rem;"><i class="fas fa-check"></i> cleared</span>` : ''}
+            ? `<span class="badge bg-danger" style="font-size:0.65rem;">₹${penRemaining} due</span>`
+            : penPaid > 0 ? `<span class="badge bg-success" style="font-size:0.65rem;"><i class="fas fa-check"></i> cleared</span>` : ''}
     </div>`;
                     } else {
                         penaltyDisplay = `<i class="fas fa-check-circle text-success" title="Paid on time" aria-label="Paid on time"></i>`;
                     }
+
                     intRecv = paidAmt >= interestFactor ? interestFactor : paidAmt;
                     prinRecv = paidAmt - intRecv;
                     if (runningPrinBalance - prinRecv < 0) {
@@ -2451,12 +2455,16 @@
                         intRecv = paidAmt - prinRecv;
                     }
                     runningPrinBalance = Math.max(0, runningPrinBalance - prinRecv);
-                    actionBtn = `<button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})" aria-label="Edit transaction ${s.sno}"><i class="fas fa-pen"></i></button>`;
+                    actionBtn = `<div class="d-flex justify-content-center align-items-center gap-1">
+                        <button class="btn btn-xs btn-outline-warning border-0" onclick="openEditTxn(${i})" aria-label="Edit transaction ${s.sno}"><i class="fas fa-pen"></i></button>
+                        <button class="btn btn-xs btn-outline-danger border-0" onclick="deleteDuePayment(${i})" aria-label="Delete transaction ${s.sno}"><i class="fas fa-trash"></i></button>
+                    </div>`;
                 } else {
                     let reminderIcons = '';
                     if (today > due) {
                         const ld = Math.ceil((today - due) / 86400000);
                         penaltyDisplay = `<span class="text-danger small fw-bold">${ld}d (₹${ld * penaltyRate})</span>`;
+
                         const phones = [d.borrowerInfo.phone, d.borrowerInfo.phone2].filter(Boolean);
                         if (phones.length > 0) {
                             const msg = getReminderMessage(d, 'due', { amt: s.expectedAmt, date: s.dueDate });
@@ -2475,7 +2483,9 @@
                     </div>`;
                 }
 
-                rows.push(`<tr>
+                const isUnderpaid = s.isPaid && (parseFloat(s.paidAmount) || 0) < (parseFloat(s.expectedAmt) || 0);
+
+                rows.push(`<tr class="${isUnderpaid ? 'table-warning' : ''}">
             <td>${s.sno}</td>
             <td>${formatDateDMY(s.dueDate)}</td>
             <td class="fw-bold">₹${fmtRaw(s.expectedAmt)}</td>
@@ -2587,26 +2597,40 @@
         // ============================================================
         async function manualCloseLoanToggle() {
             const d = localDB[currentIdx];
+            const exp = d.loan.expected * d.loan.dues;
+            const totalPaid = d.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
+            const isClosed = !d.unlocked && (d.manuallyClosed || totalPaid >= exp);
 
-            if (d.manuallyClosed) {
-                const ok = await showConfirm('This will reopen the loan and restore all waived dues as unpaid. Proceed?', 'Reopen Loan?');
-                if (!ok) return;
-                const reopenedSchedule = d.schedule.map(s => {
-                    if (s.manuallyClosed) {
-                        return { ...s, isPaid: false, paidAmount: 0, paidDate: '', receiptNo: '', penaltyPaid: 0, manuallyClosed: false };
-                    }
-                    return s;
-                });
-                db.collection('loans').doc(currentDocId).update({ schedule: reopenedSchedule, manuallyClosed: false, manualCloseDate: '' })
-                    .then(() => { showToast('Loan reopened successfully!'); viewLedger(currentIdx, true); })
-                    .catch(e => { showToast('Reopen failed: ' + e.message, 'error'); });
+            if (isClosed) {
+                if (d.manuallyClosed) {
+                    const ok = await showConfirm('This will reopen the loan and restore all waived dues as unpaid. Proceed?', 'Reopen Loan?');
+                    if (!ok) return;
+                    const reopenedSchedule = d.schedule.map(s => {
+                        if (s.manuallyClosed) {
+                            return { ...s, isPaid: false, paidAmount: 0, paidDate: '', receiptNo: '', penaltyPaid: 0, manuallyClosed: false };
+                        }
+                        return s;
+                    });
+                    db.collection('loans').doc(currentDocId).update({ schedule: reopenedSchedule, manuallyClosed: false, manualCloseDate: '', unlocked: true })
+                        .then(() => { showToast('Loan unlocked & reopened successfully!'); viewLedger(currentIdx, true); })
+                        .catch(e => { showToast('Reopen failed: ' + e.message, 'error'); });
+                } else {
+                    const ok = await showConfirm('This will unlock this closed loan so penalty can be collected or recorded. Proceed?', 'Unlock Loan?');
+                    if (!ok) return;
+                    db.collection('loans').doc(currentDocId).update({ unlocked: true })
+                        .then(() => { showToast('Loan unlocked successfully!'); viewLedger(currentIdx, true); })
+                        .catch(e => { showToast('Unlock failed: ' + e.message, 'error'); });
+                }
                 return;
             }
 
-            const totalPaid = d.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
-            const totalExp = d.loan.expected * d.loan.dues;
-            if (totalPaid >= totalExp) {
-                showToast('This loan is fully paid — no manual close needed.', 'info'); return;
+            if (totalPaid >= exp) {
+                const ok = await showConfirm('This will lock and close this loan. Proceed?', 'Lock Loan?');
+                if (!ok) return;
+                db.collection('loans').doc(currentDocId).update({ unlocked: false })
+                    .then(() => { showToast('Loan locked & closed successfully!'); viewLedger(currentIdx, true); })
+                    .catch(e => { showToast('Lock failed: ' + e.message, 'error'); });
+                return;
             }
 
             const ok = await showConfirm('This will waive all remaining dues and close the loan early. Proceed?', 'Manual Close Loan?');
@@ -2619,7 +2643,7 @@
                 return s;
             });
 
-            db.collection('loans').doc(currentDocId).update({ schedule: newSchedule, manuallyClosed: true, manualCloseDate: new Date().toISOString().split('T')[0] })
+            db.collection('loans').doc(currentDocId).update({ schedule: newSchedule, manuallyClosed: true, unlocked: false, manualCloseDate: new Date().toISOString().split('T')[0] })
                 .then(() => { showToast('Loan manually closed successfully!'); viewLedger(currentIdx, true); })
                 .catch(e => { showToast('Close failed: ' + e.message, 'error'); });
         }
@@ -2630,8 +2654,7 @@
         function openDueModal(sIdx) {
             duePayScheduleIdx = sIdx;
             const s = localDB[currentIdx].schedule[sIdx];
-            const d = localDB[currentIdx];
-            const penaltyRate = d.penaltyRate !== undefined ? d.penaltyRate : 5;
+            const penaltyRate = localDB[currentIdx].penaltyRate !== undefined ? localDB[currentIdx].penaltyRate : 5;
             const today = new Date(); today.setHours(0, 0, 0, 0);
             const due = new Date(s.dueDate); due.setHours(0, 0, 0, 0);
             const daysLate = today > due ? Math.ceil((today - due) / 86400000) : 0;
@@ -2710,6 +2733,53 @@
             bootstrap.Modal.getInstance(document.getElementById('editTxnModal')).hide();
         }
 
+        async function deleteDuePayment(schedIndex) {
+            if (currentIdx === null || !localDB[currentIdx]) return;
+            const ok = await showConfirm('Are you sure you want to delete this payment record? This will reset this due to unpaid.', 'Delete Payment?');
+            if (!ok) return;
+
+            const s = localDB[currentIdx].schedule[schedIndex];
+            if (!s) return;
+            const loanNum = localDB[currentIdx].loanNo;
+            const oldRcpt = s.receiptNo;
+            const oldDate = s.paidDate;
+
+            const newSchedule = [...localDB[currentIdx].schedule];
+            newSchedule[schedIndex] = {
+                sno: s.sno,
+                dueDate: s.dueDate,
+                expectedAmt: s.expectedAmt,
+                isPaid: false,
+                paidAmount: 0,
+                paidDate: '',
+                receiptNo: '',
+                penaltyPaid: 0,
+                manuallyClosed: false
+            };
+
+            try {
+                await db.collection('loans').doc(currentDocId).update({ schedule: newSchedule });
+                if (oldRcpt || oldDate) {
+                    const t = localHistory.find(t => t.loanNo == loanNum && (oldRcpt && oldRcpt !== '-' ? t.rcpt == oldRcpt : t.date == oldDate));
+                    if (t && t.uid) {
+                        await db.collection('transactions').doc(t.uid).delete().catch(e => console.error('Error deleting transaction record:', e));
+                    }
+                }
+                showToast('Payment deleted successfully!');
+            } catch (e) {
+                console.error('Delete payment failed:', e);
+                showToast('Delete failed: ' + e.message, 'error');
+            }
+        }
+
+        async function deleteTransactionFromModal() {
+            const idx = document.getElementById('editSchedIdx').value;
+            const modalEl = document.getElementById('editTxnModal');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance) modalInstance.hide();
+            await deleteDuePayment(parseInt(idx));
+        }
+
         // ============================================================
         // QUICK PAY
         // ============================================================
@@ -2720,14 +2790,9 @@
             const penInfo = document.getElementById('qpPenaltyInfo');
             if (l) {
                 document.getElementById('qpName').value = l.borrower;
-                const paid = l.schedule.reduce((acc, s) => acc + (parseFloat(s.paidAmount) || 0), 0);
                 const unpaidIdx = l.schedule.findIndex(s => !s.isPaid);
                 if (unpaidIdx > -1) {
-                    let target = 0;
-                    for (let i = 0; i <= unpaidIdx; i++) target += parseFloat(l.schedule[i].expectedAmt);
-                    document.getElementById('qpAmount').value = target - paid;
-
-                    // Check if this due is overdue — show penalty field
+                    document.getElementById('qpAmount').value = l.schedule[unpaidIdx].expectedAmt || l.loan.expected;
                     const unpaidDue = l.schedule[unpaidIdx];
                     const penaltyRate = l.penaltyRate !== undefined ? l.penaltyRate : 5;
                     const today = new Date(); today.setHours(0, 0, 0, 0);
