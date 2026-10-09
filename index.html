@@ -680,7 +680,7 @@
             <div class="mb-4 position-relative">
                 <i class="fas fa-search position-absolute text-muted" style="left:15px;top:12px;"></i>
                 <input type="text" id="searchInput" class="form-control rounded-pill ps-5"
-                    placeholder="Search accounts..." oninput="debouncedFilter()" aria-label="Search accounts">
+                    placeholder="Search accounts or vehicle no..." oninput="debouncedFilter()" aria-label="Search accounts or vehicle number">
             </div>
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h6 id="filterAllLbl" class="fw-bold small m-0 text-primary"
@@ -1932,14 +1932,21 @@
                 const isClosed = !loan.unlocked && (loan.manuallyClosed || loanPaid >= exp);
                 if (isClosed) closedCount++;
 
+                const vName = (loan.vehicle && loan.vehicle.name) ? loan.vehicle.name.trim() : '';
+                const vModel = (loan.vehicle && loan.vehicle.model) ? loan.vehicle.model.trim() : '';
+                const vReg = (loan.vehicle && loan.vehicle.reg) ? loan.vehicle.reg.trim() : '';
+                const vehNameModel = [vName, vModel].filter(Boolean).join(' ');
+                const vehDetail = [vehNameModel, vReg].filter(Boolean).join(' | ');
+
                 rows.push(`
             <div class="col-md-6">
-                <div class="loan-card ${isClosed ? 'closed' : 'active'}" onclick="openDashboardLedger(${i})" role="button" aria-label="View loan ${loan.loanNo}">
+                <div class="loan-card ${isClosed ? 'closed' : 'active'}" onclick="openDashboardLedger(${i})" role="button" aria-label="View loan ${loan.loanNo}" data-vehiclereg="${vReg.toLowerCase()}" data-vehicleclean="${vReg.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}">
                     <div class="d-flex justify-content-between">
                         <strong>#${loan.loanNo}</strong>
                         <span>₹${fmtRaw(loanPaid)}/${fmtRaw(exp)}</span>
                     </div>
                     <div class="text-primary fw-bold">${loan.borrower}</div>
+                    ${vehDetail ? `<div class="text-muted small mt-1" style="font-size:0.82rem;"><i class="fas fa-motorcycle me-1 text-secondary"></i>${vehDetail}</div>` : ''}
                 </div>
             </div>`);
             });
@@ -2024,9 +2031,12 @@
         }
 
         function filterLoans() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
+            const q = document.getElementById('searchInput').value.toLowerCase().trim();
+            const qClean = q.replace(/[^a-zA-Z0-9]/g, '');
             document.querySelectorAll('.loan-card').forEach(c => {
-                const matchesText = c.innerText.toLowerCase().includes(q);
+                const text = c.innerText.toLowerCase();
+                const vClean = c.getAttribute('data-vehicleclean') || '';
+                const matchesText = text.includes(q) || (qClean && (vClean.includes(qClean) || text.replace(/[^a-zA-Z0-9]/g, '').includes(qClean)));
                 const isClosed = c.classList.contains('closed');
                 const matchesFilter = filterMode === 'all' || (filterMode === 'closed' && isClosed);
                 c.parentElement.style.display = (matchesText && matchesFilter) ? 'block' : 'none';
